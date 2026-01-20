@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Trenios.Mobile.ViewModels"
+             xmlns:api="clr-namespace:Trenios.Mobile.Models.Api"
+             xmlns:h="clr-namespace:Trenios.Mobile.Helpers"
+             x:Class="Trenios.Mobile.Pages.BranchSelectionPage"
+             x:DataType="vm:BranchSelectionViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Header -->
+        <Border Grid.Row="0"
+                StrokeThickness="0"
+                BackgroundColor="{StaticResource Primary}"
+                Padding="16">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <HorizontalStackLayout Grid.Column="0" Spacing="12">
+                    <!-- Back button (only for SuperAdmin) -->
+                    <Button Text="{h:Translate Back}"
+                            Command="{Binding BackCommand}"
+                            IsVisible="{Binding CanGoBack}"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            BorderColor="White"
+                            BorderWidth="1"
+                            CornerRadius="8"
+                            HeightRequest="40"
+                            Padding="16,0"/>
+                    <VerticalStackLayout VerticalOptions="Center">
+                        <Label Text="TRENIOS"
+                               TextColor="White"
+                               FontSize="24"
+                               FontFamily="OpenSansSemibold"/>
+                        <Label Text="{Binding RestaurantName}"
+                               TextColor="White"
+                               Opacity="0.8"
+                               FontSize="14"
+                               IsVisible="{Binding RestaurantName, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <Label Grid.Column="1"
+                       Text="{h:Translate SelectBranch}"
+                       TextColor="White"
+                       FontSize="20"
+                       FontFamily="OpenSansSemibold"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+
+                <Button Grid.Column="2"
+                        Text="{h:Translate Logout}"
+                        Command="{Binding LogoutCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="White"
+                        BorderColor="White"
+                        BorderWidth="1"
+                        CornerRadius="8"
+                        HeightRequest="40"
+                        Padding="16,0"/>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <Grid Grid.Row="1" Padding="16">
+            <!-- Error Message -->
+            <Border IsVisible="{Binding HasError}"
+                    BackgroundColor="{StaticResource Danger}"
+                    StrokeShape="RoundRectangle 12"
+                    StrokeThickness="0"
+                    Padding="16"
+                    VerticalOptions="Start"
+                    Margin="0,0,0,16">
+                <HorizontalStackLayout Spacing="12">
+                    <Label Text="{Binding ErrorMessage}"
+                           TextColor="White"
+                           VerticalOptions="Center"/>
+                    <Button Text="{h:Translate Retry}"
+                            Command="{Binding RefreshCommand}"
+                            BackgroundColor="White"
+                            TextColor="{StaticResource Danger}"
+                            HeightRequest="36"
+                            CornerRadius="8"
+                            Padding="12,0"/>
+                </HorizontalStackLayout>
+            </Border>
+
+            <!-- Loading Indicator -->
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               HeightRequest="50"
+                               WidthRequest="50"
+                               Color="{StaticResource Primary}"/>
+
+            <!-- Branch List -->
+            <CollectionView ItemsSource="{Binding Branches}"
+                            IsVisible="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                            SelectionMode="None">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                                     Span="{OnIdiom Phone=1, Tablet=2, Desktop=3}"
+                                     HorizontalItemSpacing="16"
+                                     VerticalItemSpacing="16"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="api:BranchDto">
+                        <Border StrokeShape="RoundRectangle 16"
+                                StrokeThickness="0"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                                Padding="20"
+                                Shadow="{Shadow Brush=Black, Opacity=0.1, Radius=8, Offset='0,4'}">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BranchSelectionViewModel}}, Path=SelectBranchCommand}"
+                                    CommandParameter="{Binding .}"/>
+                            </Border.GestureRecognizers>
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
+                                <Label Grid.Row="0"
+                                       Text="{Binding Name}"
+                                       FontSize="20"
+                                       FontFamily="OpenSansSemibold"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
+                                <Label Grid.Row="1"
+                                       Text="{Binding Code, StringFormat='Code: {0}'}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource Primary}"
+                                       IsVisible="{Binding Code, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
+                                <Label Grid.Row="2"
+                                       Text="{Binding Address}"
+                                       FontSize="14"
+                                       TextColor="{StaticResource Gray500}"
+                                       LineBreakMode="TailTruncation"
+                                       MaxLines="2"
+                                       IsVisible="{Binding Address, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
+                                <HorizontalStackLayout Grid.Row="3" Spacing="8">
+                                    <Border BackgroundColor="{StaticResource Success}"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 4"
+                                            Padding="8,4">
+                                        <Label Text="{h:Translate Active}"
+                                               TextColor="White"
+                                               FontSize="12"/>
+                                    </Border>
+                                    <Label Text="{Binding Phone}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource Gray500}"
+                                           VerticalOptions="Center"
+                                           IsVisible="{Binding Phone, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center"
+                                         HorizontalOptions="Center"
+                                         Spacing="12">
+                        <Label Text="{h:Translate NoBranchesFound}"
+                               FontSize="18"
+                               TextColor="{StaticResource Gray500}"
+                               HorizontalOptions="Center"/>
+                        <Button Text="{h:Translate Refresh}"
+                                Command="{Binding RefreshCommand}"
+                                Style="{StaticResource PrimaryButton}"
+                                WidthRequest="120"/>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+            </CollectionView>
+        </Grid>
+    </Grid>
+
+</ContentPage>

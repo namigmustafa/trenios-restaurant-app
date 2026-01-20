@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Trenios.Mobile.ViewModels"
+             xmlns:models="clr-namespace:Trenios.Mobile.Models.Api"
+             xmlns:h="clr-namespace:Trenios.Mobile.Helpers"
+             x:Class="Trenios.Mobile.Pages.OrdersPage"
+             x:DataType="vm:OrdersViewModel"
+             x:Name="ThisPage"
+             Title="{h:Translate Orders}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="*,Auto">
+        <!-- Header -->
+        <Grid Grid.Row="0" Grid.ColumnSpan="2"
+              Padding="16,12"
+              BackgroundColor="{StaticResource Primary}"
+              ColumnDefinitions="Auto,*,Auto">
+            <Button Grid.Column="0"
+                    Text="{h:Translate Back}"
+                    Style="{StaticResource GhostButton}"
+                    TextColor="White"
+                    Command="{Binding BackCommand}"/>
+            <Label Grid.Column="1"
+                   Text="{h:Translate Orders}"
+                   FontFamily="OpenSansSemibold"
+                   FontSize="20"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+            <Button Grid.Column="2"
+                    Text="{h:Translate Refresh}"
+                    Style="{StaticResource GhostButton}"
+                    TextColor="White"
+                    Command="{Binding RefreshCommand}"/>
+        </Grid>
+
+        <!-- Status Filter Tabs -->
+        <ScrollView Grid.Row="1" Grid.ColumnSpan="2"
+                    Orientation="Horizontal"
+                    HorizontalScrollBarVisibility="Never"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray800}}">
+            <HorizontalStackLayout Padding="12,8" Spacing="8">
+                <Button Text="{h:Translate All}"
+                        Style="{StaticResource GhostButton}"
+                        BackgroundColor="{Binding FilterAll, Converter={StaticResource BoolToBackgroundConverter}}"
+                        Command="{Binding SetStatusFilterCommand}"
+                        CommandParameter="All"/>
+                <Button Text="{h:Translate Created}"
+                        Style="{StaticResource GhostButton}"
+                        BackgroundColor="{Binding FilterCreated, Converter={StaticResource BoolToBackgroundConverter}}"
+                        Command="{Binding SetStatusFilterCommand}"
+                        CommandParameter="Created"/>
+                <Button Text="{h:Translate Confirmed}"
+                        Style="{StaticResource GhostButton}"
+                        BackgroundColor="{Binding FilterConfirmed, Converter={StaticResource BoolToBackgroundConverter}}"
+                        Command="{Binding SetStatusFilterCommand}"
+                        CommandParameter="Confirmed"/>
+                <Button Text="{h:Translate Preparing}"
+                        Style="{StaticResource GhostButton}"
+                        BackgroundColor="{Binding FilterPreparing, Converter={StaticResource BoolToBackgroundConverter}}"
+                        Command="{Binding SetStatusFilterCommand}"
+                        CommandParameter="Preparing"/>
+                <Button Text="{h:Translate Completed}"
+                        Style="{StaticResource GhostButton}"
+                        BackgroundColor="{Binding FilterCompleted, Converter={StaticResource BoolToBackgroundConverter}}"
+                        Command="{Binding SetStatusFilterCommand}"
+                        CommandParameter="Completed"/>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- Orders List -->
+        <RefreshView Grid.Row="2" Grid.Column="0"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}">
+            <CollectionView ItemsSource="{Binding Orders}"
+                            SelectionMode="Single"
+                            SelectedItem="{Binding SelectedOrder}"
+                            SelectionChangedCommand="{Binding SelectOrderCommand}"
+                            SelectionChangedCommandParameter="{Binding SelectedItem, Source={RelativeSource Self}}">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="40">
+                        <Label Text="{h:Translate NoOrdersFound}"
+                               FontSize="16"
+                               TextColor="{StaticResource Gray500}"
+                               HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:OrderResponse">
+                        <Border Margin="12,6"
+                                Padding="16,12"
+                                StrokeShape="RoundRectangle 12"
+                                StrokeThickness="1"
+                                Stroke="{StaticResource Gray200}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}">
+                            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="8">
+                                <!-- Order Number and Status -->
+                                <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="12">
+                                    <Label Text="{Binding OrderNumber}"
+                                           FontFamily="OpenSansSemibold"
+                                           FontSize="16"/>
+                                    <Border Padding="8,4"
+                                            StrokeShape="RoundRectangle 4"
+                                            StrokeThickness="0"
+                                            BackgroundColor="{Binding StatusColor}">
+                                        <Label Text="{Binding StatusDisplay}"
+                                               FontSize="11"
+                                               TextColor="White"/>
+                                    </Border>
+                                </HorizontalStackLayout>
+
+                                <!-- Time and Type -->
+                                <HorizontalStackLayout Grid.Row="0" Grid.Column="1" Spacing="8">
+                                    <Label Text="{Binding OrderTypeDisplay}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource Gray500}"/>
+                                    <Label Text="{Binding PlacedAtDisplay}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource Gray500}"/>
+                                </HorizontalStackLayout>
+
+                                <!-- Items Summary -->
+                                <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                       Text="{Binding TotalItems, StringFormat='{0} items'}"
+                                       FontSize="13"
+                                       TextColor="{StaticResource Gray600}"/>
+
+                                <!-- Total -->
+                                <Label Grid.Row="2" Grid.Column="0"
+                                       Text="{Binding TotalAmount, StringFormat='Total: {0:C2}'}"
+                                       FontFamily="OpenSansSemibold"
+                                       FontSize="14"
+                                       TextColor="{StaticResource Primary}"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Order Details Panel -->
+        <Border Grid.Row="2" Grid.Column="1"
+                IsVisible="{Binding HasSelectedOrder}"
+                WidthRequest="400"
+                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                StrokeThickness="0">
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- Details Header -->
+                <Grid Grid.Row="0"
+                      Padding="16,12"
+                      BackgroundColor="{StaticResource Gray100}"
+                      ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout>
+                        <Label Text="{Binding SelectedOrder.OrderNumber}"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="18"/>
+                        <Label Text="{Binding SelectedOrder.PlacedAtFullDisplay}"
+                               FontSize="12"
+                               TextColor="{StaticResource Gray500}"/>
+                    </VerticalStackLayout>
+                    <Button Grid.Column="1"
+                            Text="X"
+                            WidthRequest="40"
+                            HeightRequest="40"
+                            CornerRadius="20"
+                            BackgroundColor="{StaticResource Gray200}"
+                            TextColor="{StaticResource Gray700}"
+                            Command="{Binding CloseDetailsCommand}"/>
+                </Grid>
+
+                <!-- Order Items -->
+                <ScrollView Grid.Row="1" Padding="16">
+                    <VerticalStackLayout Spacing="12">
+                        <!-- Status Badge -->
+                        <Border Padding="12,8"
+                                StrokeShape="RoundRectangle 8"
+                                StrokeThickness="0"
+                                BackgroundColor="{Binding SelectedOrder.StatusColor}"
+                                HorizontalOptions="Start">
+                            <Label Text="{Binding SelectedOrder.StatusDisplay}"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="14"
+                                   TextColor="White"/>
+                        </Border>
+
+                        <!-- Order Type -->
+                        <HorizontalStackLayout Spacing="8">
+                            <Label Text="{h:Translate Type}"
+                                   FontSize="13"
+                                   TextColor="{StaticResource Gray500}"/>
+                            <Label Text="{Binding SelectedOrder.OrderTypeDisplay}"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="13"/>
+                        </HorizontalStackLayout>
+
+                        <BoxView HeightRequest="1" Color="{StaticResource Gray200}"/>
+
+                        <!-- Items Header -->
+                        <Label Text="{h:Translate ItemsLabel}"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="15"
+                               Margin="0,8,0,0"/>
+
+                        <!-- Items List -->
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedOrder.Items}"
+                                             Spacing="8">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:OrderItemResponse">
+                                    <Border Padding="12"
+                                            StrokeShape="RoundRectangle 8"
+                                            StrokeThickness="1"
+                                            Stroke="{StaticResource Gray200}"
+                                            BackgroundColor="{StaticResource Gray50}">
+                                        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" RowSpacing="4">
+                                            <!-- Quantity -->
+                                            <Border Grid.Row="0" Grid.Column="0"
+                                                    WidthRequest="28"
+                                                    HeightRequest="28"
+                                                    StrokeShape="RoundRectangle 4"
+                                                    StrokeThickness="0"
+                                                    BackgroundColor="{StaticResource Primary}">
+                                                <Label Text="{Binding QuantityDisplay}"
+                                                       FontSize="12"
+                                                       TextColor="White"
+                                                       HorizontalOptions="Center"
+                                                       VerticalOptions="Center"/>
+                                            </Border>
+
+                                            <!-- Name -->
+                                            <Label Grid.Row="0" Grid.Column="1"
+                                                   Text="{Binding MenuItemName}"
+                                                   FontFamily="OpenSansSemibold"
+                                                   FontSize="14"
+                                                   VerticalOptions="Center"/>
+
+                                            <!-- Price -->
+                                            <Label Grid.Row="0" Grid.Column="2"
+                                                   Text="{Binding TotalPrice, StringFormat='{0:C2}'}"
+                                                   FontFamily="OpenSansSemibold"
+                                                   FontSize="14"
+                                                   TextColor="{StaticResource Primary}"
+                                                   VerticalOptions="Center"/>
+
+                                            <!-- Additions -->
+                                            <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                                                   Text="{Binding AdditionsSummary}"
+                                                   FontSize="12"
+                                                   TextColor="{StaticResource Gray500}"
+                                                   IsVisible="{Binding HasAdditions}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+
+                        <BoxView HeightRequest="1" Color="{StaticResource Gray200}" Margin="0,8"/>
+
+                        <!-- Price Summary -->
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
+                            <Label Grid.Row="0" Grid.Column="0" Text="{h:Translate Subtotal}" FontSize="13"/>
+                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding SelectedOrder.SubTotal, StringFormat='{0:C2}'}" FontSize="13"/>
+
+                            <Label Grid.Row="1" Grid.Column="0" Text="{h:Translate Tax}" FontSize="13"/>
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedOrder.TaxAmount, StringFormat='{0:C2}'}" FontSize="13"/>
+
+                            <Label Grid.Row="2" Grid.Column="0" Text="{h:Translate Discount}" FontSize="13" IsVisible="{Binding SelectedOrder.DiscountAmount, Converter={StaticResource IsNotNullConverter}}"/>
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding SelectedOrder.DiscountAmount, StringFormat='-{0:C2}'}" FontSize="13" TextColor="{StaticResource Success}" IsVisible="{Binding SelectedOrder.DiscountAmount, Converter={StaticResource IsNotNullConverter}}"/>
+
+                            <Label Grid.Row="3" Grid.Column="0" Text="{h:Translate Total}" FontFamily="OpenSansSemibold" FontSize="16"/>
+                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding SelectedOrder.TotalAmount, StringFormat='{0:C2}'}" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource Primary}"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </ScrollView>
+
+                <!-- Actions -->
+                <Grid Grid.Row="2"
+                      Padding="16"
+                      ColumnDefinitions="*,*"
+                      ColumnSpacing="12"
+                      BackgroundColor="{StaticResource Gray100}">
+                    <Button Grid.Column="0"
+                            Text="{h:Translate CancelOrder}"
+                            Style="{StaticResource DangerButton}"
+                            Command="{Binding UpdateStatusCommand}"
+                            CommandParameter="Cancelled"/>
+                    <Button Grid.Column="1"
+                            Text="{h:Translate Complete}"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding UpdateStatusCommand}"
+                            CommandParameter="Completed"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Loading Overlay -->
+        <Grid Grid.RowSpan="3" Grid.ColumnSpan="2"
+              IsVisible="{Binding IsLoading}"
+              BackgroundColor="#80000000">
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                               Color="{StaticResource Primary}"
+                               WidthRequest="50"
+                               HeightRequest="50"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+        </Grid>
+    </Grid>
+</ContentPage>
