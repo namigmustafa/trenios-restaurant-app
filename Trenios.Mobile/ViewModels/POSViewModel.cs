@@ -21,6 +21,11 @@ public class POSViewModel : BaseViewModel
     private string? _errorMessage;
     private int _customizationQuantity = 1;
 
+    // Cached customization totals for performance
+    private decimal _cachedAdditionsTotal;
+    private decimal _cachedItemPrice;
+    private decimal _cachedTotalPrice;
+
     public ObservableCollection<CategoryDto> Categories { get; } = new();
     public ObservableCollection<BranchMenuItemDto> MenuItems { get; } = new();
     public ObservableCollection<CartItem> CartItems { get; } = new();
@@ -98,20 +103,15 @@ public class POSViewModel : BaseViewModel
         {
             if (value >= 1 && SetProperty(ref _customizationQuantity, value))
             {
-                OnPropertyChanged(nameof(CustomizationTotalPrice));
+                RecalculateCustomizationTotals();
                 ((Command)DecreaseCustomizationQuantityCommand).ChangeCanExecute();
             }
         }
     }
 
-    public decimal CustomizationAdditionsTotal => SelectableAdditionGroups
-        .SelectMany(g => g.Additions)
-        .Where(a => a.IsSelected && a.Quantity > 0)
-        .Sum(a => a.TotalPrice);
-
-    public decimal CustomizationItemPrice => (SelectedMenuItem?.Price ?? 0) + CustomizationAdditionsTotal;
-
-    public decimal CustomizationTotalPrice => CustomizationItemPrice * CustomizationQuantity;
+    public decimal CustomizationAdditionsTotal => _cachedAdditionsTotal;
+    public decimal CustomizationItemPrice => _cachedItemPrice;
+    public decimal CustomizationTotalPrice => _cachedTotalPrice;
 
     public decimal Subtotal => _orderService.Subtotal;
     public decimal Tax => _orderService.Tax;
@@ -260,21 +260,24 @@ public class POSViewModel : BaseViewModel
             // Check if item has addition groups
             if (menuItem.AdditionGroups?.Count > 0)
             {
-                IsLoadingAdditions = true;
-
-                // Small delay for visual feedback
-                await Task.Delay(100);
-
-                // Build selectable addition groups
-                SelectableAdditionGroups.Clear();
+                // Build selectable addition groups - create all groups first
+                var groups = new List<SelectableAdditionGroup>();
                 foreach (var group in menuItem.AdditionGroups)
                 {
                     if (group == null) continue;
-                    var selectableGroup = new SelectableAdditionGroup(group, OnAdditionSelectionChanged);
-                    SelectableAdditionGroups.Add(selectableGroup);
+                    groups.Add(new SelectableAdditionGroup(group, OnAdditionSelectionChanged));
                 }
 
-                IsLoadingAdditions = false;
+                // Clear and add all at once to minimize UI updates
+                SelectableAdditionGroups.Clear();
+                foreach (var group in groups)
+                {
+                    SelectableAdditionGroups.Add(group);
+                }
+
+                // Update cached totals after groups are built
+                RecalculateCustomizationTotals();
+
                 ShowCustomization = true;
             }
             else
@@ -285,7 +288,6 @@ public class POSViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
-            IsLoadingAdditions = false;
             await Application.Current!.MainPage!.DisplayAlert("Error",
                 $"{ex.GetType().Name}: {ex.Message}\n\n{ex.StackTrace}", "OK");
         }
@@ -293,10 +295,47 @@ public class POSViewModel : BaseViewModel
 
     private void OnAdditionSelectionChanged()
     {
-        OnPropertyChanged(nameof(CustomizationAdditionsTotal));
-        OnPropertyChanged(nameof(CustomizationItemPrice));
-        OnPropertyChanged(nameof(CustomizationTotalPrice));
+        RecalculateCustomizationTotals();
         ((Command)ConfirmCustomizationCommand).ChangeCanExecute();
+    }
+
+    /// <summary>
+    /// Recalculates and caches customization totals, then fires property change notifications.
+    /// </summary>
+    private void RecalculateCustomizationTotals()
+    {
+        // Calculate additions total using simple loop (faster than LINQ)
+        decimal additionsTotal = 0;
+        foreach (var group in SelectableAdditionGroups)
+        {
+            foreach (var addition in group.Additions)
+            {
+                if (addition.IsSelected && addition.Quantity > 0)
+                {
+                    additionsTotal += addition.TotalPrice;
+                }
+            }
+        }
+
+        var basePrice = SelectedMenuItem?.Price ?? 0;
+        var itemPrice = basePrice + additionsTotal;
+        var totalPrice = itemPrice * CustomizationQuantity;
+
+        // Only notify if values changed
+        var additionsChanged = _cachedAdditionsTotal != additionsTotal;
+        var itemPriceChanged = _cachedItemPrice != itemPrice;
+        var totalPriceChanged = _cachedTotalPrice != totalPrice;
+
+        _cachedAdditionsTotal = additionsTotal;
+        _cachedItemPrice = itemPrice;
+        _cachedTotalPrice = totalPrice;
+
+        if (additionsChanged)
+            OnPropertyChanged(nameof(CustomizationAdditionsTotal));
+        if (itemPriceChanged)
+            OnPropertyChanged(nameof(CustomizationItemPrice));
+        if (totalPriceChanged)
+            OnPropertyChanged(nameof(CustomizationTotalPrice));
     }
 
     private void ToggleAddition(SelectableAddition addition)
@@ -493,14 +532,13 @@ public class POSViewModel : BaseViewModel
     private bool CanConfirmCustomization()
     {
         // Check all required groups have selections
+        // Uses cached TotalSelected from each group for performance
         foreach (var group in SelectableAdditionGroups)
         {
             if (group.IsRequired)
             {
-                // For MultiSelect, count total quantity of selected items; for SingleSelect, count selected items
-                var totalSelections = group.IsMultiSelect
-                    ? group.Additions.Where(a => a.IsSelected).Sum(a => a.Quantity)
-                    : group.Additions.Count(a => a.IsSelected);
+                // TotalSelected is already cached in the group
+                var totalSelections = group.TotalSelected;
 
                 if (totalSelections < group.MinSelections || totalSelections == 0)
                 {
@@ -535,7 +573,8 @@ public class POSViewModel : BaseViewModel
 }
 
 /// <summary>
-/// Represents an addition group with selectable additions for the customization UI
+/// Represents an addition group with selectable additions for the customization UI.
+/// Optimized for performance with cached properties and batched notifications.
 /// </summary>
 public class SelectableAdditionGroup : INotifyPropertyChanged
 {
@@ -547,20 +586,22 @@ public class SelectableAdditionGroup : INotifyPropertyChanged
     public int MinSelections { get; }
     public int MaxSelections { get; }
     public bool HasOnlyOneAddition { get; }
-    public ObservableCollection<SelectableAddition> Additions { get; } = new();
 
-    private bool _isUpdating; // Guard against re-entrant updates
+    // Use List for faster iteration - we don't need collection change notifications
+    private readonly List<SelectableAddition> _additions = new();
+    public IReadOnlyList<SelectableAddition> Additions => _additions;
+
+    // Cached computed values
+    private int _cachedTotalSelected;
+    private string _cachedSelectionHint = string.Empty;
+    private bool _cachedCanAddMore = true;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    // Current total quantity selected in this group (only count selected additions)
-    public int TotalSelected => Additions.Where(a => a.IsSelected).Sum(a => a.Quantity);
-
-    // Remaining selections available
-    public int RemainingSelections => MaxSelections > 0 ? Math.Max(0, MaxSelections - TotalSelected) : int.MaxValue;
-
-    // Can add more selections
-    public bool CanAddMore => MaxSelections == 0 || TotalSelected < MaxSelections;
+    public int TotalSelected => _cachedTotalSelected;
+    public int RemainingSelections => MaxSelections > 0 ? Math.Max(0, MaxSelections - _cachedTotalSelected) : int.MaxValue;
+    public bool CanAddMore => _cachedCanAddMore;
+    public string SelectionHint => _cachedSelectionHint;
 
     public SelectableAdditionGroup(AdditionGroupDto group, Action onSelectionChanged)
     {
@@ -572,98 +613,125 @@ public class SelectableAdditionGroup : INotifyPropertyChanged
         MinSelections = group.MinSelections;
         MaxSelections = group.MaxSelections;
 
-        // Wrap the callback to also notify our properties and update disabled state
-        Action wrappedCallback = () =>
-        {
-            // Guard against re-entrant calls
-            if (_isUpdating) return;
-            _isUpdating = true;
-            try
-            {
-                onSelectionChanged();
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalSelected)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RemainingSelections)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddMore)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectionHint)));
-                UpdateDisabledStates();
-            }
-            finally
-            {
-                _isUpdating = false;
-            }
-        };
-
         if (group.Additions != null)
         {
             var availableAdditions = group.Additions
                 .Where(a => a != null && a.IsAvailable)
                 .OrderBy(a => a.DisplayOrder)
                 .ToList();
+
             HasOnlyOneAddition = availableAdditions.Count == 1;
 
+            // Create all additions first without any callbacks
             foreach (var addition in availableAdditions)
             {
-                var selectable = new SelectableAddition(addition, wrappedCallback);
-                Additions.Add(selectable);
+                var selectable = new SelectableAddition(addition, this, onSelectionChanged);
+                _additions.Add(selectable);
             }
 
-            // Auto-select first addition if:
-            // 1. Only one addition exists, OR
-            // 2. Required and single-select
-            // Note: Use SetSelectedWithoutCallback to avoid triggering callbacks during construction
+            // Auto-select first addition if needed (without triggering callbacks)
             if (HasOnlyOneAddition || (IsRequired && IsSingleSelect))
             {
-                if (Additions.Count > 0)
+                if (_additions.Count > 0)
                 {
-                    Additions[0].SetSelectedWithoutCallback(true);
+                    _additions[0].SetSelectedSilent(true);
                 }
             }
+
+            // Calculate initial cached values (no notifications during init)
+            RecalculateCachedValues();
+        }
+        else
+        {
+            HasOnlyOneAddition = false;
+            _cachedSelectionHint = ComputeSelectionHint();
         }
     }
 
     /// <summary>
-    /// Updates disabled state for all additions based on max selections
+    /// Called by child additions when selection/quantity changes.
+    /// Recalculates cached values and fires a single batch of notifications.
     /// </summary>
+    internal void OnAdditionChanged()
+    {
+        var oldTotalSelected = _cachedTotalSelected;
+        var oldCanAddMore = _cachedCanAddMore;
+        var oldHint = _cachedSelectionHint;
+
+        RecalculateCachedValues();
+
+        // Only notify if values actually changed
+        if (oldTotalSelected != _cachedTotalSelected)
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalSelected)));
+
+        if (oldCanAddMore != _cachedCanAddMore)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddMore)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RemainingSelections)));
+
+            // Update disabled states only when CanAddMore changes
+            if (!IsSingleSelect && MaxSelections > 0)
+            {
+                UpdateDisabledStates();
+            }
+        }
+
+        if (oldHint != _cachedSelectionHint)
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectionHint)));
+    }
+
+    private void RecalculateCachedValues()
+    {
+        _cachedTotalSelected = 0;
+        foreach (var a in _additions)
+        {
+            if (a.IsSelected)
+                _cachedTotalSelected += a.Quantity;
+        }
+
+        _cachedCanAddMore = MaxSelections == 0 || _cachedTotalSelected < MaxSelections;
+        _cachedSelectionHint = ComputeSelectionHint();
+    }
+
     private void UpdateDisabledStates()
     {
-        // No disabling needed for single-select (can always switch) or unlimited
-        if (MaxSelections == 0 || IsSingleSelect) return;
-
-        var canAdd = CanAddMore;
-        foreach (var addition in Additions)
+        var canAdd = _cachedCanAddMore;
+        foreach (var addition in _additions)
         {
-            // Disable if max reached and this item is not selected
-            addition.IsDisabled = !canAdd && !addition.IsSelected;
+            var shouldBeDisabled = !canAdd && !addition.IsSelected;
+            if (addition.IsDisabled != shouldBeDisabled)
+            {
+                addition.SetDisabledSilent(shouldBeDisabled);
+            }
         }
     }
 
-    public string SelectionHint
+    private string ComputeSelectionHint()
     {
-        get
+        if (HasOnlyOneAddition)
+            return "Required";
+        if (IsSingleSelect)
+            return IsRequired ? "Select one (required)" : "Select one (optional)";
+        if (MaxSelections > 0)
         {
-            if (HasOnlyOneAddition)
-                return "Required";
-            if (IsSingleSelect)
-                return IsRequired ? "Select one (required)" : "Select one (optional)";
-            if (MaxSelections > 0)
-            {
-                if (IsRequired && MinSelections > 0)
-                    return $"Select {MinSelections}-{MaxSelections} ({TotalSelected}/{MaxSelections})";
-                return $"Select up to {MaxSelections} ({TotalSelected}/{MaxSelections})";
-            }
-            return "Select any";
+            if (IsRequired && MinSelections > 0)
+                return $"Select {MinSelections}-{MaxSelections} ({_cachedTotalSelected}/{MaxSelections})";
+            return $"Select up to {MaxSelections} ({_cachedTotalSelected}/{MaxSelections})";
         }
+        return "Select any";
     }
 }
 
 /// <summary>
-/// Represents a single selectable addition with selection state and quantity
+/// Represents a single selectable addition with selection state and quantity.
+/// Optimized for performance with minimal property notifications.
 /// </summary>
 public class SelectableAddition : INotifyPropertyChanged
 {
     private bool _isSelected;
     private int _quantity = 1;
     private bool _isDisabled;
+    private readonly SelectableAdditionGroup _parentGroup;
     private readonly Action _onSelectionChanged;
 
     public Guid AdditionId { get; }
@@ -675,46 +743,54 @@ public class SelectableAddition : INotifyPropertyChanged
         get => _isSelected;
         set
         {
-            if (_isSelected != value)
+            if (_isSelected == value) return;
+
+            _isSelected = value;
+            if (!value)
             {
-                _isSelected = value;
-                if (!value)
-                {
-                    _quantity = 1; // Reset quantity when deselected
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Quantity)));
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalPrice)));
-                }
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
-                _onSelectionChanged?.Invoke();
+                _quantity = 1; // Reset quantity when deselected
             }
+
+            // Batch notify: fire all property changes first, then notify parent once
+            NotifyPropertyChanged(nameof(IsSelected));
+            if (!value)
+            {
+                NotifyPropertyChanged(nameof(Quantity));
+                NotifyPropertyChanged(nameof(TotalPrice));
+            }
+
+            _parentGroup.OnAdditionChanged();
+            _onSelectionChanged?.Invoke();
         }
     }
 
     /// <summary>
-    /// Sets IsSelected without triggering the callback (used during initial construction)
+    /// Sets IsSelected without triggering any callbacks or parent notifications.
+    /// Used during initialization.
     /// </summary>
-    public void SetSelectedWithoutCallback(bool selected)
+    internal void SetSelectedSilent(bool selected)
     {
+        if (_isSelected == selected) return;
         _isSelected = selected;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+        NotifyPropertyChanged(nameof(IsSelected));
     }
 
     /// <summary>
-    /// Force sets the selected state, updating UI but not triggering group callbacks.
-    /// Used for single-select to batch all changes and call callback once at the end.
+    /// Force sets the selected state, updating UI but not triggering parent/group callbacks.
+    /// Used for single-select batch operations.
     /// </summary>
     public void ForceSetSelected(bool selected)
     {
-        if (_isSelected == selected) return; // No change needed
+        if (_isSelected == selected) return;
 
         _isSelected = selected;
         if (!selected)
         {
-            _quantity = 1; // Reset quantity when deselected
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Quantity)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalPrice)));
+            _quantity = 1;
+            NotifyPropertyChanged(nameof(Quantity));
+            NotifyPropertyChanged(nameof(TotalPrice));
         }
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+        NotifyPropertyChanged(nameof(IsSelected));
     }
 
     public int Quantity
@@ -722,58 +798,75 @@ public class SelectableAddition : INotifyPropertyChanged
         get => _quantity;
         set
         {
-            if (_quantity != value && value >= 0)
+            if (_quantity == value || value < 0) return;
+
+            _quantity = value;
+
+            if (value == 0)
             {
-                _quantity = value;
-                if (value == 0)
-                {
-                    IsSelected = false;
-                }
-                else if (!_isSelected && value > 0)
-                {
-                    _isSelected = true;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
-                }
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Quantity)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalPrice)));
-                _onSelectionChanged?.Invoke();
+                // Deselecting via quantity - handle as selection change
+                _isSelected = false;
+                NotifyPropertyChanged(nameof(IsSelected));
             }
+            else if (!_isSelected)
+            {
+                // Auto-select when quantity > 0
+                _isSelected = true;
+                NotifyPropertyChanged(nameof(IsSelected));
+            }
+
+            NotifyPropertyChanged(nameof(Quantity));
+            NotifyPropertyChanged(nameof(TotalPrice));
+
+            _parentGroup.OnAdditionChanged();
+            _onSelectionChanged?.Invoke();
         }
     }
 
-    /// <summary>
-    /// Item is disabled when max selections reached and this item is not selected
-    /// </summary>
     public bool IsDisabled
     {
         get => _isDisabled;
         set
         {
-            if (_isDisabled != value)
-            {
-                _isDisabled = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDisabled)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ItemOpacity)));
-            }
+            if (_isDisabled == value) return;
+            _isDisabled = value;
+            NotifyPropertyChanged(nameof(IsDisabled));
+            NotifyPropertyChanged(nameof(ItemOpacity));
         }
     }
 
-    public double ItemOpacity => IsDisabled ? 0.4 : 1.0;
+    /// <summary>
+    /// Sets disabled state without firing notifications (used during batch updates)
+    /// </summary>
+    internal void SetDisabledSilent(bool disabled)
+    {
+        if (_isDisabled == disabled) return;
+        _isDisabled = disabled;
+        NotifyPropertyChanged(nameof(IsDisabled));
+        NotifyPropertyChanged(nameof(ItemOpacity));
+    }
 
-    public decimal TotalPrice => UnitPrice * Quantity;
+    public double ItemOpacity => _isDisabled ? 0.4 : 1.0;
+    public decimal TotalPrice => UnitPrice * _quantity;
     public bool HasPrice => UnitPrice > 0;
-
-    // Alias for backward compatibility
-    public decimal Price => UnitPrice;
+    public decimal Price => UnitPrice; // Backward compatibility
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public SelectableAddition(AdditionDto addition, Action onSelectionChanged)
+    private void NotifyPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    public SelectableAddition(AdditionDto addition, SelectableAdditionGroup parentGroup, Action onSelectionChanged)
     {
         ArgumentNullException.ThrowIfNull(addition);
+        ArgumentNullException.ThrowIfNull(parentGroup);
+
         AdditionId = addition.Id;
         Name = addition.Name ?? string.Empty;
         UnitPrice = addition.CurrentPrice;
+        _parentGroup = parentGroup;
         _onSelectionChanged = onSelectionChanged;
     }
 }

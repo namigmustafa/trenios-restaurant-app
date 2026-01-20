@@ -12,26 +12,26 @@
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <!-- Menu Item Template - Image on left, Name and Price -->
+            <!-- Menu Item Template - Image on left, Name and Price (1.5x size) -->
             <DataTemplate x:Key="MenuItemTemplate" x:DataType="api:BranchMenuItemDto">
-                <Border StrokeShape="RoundRectangle 10"
+                <Border StrokeShape="RoundRectangle 12"
                         StrokeThickness="1"
                         Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
                         BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                         Padding="0"
-                        HeightRequest="100">
+                        HeightRequest="150">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectMenuItemCommand}"
                                               CommandParameter="{Binding .}"/>
                     </Border.GestureRecognizers>
-                    <Grid ColumnDefinitions="100,*">
+                    <Grid ColumnDefinitions="150,*">
                         <!-- Image or Placeholder on Left -->
                         <Grid Grid.Column="0" BackgroundColor="{StaticResource Gray100}">
                             <Image Source="{Binding PrimaryImageUrl}"
                                    Aspect="AspectFill"
                                    IsVisible="{Binding HasImage}"/>
                             <Label Text="{Binding MenuItemName, Converter={StaticResource FirstLetterConverter}}"
-                                   FontSize="28"
+                                   FontSize="42"
                                    FontFamily="OpenSansSemibold"
                                    TextColor="{StaticResource Gray400}"
                                    HorizontalOptions="Center"
@@ -40,16 +40,16 @@
                         </Grid>
                         <!-- Name & Price on Right -->
                         <VerticalStackLayout Grid.Column="1"
-                                             Padding="12,10"
+                                             Padding="16,14"
                                              VerticalOptions="Center"
-                                             Spacing="6">
+                                             Spacing="8">
                             <Label Text="{Binding MenuItemName}"
-                                   FontSize="18"
+                                   FontSize="22"
                                    FontFamily="OpenSansSemibold"
                                    LineBreakMode="TailTruncation"
                                    MaxLines="2"/>
                             <Label Text="{Binding Price, StringFormat='€{0:F2}'}"
-                                   FontSize="16"
+                                   FontSize="20"
                                    FontFamily="OpenSansSemibold"
                                    TextColor="{StaticResource Primary}"/>
                         </VerticalStackLayout>
@@ -639,234 +639,221 @@
                         </HorizontalStackLayout>
                     </Grid>
 
-                    <!-- Addition Groups -->
-                    <ScrollView MaximumHeightRequest="500">
-                        <VerticalStackLayout Padding="24,16"
-                                             Spacing="20"
-                                             BindableLayout.ItemsSource="{Binding SelectableAdditionGroups}">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="vm:SelectableAdditionGroup">
-                                    <VerticalStackLayout Spacing="12">
-                                        <!-- Group Header -->
-                                        <HorizontalStackLayout Spacing="10">
-                                            <Label Text="{Binding Name}"
-                                                   FontFamily="OpenSansSemibold"
-                                                   FontSize="18"/>
-                                            <Label Text="{Binding SelectionHint}"
-                                                   Style="{StaticResource Caption}"
-                                                   FontSize="14"
-                                                   VerticalOptions="Center"/>
-                                            <Label Text="*"
-                                                   TextColor="{StaticResource Danger}"
-                                                   FontSize="16"
-                                                   IsVisible="{Binding IsRequired}"
-                                                   VerticalOptions="Center"/>
-                                        </HorizontalStackLayout>
+                    <!-- Addition Groups - Use CollectionView for virtualized rendering -->
+                    <CollectionView ItemsSource="{Binding SelectableAdditionGroups}"
+                                    MaximumHeightRequest="500"
+                                    VerticalScrollBarVisibility="Default">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="16"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:SelectableAdditionGroup">
+                                <VerticalStackLayout Spacing="12" Padding="24,8">
+                                    <!-- Group Header -->
+                                    <HorizontalStackLayout Spacing="10">
+                                        <Label Text="{Binding Name}"
+                                               FontFamily="OpenSansSemibold"
+                                               FontSize="20"/>
+                                        <Label Text="{Binding SelectionHint}"
+                                               Style="{StaticResource Caption}"
+                                               FontSize="16"
+                                               VerticalOptions="Center"/>
+                                        <Label Text="*"
+                                               TextColor="{StaticResource Danger}"
+                                               FontSize="18"
+                                               IsVisible="{Binding IsRequired}"
+                                               VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
 
-                                        <!-- Single Select Additions (Radio style) -->
-                                        <VerticalStackLayout Spacing="6"
-                                                             IsVisible="{Binding IsSingleSelect}"
-                                                             BindableLayout.ItemsSource="{Binding Additions}">
-                                            <BindableLayout.ItemTemplate>
-                                                <DataTemplate x:DataType="vm:SelectableAddition">
-                                                    <Border Padding="12,10"
-                                                            StrokeShape="RoundRectangle 8"
-                                                            StrokeThickness="1"
-                                                            Stroke="{StaticResource Gray300}"
-                                                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}">
-                                                        <Border.Triggers>
-                                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                                                <Setter Property="Stroke" Value="{StaticResource Primary}"/>
-                                                                <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}"/>
-                                                            </DataTrigger>
-                                                        </Border.Triggers>
-                                                        <Border.GestureRecognizers>
-                                                            <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
-                                                                                  CommandParameter="{Binding .}"/>
-                                                        </Border.GestureRecognizers>
-                                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" InputTransparent="True">
-                                                            <!-- Radio Circle -->
-                                                            <Border Grid.Column="0"
-                                                                    WidthRequest="22"
-                                                                    HeightRequest="22"
-                                                                    StrokeShape="RoundRectangle 11"
-                                                                    StrokeThickness="2"
-                                                                    Stroke="{StaticResource Gray400}"
-                                                                    BackgroundColor="Transparent"
-                                                                    VerticalOptions="Center"
-                                                                    InputTransparent="True">
-                                                                <Border.Triggers>
-                                                                    <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                                                        <Setter Property="Stroke" Value="{StaticResource Primary}"/>
-                                                                        <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
-                                                                    </DataTrigger>
-                                                                </Border.Triggers>
-                                                                <Label Text="✓"
-                                                                       FontSize="12"
-                                                                       TextColor="White"
-                                                                       HorizontalOptions="Center"
-                                                                       VerticalOptions="Center"
-                                                                       IsVisible="{Binding IsSelected}"
-                                                                       InputTransparent="True"/>
-                                                            </Border>
-                                                            <!-- Name -->
-                                                            <Label Grid.Column="1"
-                                                                   Text="{Binding Name}"
+                                    <!-- Single Select Additions (Radio style) - Virtualized -->
+                                    <CollectionView ItemsSource="{Binding Additions}"
+                                                    IsVisible="{Binding IsSingleSelect}"
+                                                    SelectionMode="None"
+                                                    VerticalScrollBarVisibility="Never"
+                                                    HeightRequest="{Binding Additions.Count, Converter={StaticResource CountToHeightConverter}}">
+                                        <CollectionView.ItemsLayout>
+                                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
+                                        </CollectionView.ItemsLayout>
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:SelectableAddition">
+                                                <Border Padding="14,12"
+                                                        StrokeShape="RoundRectangle 10"
+                                                        StrokeThickness="1"
+                                                        Stroke="{Binding IsSelected, Converter={StaticResource BoolToStrokeConverter}}"
+                                                        BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToBackgroundConverter}}">
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
+                                                                              CommandParameter="{Binding .}"/>
+                                                    </Border.GestureRecognizers>
+                                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14" InputTransparent="True">
+                                                        <!-- Radio Circle -->
+                                                        <Border Grid.Column="0"
+                                                                WidthRequest="26"
+                                                                HeightRequest="26"
+                                                                StrokeShape="RoundRectangle 13"
+                                                                StrokeThickness="2"
+                                                                Stroke="{Binding IsSelected, Converter={StaticResource BoolToStrokeConverter}}"
+                                                                BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToCircleBackgroundConverter}}"
+                                                                VerticalOptions="Center"
+                                                                InputTransparent="True">
+                                                            <Label Text="✓"
                                                                    FontSize="14"
+                                                                   TextColor="White"
+                                                                   HorizontalOptions="Center"
                                                                    VerticalOptions="Center"
+                                                                   IsVisible="{Binding IsSelected}"
                                                                    InputTransparent="True"/>
-                                                            <!-- Price -->
-                                                            <Label Grid.Column="2"
-                                                                   Text="{Binding UnitPrice, StringFormat='+€{0:F2}'}"
+                                                        </Border>
+                                                        <!-- Name -->
+                                                        <Label Grid.Column="1"
+                                                               Text="{Binding Name}"
+                                                               FontSize="18"
+                                                               VerticalOptions="Center"
+                                                               InputTransparent="True"/>
+                                                        <!-- Price -->
+                                                        <Label Grid.Column="2"
+                                                               Text="{Binding UnitPrice, StringFormat='+€{0:F2}'}"
+                                                               FontSize="16"
+                                                               TextColor="{StaticResource Primary}"
+                                                               VerticalOptions="Center"
+                                                               IsVisible="{Binding HasPrice}"
+                                                               InputTransparent="True"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
+                                    </CollectionView>
+
+                                    <!-- Multi Select Additions (Checkbox style with +/-) - Virtualized -->
+                                    <CollectionView ItemsSource="{Binding Additions}"
+                                                    IsVisible="{Binding IsMultiSelect}"
+                                                    SelectionMode="None"
+                                                    VerticalScrollBarVisibility="Never"
+                                                    HeightRequest="{Binding Additions.Count, Converter={StaticResource CountToHeightMultiConverter}}">
+                                        <CollectionView.ItemsLayout>
+                                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
+                                        </CollectionView.ItemsLayout>
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:SelectableAddition">
+                                                <Border Padding="14,12"
+                                                        StrokeShape="RoundRectangle 10"
+                                                        StrokeThickness="1"
+                                                        Stroke="{Binding IsSelected, Converter={StaticResource BoolToStrokeConverter}}"
+                                                        BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToBackgroundConverter}}"
+                                                        Opacity="{Binding ItemOpacity}">
+                                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                                                        <!-- Checkbox Square -->
+                                                        <Border Grid.Column="0"
+                                                                WidthRequest="26"
+                                                                HeightRequest="26"
+                                                                StrokeShape="RoundRectangle 5"
+                                                                StrokeThickness="2"
+                                                                Stroke="{Binding IsSelected, Converter={StaticResource BoolToStrokeConverter}}"
+                                                                BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToCircleBackgroundConverter}}"
+                                                                VerticalOptions="Center">
+                                                            <Border.GestureRecognizers>
+                                                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
+                                                                                      CommandParameter="{Binding .}"/>
+                                                            </Border.GestureRecognizers>
+                                                            <Label Text="✓"
                                                                    FontSize="14"
-                                                                   TextColor="{StaticResource Primary}"
+                                                                   TextColor="White"
+                                                                   HorizontalOptions="Center"
                                                                    VerticalOptions="Center"
-                                                                   IsVisible="{Binding HasPrice}"
-                                                                   InputTransparent="True"/>
-                                                        </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </BindableLayout.ItemTemplate>
-                                        </VerticalStackLayout>
+                                                                   IsVisible="{Binding IsSelected}"/>
+                                                        </Border>
 
-                                        <!-- Multi Select Additions (Checkbox style with +/-) -->
-                                        <VerticalStackLayout Spacing="6"
-                                                             IsVisible="{Binding IsMultiSelect}"
-                                                             BindableLayout.ItemsSource="{Binding Additions}">
-                                            <BindableLayout.ItemTemplate>
-                                                <DataTemplate x:DataType="vm:SelectableAddition">
-                                                    <Border Padding="12,10"
-                                                            StrokeShape="RoundRectangle 8"
-                                                            StrokeThickness="1"
-                                                            Stroke="{StaticResource Gray300}"
-                                                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
-                                                            Opacity="{Binding ItemOpacity}">
-                                                        <Border.Triggers>
-                                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                                                <Setter Property="Stroke" Value="{StaticResource Primary}"/>
-                                                                <Setter Property="BackgroundColor" Value="{StaticResource PrimaryLight}"/>
-                                                            </DataTrigger>
-                                                        </Border.Triggers>
-                                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                                            <!-- Checkbox Square -->
-                                                            <Border Grid.Column="0"
-                                                                    WidthRequest="22"
-                                                                    HeightRequest="22"
-                                                                    StrokeShape="RoundRectangle 4"
-                                                                    StrokeThickness="2"
-                                                                    Stroke="{StaticResource Gray400}"
-                                                                    BackgroundColor="Transparent"
-                                                                    VerticalOptions="Center">
-                                                                <Border.Triggers>
-                                                                    <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                                                        <Setter Property="Stroke" Value="{StaticResource Primary}"/>
-                                                                        <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
-                                                                    </DataTrigger>
-                                                                </Border.Triggers>
-                                                                <Border.GestureRecognizers>
-                                                                    <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
-                                                                                          CommandParameter="{Binding .}"/>
-                                                                </Border.GestureRecognizers>
-                                                                <Label Text="✓"
-                                                                       FontSize="12"
-                                                                       TextColor="White"
-                                                                       HorizontalOptions="Center"
-                                                                       VerticalOptions="Center"
-                                                                       IsVisible="{Binding IsSelected}"/>
-                                                            </Border>
-
-                                                            <!-- Name and Price (tappable to toggle) -->
-                                                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
-                                                                <VerticalStackLayout.GestureRecognizers>
-                                                                    <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
-                                                                                          CommandParameter="{Binding .}"/>
-                                                                </VerticalStackLayout.GestureRecognizers>
-                                                                <HorizontalStackLayout Spacing="4">
-                                                                    <Label Text="{Binding Quantity, StringFormat='{0}x '}"
-                                                                           FontSize="14"
-                                                                           FontFamily="OpenSansSemibold"
-                                                                           TextColor="{StaticResource Primary}"
-                                                                           IsVisible="{Binding IsSelected}"/>
-                                                                    <Label Text="{Binding Name}"
-                                                                           FontSize="14"/>
-                                                                </HorizontalStackLayout>
-                                                                <Label Text="{Binding UnitPrice, StringFormat='€{0:F2} each'}"
-                                                                       FontSize="11"
-                                                                       TextColor="{StaticResource Gray500}"
-                                                                       IsVisible="{Binding HasPrice}"/>
-                                                            </VerticalStackLayout>
-
-                                                            <!-- +/- Buttons (only visible when selected) -->
-                                                            <HorizontalStackLayout Grid.Column="2"
-                                                                                   Spacing="6"
-                                                                                   IsVisible="{Binding IsSelected}"
-                                                                                   VerticalOptions="Center">
-                                                                <!-- Decrease Button -->
-                                                                <Border WidthRequest="28"
-                                                                        HeightRequest="28"
-                                                                        StrokeShape="RoundRectangle 14"
-                                                                        StrokeThickness="0"
-                                                                        BackgroundColor="{StaticResource Gray200}">
-                                                                    <Border.GestureRecognizers>
-                                                                        <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.DecreaseAdditionQuantityCommand}"
-                                                                                              CommandParameter="{Binding .}"/>
-                                                                    </Border.GestureRecognizers>
-                                                                    <Label Text="-"
-                                                                           FontSize="16"
-                                                                           FontFamily="OpenSansSemibold"
-                                                                           TextColor="{StaticResource Gray700}"
-                                                                           HorizontalOptions="Center"
-                                                                           VerticalOptions="Center"
-                                                                           InputTransparent="True"/>
-                                                                </Border>
-
-                                                                <!-- Quantity Display -->
-                                                                <Label Text="{Binding Quantity}"
-                                                                       FontSize="14"
-                                                                       FontFamily="OpenSansSemibold"
-                                                                       WidthRequest="24"
-                                                                       HorizontalTextAlignment="Center"
-                                                                       VerticalOptions="Center"/>
-
-                                                                <!-- Increase Button -->
-                                                                <Border WidthRequest="28"
-                                                                        HeightRequest="28"
-                                                                        StrokeShape="RoundRectangle 14"
-                                                                        StrokeThickness="0"
-                                                                        BackgroundColor="{StaticResource Primary}">
-                                                                    <Border.GestureRecognizers>
-                                                                        <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.IncreaseAdditionQuantityCommand}"
-                                                                                              CommandParameter="{Binding .}"/>
-                                                                    </Border.GestureRecognizers>
-                                                                    <Label Text="+"
-                                                                           FontSize="16"
-                                                                           FontFamily="OpenSansSemibold"
-                                                                           TextColor="White"
-                                                                           HorizontalOptions="Center"
-                                                                           VerticalOptions="Center"
-                                                                           InputTransparent="True"/>
-                                                                </Border>
-
-                                                                <!-- Total Price -->
-                                                                <Label Text="{Binding TotalPrice, StringFormat='€{0:F2}'}"
-                                                                       FontSize="13"
+                                                        <!-- Name and Price (tappable to toggle) -->
+                                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                                            <VerticalStackLayout.GestureRecognizers>
+                                                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
+                                                                                      CommandParameter="{Binding .}"/>
+                                                            </VerticalStackLayout.GestureRecognizers>
+                                                            <HorizontalStackLayout Spacing="4">
+                                                                <Label Text="{Binding Quantity, StringFormat='{0}x '}"
+                                                                       FontSize="16"
                                                                        FontFamily="OpenSansSemibold"
                                                                        TextColor="{StaticResource Primary}"
-                                                                       WidthRequest="50"
-                                                                       HorizontalTextAlignment="End"
-                                                                       VerticalOptions="Center"
-                                                                       IsVisible="{Binding HasPrice}"/>
+                                                                       IsVisible="{Binding IsSelected}"/>
+                                                                <Label Text="{Binding Name}"
+                                                                       FontSize="16"/>
                                                             </HorizontalStackLayout>
-                                                        </Grid>
-                                                    </Border>
-                                                </DataTemplate>
-                                            </BindableLayout.ItemTemplate>
-                                        </VerticalStackLayout>
-                                    </VerticalStackLayout>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                    </ScrollView>
+                                                            <Label Text="{Binding UnitPrice, StringFormat='€{0:F2} each'}"
+                                                                   FontSize="13"
+                                                                   TextColor="{StaticResource Gray500}"
+                                                                   IsVisible="{Binding HasPrice}"/>
+                                                        </VerticalStackLayout>
+
+                                                        <!-- +/- Buttons (only visible when selected) -->
+                                                        <HorizontalStackLayout Grid.Column="2"
+                                                                               Spacing="8"
+                                                                               IsVisible="{Binding IsSelected}"
+                                                                               VerticalOptions="Center">
+                                                            <!-- Decrease Button -->
+                                                            <Border WidthRequest="34"
+                                                                    HeightRequest="34"
+                                                                    StrokeShape="RoundRectangle 17"
+                                                                    StrokeThickness="0"
+                                                                    BackgroundColor="{StaticResource Gray200}">
+                                                                <Border.GestureRecognizers>
+                                                                    <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.DecreaseAdditionQuantityCommand}"
+                                                                                          CommandParameter="{Binding .}"/>
+                                                                </Border.GestureRecognizers>
+                                                                <Label Text="-"
+                                                                       FontSize="18"
+                                                                       FontFamily="OpenSansSemibold"
+                                                                       TextColor="{StaticResource Gray700}"
+                                                                       HorizontalOptions="Center"
+                                                                       VerticalOptions="Center"
+                                                                       InputTransparent="True"/>
+                                                            </Border>
+
+                                                            <!-- Quantity Display -->
+                                                            <Label Text="{Binding Quantity}"
+                                                                   FontSize="16"
+                                                                   FontFamily="OpenSansSemibold"
+                                                                   WidthRequest="28"
+                                                                   HorizontalTextAlignment="Center"
+                                                                   VerticalOptions="Center"/>
+
+                                                            <!-- Increase Button -->
+                                                            <Border WidthRequest="34"
+                                                                    HeightRequest="34"
+                                                                    StrokeShape="RoundRectangle 17"
+                                                                    StrokeThickness="0"
+                                                                    BackgroundColor="{StaticResource Primary}">
+                                                                <Border.GestureRecognizers>
+                                                                    <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.IncreaseAdditionQuantityCommand}"
+                                                                                          CommandParameter="{Binding .}"/>
+                                                                </Border.GestureRecognizers>
+                                                                <Label Text="+"
+                                                                       FontSize="18"
+                                                                       FontFamily="OpenSansSemibold"
+                                                                       TextColor="White"
+                                                                       HorizontalOptions="Center"
+                                                                       VerticalOptions="Center"
+                                                                       InputTransparent="True"/>
+                                                            </Border>
+
+                                                            <!-- Total Price -->
+                                                            <Label Text="{Binding TotalPrice, StringFormat='€{0:F2}'}"
+                                                                   FontSize="15"
+                                                                   FontFamily="OpenSansSemibold"
+                                                                   TextColor="{StaticResource Primary}"
+                                                                   WidthRequest="55"
+                                                                   HorizontalTextAlignment="End"
+                                                                   VerticalOptions="Center"
+                                                                   IsVisible="{Binding HasPrice}"/>
+                                                        </HorizontalStackLayout>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
+                                    </CollectionView>
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
 
                     <!-- Footer with Total and Actions -->
                     <Grid RowDefinitions="Auto,Auto"

@@ -20,6 +20,10 @@
             <converters:BoolToTextColorConverter x:Key="BoolToTextColorConverter"/>
             <converters:FirstLetterConverter x:Key="FirstLetterConverter"/>
             <converters:QuantityToBoolConverter x:Key="QuantityToBoolConverter"/>
+            <converters:BoolToStrokeConverter x:Key="BoolToStrokeConverter"/>
+            <converters:BoolToCircleBackgroundConverter x:Key="BoolToCircleBackgroundConverter"/>
+            <converters:CountToHeightConverter x:Key="CountToHeightConverter"/>
+            <converters:CountToHeightMultiConverter x:Key="CountToHeightMultiConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
