@@ -172,7 +172,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["Tax"] = "Tax",
             ["Discount"] = "Discount",
             ["CancelOrder"] = "Cancel Order",
-            ["Complete"] = "Complete"
+            ["Complete"] = "Complete",
+            ["RestaurantHome"] = "Restaurant Home",
+            ["ShowOrders"] = "Show Orders"
         },
 
         ["az"] = new()
@@ -263,7 +265,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["Tax"] = "Vergi",
             ["Discount"] = "Endirim",
             ["CancelOrder"] = "Sifarişi Ləğv Et",
-            ["Complete"] = "Tamamla"
+            ["Complete"] = "Tamamla",
+            ["RestaurantHome"] = "Restoran Əsas Səhifə",
+            ["ShowOrders"] = "Sifarişləri Göstər"
         },
 
         ["ru"] = new()
@@ -354,7 +358,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["Tax"] = "Налог",
             ["Discount"] = "Скидка",
             ["CancelOrder"] = "Отменить Заказ",
-            ["Complete"] = "Завершить"
+            ["Complete"] = "Завершить",
+            ["RestaurantHome"] = "Главная Ресторана",
+            ["ShowOrders"] = "Показать Заказы"
         },
 
         ["tr"] = new()
@@ -445,7 +451,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["Tax"] = "Vergi",
             ["Discount"] = "İndirim",
             ["CancelOrder"] = "Siparişi İptal Et",
-            ["Complete"] = "Tamamla"
+            ["Complete"] = "Tamamla",
+            ["RestaurantHome"] = "Restoran Ana Sayfa",
+            ["ShowOrders"] = "Siparişleri Göster"
         },
 
         ["lv"] = new()
@@ -536,7 +544,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["Tax"] = "Nodoklis",
             ["Discount"] = "Atlaide",
             ["CancelOrder"] = "Atcelt Pasūtījumu",
-            ["Complete"] = "Pabeigt"
+            ["Complete"] = "Pabeigt",
+            ["RestaurantHome"] = "Restorāna Sākums",
+            ["ShowOrders"] = "Rādīt Pasūtījumus"
         }
     };
 }

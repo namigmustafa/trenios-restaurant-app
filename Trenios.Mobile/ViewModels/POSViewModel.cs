@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Input;
 using Trenios.Mobile.Models.Api;
 using Trenios.Mobile.Services;
@@ -25,6 +26,7 @@ public class POSViewModel : BaseViewModel
     private decimal _cachedAdditionsTotal;
     private decimal _cachedItemPrice;
     private decimal _cachedTotalPrice;
+    private string? _validationMessage;
 
     public ObservableCollection<CategoryDto> Categories { get; } = new();
     public ObservableCollection<BranchMenuItemDto> MenuItems { get; } = new();
@@ -112,6 +114,14 @@ public class POSViewModel : BaseViewModel
     public decimal CustomizationAdditionsTotal => _cachedAdditionsTotal;
     public decimal CustomizationItemPrice => _cachedItemPrice;
     public decimal CustomizationTotalPrice => _cachedTotalPrice;
+
+    public string? ValidationMessage
+    {
+        get => _validationMessage;
+        private set => SetProperty(ref _validationMessage, value);
+    }
+
+    public bool HasValidationError => !string.IsNullOrEmpty(_validationMessage);
 
     public decimal Subtotal => _orderService.Subtotal;
     public decimal Tax => _orderService.Tax;
@@ -254,42 +264,59 @@ public class POSViewModel : BaseViewModel
 
         try
         {
+            IsLoadingAdditions = true;
+
             SelectedMenuItem = menuItem;
             CustomizationQuantity = 1;
 
-            // Check if item has addition groups
-            if (menuItem.AdditionGroups?.Count > 0)
+            // Count total additions across all groups
+            var totalAdditionsCount = 0;
+            if (menuItem.AdditionGroups != null)
             {
-                // Build selectable addition groups - create all groups first
-                var groups = new List<SelectableAdditionGroup>();
                 foreach (var group in menuItem.AdditionGroups)
                 {
-                    if (group == null) continue;
-                    groups.Add(new SelectableAdditionGroup(group, OnAdditionSelectionChanged));
+                    if (group?.Additions != null)
+                    {
+                        totalAdditionsCount += group.Additions.Count;
+                    }
                 }
-
-                // Clear and add all at once to minimize UI updates
-                SelectableAdditionGroups.Clear();
-                foreach (var group in groups)
-                {
-                    SelectableAdditionGroups.Add(group);
-                }
-
-                // Update cached totals after groups are built
-                RecalculateCustomizationTotals();
-
-                ShowCustomization = true;
             }
-            else
+
+            System.Diagnostics.Debug.WriteLine($"MenuItem: {menuItem.MenuItemName}, Groups: {menuItem.AdditionGroups?.Count ?? 0}, Total Additions: {totalAdditionsCount}");
+
+            // Always show customization popup
+            // Build selectable addition groups if there are any
+            SelectableAdditionGroups.Clear();
+
+            if (totalAdditionsCount > 0 && menuItem.AdditionGroups != null)
             {
-                // Add directly to cart
-                _orderService.AddItem(menuItem);
+                foreach (var group in menuItem.AdditionGroups)
+                {
+                    if (group == null || group.Additions == null || group.Additions.Count == 0) continue;
+                    SelectableAdditionGroups.Add(new SelectableAdditionGroup(group, OnAdditionSelectionChanged));
+                }
             }
+
+            // Update cached totals after groups are built
+            RecalculateCustomizationTotals();
+
+            // Evaluate button state initially (important for required groups)
+            ((Command)ConfirmCustomizationCommand).ChangeCanExecute();
+
+            // Small delay to show the loading spinner
+            await Task.Delay(100);
+
+            // Always show the customization popup (even if no additions)
+            ShowCustomization = true;
         }
         catch (Exception ex)
         {
             await Application.Current!.MainPage!.DisplayAlert("Error",
                 $"{ex.GetType().Name}: {ex.Message}\n\n{ex.StackTrace}", "OK");
+        }
+        finally
+        {
+            IsLoadingAdditions = false;
         }
     }
 
@@ -425,6 +452,8 @@ public class POSViewModel : BaseViewModel
         SelectedMenuItem = null;
         SelectableAdditionGroups.Clear();
         CustomizationQuantity = 1;
+        ValidationMessage = null;
+        OnPropertyChanged(nameof(HasValidationError));
     }
 
     private async Task PayAsync()
@@ -533,6 +562,8 @@ public class POSViewModel : BaseViewModel
     {
         // Check all required groups have selections
         // Uses cached TotalSelected from each group for performance
+        var missingGroups = new List<string>();
+
         foreach (var group in SelectableAdditionGroups)
         {
             if (group.IsRequired)
@@ -542,10 +573,20 @@ public class POSViewModel : BaseViewModel
 
                 if (totalSelections < group.MinSelections || totalSelections == 0)
                 {
-                    return false;
+                    missingGroups.Add(group.Name);
                 }
             }
         }
+
+        if (missingGroups.Count > 0)
+        {
+            ValidationMessage = $"Please select: {string.Join(", ", missingGroups)}";
+            OnPropertyChanged(nameof(HasValidationError));
+            return false;
+        }
+
+        ValidationMessage = null;
+        OnPropertyChanged(nameof(HasValidationError));
         return true;
     }
 

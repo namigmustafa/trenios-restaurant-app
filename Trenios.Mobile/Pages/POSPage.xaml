@@ -12,44 +12,43 @@
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <!-- Menu Item Template - Image on left, Name and Price (1.5x size) -->
+            <!-- Menu Item Template - Image on top, Name and Price below -->
             <DataTemplate x:Key="MenuItemTemplate" x:DataType="api:BranchMenuItemDto">
                 <Border StrokeShape="RoundRectangle 12"
                         StrokeThickness="1"
                         Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
                         BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
-                        Padding="0"
-                        HeightRequest="150">
+                        Padding="0">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectMenuItemCommand}"
                                               CommandParameter="{Binding .}"/>
                     </Border.GestureRecognizers>
-                    <Grid ColumnDefinitions="150,*">
-                        <!-- Image or Placeholder on Left -->
-                        <Grid Grid.Column="0" BackgroundColor="{StaticResource Gray100}">
+                    <Grid RowDefinitions="100,Auto">
+                        <!-- Image or Placeholder on Top -->
+                        <Grid Grid.Row="0" BackgroundColor="{StaticResource Gray100}">
                             <Image Source="{Binding PrimaryImageUrl}"
-                                   Aspect="AspectFill"
+                                   Aspect="AspectFit"
                                    IsVisible="{Binding HasImage}"/>
                             <Label Text="{Binding MenuItemName, Converter={StaticResource FirstLetterConverter}}"
-                                   FontSize="42"
+                                   FontSize="36"
                                    FontFamily="OpenSansSemibold"
                                    TextColor="{StaticResource Gray400}"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center"
                                    IsVisible="{Binding HasImage, Converter={StaticResource InvertedBoolConverter}}"/>
                         </Grid>
-                        <!-- Name & Price on Right -->
-                        <VerticalStackLayout Grid.Column="1"
-                                             Padding="16,14"
-                                             VerticalOptions="Center"
-                                             Spacing="8">
+                        <!-- Name & Price at Bottom -->
+                        <VerticalStackLayout Grid.Row="1"
+                                             Padding="12,10"
+                                             Spacing="4">
                             <Label Text="{Binding MenuItemName}"
-                                   FontSize="22"
+                                   FontSize="14"
                                    FontFamily="OpenSansSemibold"
                                    LineBreakMode="TailTruncation"
-                                   MaxLines="2"/>
+                                   MaxLines="2"
+                                   HeightRequest="38"/>
                             <Label Text="{Binding Price, StringFormat='€{0:F2}'}"
-                                   FontSize="20"
+                                   FontSize="16"
                                    FontFamily="OpenSansSemibold"
                                    TextColor="{StaticResource Primary}"/>
                         </VerticalStackLayout>
@@ -125,29 +124,58 @@
                 <!-- Header -->
                 <Grid Grid.Row="0"
                       Style="{StaticResource HeaderGrid}"
-                      ColumnDefinitions="Auto,*,Auto,Auto">
-                    <!-- Branch Button -->
+                      ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
+                    <!-- Back Button -->
                     <Button Grid.Column="0"
-                            Text="{Binding BranchName}"
+                            Text="&lt;"
                             Style="{StaticResource NavButton}"
                             Command="{Binding BackCommand}"
+                            FontSize="18"
+                            Padding="12,10"/>
+
+                    <!-- Orders -->
+                    <Button Grid.Column="1"
+                            Text="{h:Translate Orders}"
+                            Style="{StaticResource NavButton}"
+                            Command="{Binding ViewOrdersCommand}"
                             FontSize="14"
-                            Padding="16,10"/>
+                            Padding="16,10"
+                            Margin="16,0,0,0"/>
 
-                    <!-- Center: Orders and Kitchen -->
-                    <HorizontalStackLayout Grid.Column="1"
-                                           HorizontalOptions="Center"
-                                           Spacing="12">
-                        <Button Text="{h:Translate Orders}"
-                                Style="{StaticResource NavButton}"
-                                Command="{Binding ViewOrdersCommand}"/>
-                        <Button Text="{h:Translate Kitchen}"
-                                Style="{StaticResource NavButton}"
-                                Command="{Binding ViewKitchenCommand}"/>
-                    </HorizontalStackLayout>
+                    <!-- Kitchen -->
+                    <Button Grid.Column="2"
+                            Text="{h:Translate Kitchen}"
+                            Style="{StaticResource NavButton}"
+                            Command="{Binding ViewKitchenCommand}"
+                            FontSize="14"
+                            Padding="16,10"
+                            Margin="8,0,0,0"/>
 
-                    <!-- User with Dropdown -->
-                    <Border Grid.Column="2"
+                    <!-- Language Flag Button -->
+                    <Border Grid.Column="4"
+                            StrokeShape="RoundRectangle 8"
+                            StrokeThickness="1"
+                            Stroke="{StaticResource Gray300}"
+                            BackgroundColor="Transparent"
+                            Padding="12,8"
+                            Margin="0,0,10,0">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnLanguageTapped"/>
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="8">
+                            <Label Text="🌐"
+                                   FontSize="18"
+                                   VerticalOptions="Center"/>
+                            <Label x:Name="CurrentLanguageLabelTablet"
+                                   Text="EN"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="14"
+                                   VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <!-- User Button -->
+                    <Border Grid.Column="5"
                             StrokeShape="RoundRectangle 8"
                             StrokeThickness="1"
                             Stroke="{StaticResource Gray300}"
@@ -158,42 +186,10 @@
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnUserTapped"/>
                         </Border.GestureRecognizers>
-                        <HorizontalStackLayout Spacing="8">
-                            <Label Text="{Binding UserName}"
-                                   FontFamily="OpenSansSemibold"
-                                   FontSize="14"
-                                   VerticalOptions="Center"/>
-                            <Label Text="▼"
-                                   FontSize="10"
-                                   VerticalOptions="Center"
-                                   TextColor="{StaticResource Gray500}"/>
-                        </HorizontalStackLayout>
-                    </Border>
-
-                    <!-- User Dropdown Menu (hidden by default) -->
-                    <Border Grid.Column="2"
-                            x:Name="UserMenuTablet"
-                            IsVisible="False"
-                            StrokeShape="RoundRectangle 8"
-                            StrokeThickness="1"
-                            Stroke="{StaticResource Gray300}"
-                            BackgroundColor="{StaticResource White}"
-                            Padding="4"
-                            VerticalOptions="Start"
-                            Margin="0,50,10,0"
-                            ZIndex="100">
-                        <VerticalStackLayout Spacing="2">
-                            <Button Text="{h:Translate Language}"
-                                    Style="{StaticResource GhostButton}"
-                                    Clicked="OnLanguageTapped"
-                                    HorizontalOptions="Fill"/>
-                            <BoxView HeightRequest="1" BackgroundColor="{StaticResource Gray200}"/>
-                            <Button Text="{h:Translate Logout}"
-                                    Style="{StaticResource GhostButton}"
-                                    TextColor="{StaticResource Danger}"
-                                    Command="{Binding LogoutCommand}"
-                                    HorizontalOptions="Fill"/>
-                        </VerticalStackLayout>
+                        <Label Text="{Binding UserName}"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="14"
+                               VerticalOptions="Center"/>
                     </Border>
                 </Grid>
 
@@ -222,12 +218,12 @@
                     <CollectionView ItemsSource="{Binding MenuItems}"
                                     ItemTemplate="{StaticResource MenuItemTemplate}"
                                     BackgroundColor="Transparent"
-                                    Margin="4">
+                                    Margin="8">
                         <CollectionView.ItemsLayout>
                             <GridItemsLayout Orientation="Vertical"
-                                             Span="4"
-                                             HorizontalItemSpacing="4"
-                                             VerticalItemSpacing="4"/>
+                                             Span="3"
+                                             HorizontalItemSpacing="8"
+                                             VerticalItemSpacing="8"/>
                         </CollectionView.ItemsLayout>
                         <CollectionView.EmptyView>
                             <VerticalStackLayout VerticalOptions="Center"
@@ -312,23 +308,8 @@
 
                 <!-- Quick Actions -->
                 <Grid Grid.Row="3"
-                      ColumnDefinitions="*,*,2*"
-                      ColumnSpacing="8"
                       Padding="12">
-                    <Button Grid.Column="0"
-                            Text="{h:Translate Cancel}"
-                            Style="{StaticResource DangerButton}"
-                            Command="{Binding CancelOrderCommand}"
-                            FontSize="14"
-                            Padding="8"/>
-                    <Button Grid.Column="1"
-                            Text="{h:Translate Repeat}"
-                            Style="{StaticResource SecondaryButton}"
-                            Command="{Binding RepeatLastOrderCommand}"
-                            FontSize="14"
-                            Padding="8"/>
-                    <Button Grid.Column="2"
-                            Text="{h:Translate CreateOrder}"
+                    <Button Text="{h:Translate CreateOrder}"
                             Style="{StaticResource SuccessButton}"
                             Command="{Binding PayCommand}"/>
                 </Grid>
@@ -341,95 +322,74 @@
               IsVisible="True">
             <!-- Header -->
             <Grid Grid.Row="0"
+                  x:Name="PhoneHeader"
                   Style="{StaticResource HeaderGrid}"
-                  ColumnDefinitions="Auto,*,Auto,Auto,Auto">
-                <!-- Branch Button -->
+                  ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
+                <!-- Back Button -->
                 <Button Grid.Column="0"
-                        Text="{Binding BranchName}"
+                        Text="&lt;"
                         Style="{StaticResource NavButton}"
                         Command="{Binding BackCommand}"
-                        FontSize="14"
-                        Padding="12,8"/>
+                        FontSize="16"
+                        Padding="10,8"/>
 
-                <!-- Center: Orders and Kitchen -->
-                <HorizontalStackLayout Grid.Column="1"
-                                       HorizontalOptions="Center"
-                                       Spacing="10">
-                    <Button Text="{h:Translate Orders}"
-                            Style="{StaticResource NavButton}"
-                            Command="{Binding ViewOrdersCommand}"/>
-                    <Button Text="{h:Translate Kitchen}"
-                            Style="{StaticResource NavButton}"
-                            Command="{Binding ViewKitchenCommand}"/>
-                </HorizontalStackLayout>
+                <!-- Orders -->
+                <Button Grid.Column="1"
+                        Text="{h:Translate Orders}"
+                        Style="{StaticResource NavButton}"
+                        Command="{Binding ViewOrdersCommand}"
+                        FontSize="12"
+                        Padding="10,8"
+                        Margin="12,0,0,0"/>
 
-                <!-- Cart Badge -->
-                <Border Grid.Column="2"
-                        StrokeShape="RoundRectangle 8"
-                        BackgroundColor="{StaticResource Primary}"
-                        Padding="12,8"
-                        IsVisible="{Binding HasItems}"
-                        Margin="0,0,8,0">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnCartTapped"/>
-                    </Border.GestureRecognizers>
-                    <HorizontalStackLayout Spacing="4">
-                        <Label Text="{Binding TotalItems}"
-                               TextColor="White"
-                               FontFamily="OpenSansSemibold"/>
-                        <Label Text="{Binding Total, StringFormat=' €{0:F2}'}"
-                               TextColor="White"
-                               FontFamily="OpenSansSemibold"/>
-                    </HorizontalStackLayout>
-                </Border>
+                <!-- Kitchen -->
+                <Button Grid.Column="2"
+                        Text="{h:Translate Kitchen}"
+                        Style="{StaticResource NavButton}"
+                        Command="{Binding ViewKitchenCommand}"
+                        FontSize="12"
+                        Padding="10,8"
+                        Margin="4,0,0,0"/>
 
-                <!-- User with Dropdown -->
-                <Border Grid.Column="3"
+                <!-- Language Flag Button -->
+                <Border Grid.Column="4"
                         StrokeShape="RoundRectangle 8"
                         StrokeThickness="1"
                         Stroke="{StaticResource Gray300}"
                         BackgroundColor="Transparent"
                         Padding="10,6"
+                        Margin="0,0,8,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageTapped"/>
+                    </Border.GestureRecognizers>
+                    <HorizontalStackLayout Spacing="4">
+                        <Label Text="🌐"
+                               FontSize="16"
+                               VerticalOptions="Center"/>
+                        <Label x:Name="CurrentLanguageLabelPhone"
+                               Text="EN"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="12"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Border>
+
+                <!-- User Button -->
+                <Border Grid.Column="5"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1"
+                        Stroke="{StaticResource Gray300}"
+                        BackgroundColor="Transparent"
+                        Padding="10,6"
+                        Margin="0,0,8,0"
                         x:Name="UserDropdownPhone">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnUserTapped"/>
                     </Border.GestureRecognizers>
-                    <HorizontalStackLayout Spacing="6">
-                        <Label Text="{Binding UserName}"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="14"
-                               VerticalOptions="Center"/>
-                        <Label Text="▼"
-                               FontSize="10"
-                               VerticalOptions="Center"
-                               TextColor="{StaticResource Gray500}"/>
-                    </HorizontalStackLayout>
-                </Border>
-
-                <!-- User Dropdown Menu (hidden by default) -->
-                <Border Grid.Column="3"
-                        x:Name="UserMenuPhone"
-                        IsVisible="False"
-                        StrokeShape="RoundRectangle 8"
-                        StrokeThickness="1"
-                        Stroke="{StaticResource Gray300}"
-                        BackgroundColor="{StaticResource White}"
-                        Padding="4"
-                        VerticalOptions="Start"
-                        Margin="0,45,0,0"
-                        ZIndex="100">
-                    <VerticalStackLayout Spacing="2">
-                        <Button Text="{h:Translate Language}"
-                                Style="{StaticResource GhostButton}"
-                                Clicked="OnLanguageTapped"
-                                HorizontalOptions="Fill"/>
-                        <BoxView HeightRequest="1" BackgroundColor="{StaticResource Gray200}"/>
-                        <Button Text="{h:Translate Logout}"
-                                Style="{StaticResource GhostButton}"
-                                TextColor="{StaticResource Danger}"
-                                Command="{Binding LogoutCommand}"
-                                HorizontalOptions="Fill"/>
-                    </VerticalStackLayout>
+                    <Label Text="{Binding UserName}"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="14"
+                           VerticalOptions="Center"/>
                 </Border>
             </Grid>
 
@@ -464,12 +424,12 @@
                         <CollectionView ItemsSource="{Binding MenuItems}"
                                         ItemTemplate="{StaticResource MenuItemTemplate}"
                                         BackgroundColor="Transparent"
-                                        Margin="4">
+                                        Margin="8">
                             <CollectionView.ItemsLayout>
                                 <GridItemsLayout Orientation="Vertical"
                                                  Span="3"
-                                                 HorizontalItemSpacing="4"
-                                                 VerticalItemSpacing="4"/>
+                                                 HorizontalItemSpacing="8"
+                                                 VerticalItemSpacing="8"/>
                             </CollectionView.ItemsLayout>
                         </CollectionView>
 
@@ -541,17 +501,8 @@
 
                     <!-- Quick Actions -->
                     <Grid Grid.Row="3"
-                          ColumnDefinitions="*,2*"
-                          ColumnSpacing="8"
                           Padding="12">
-                        <Button Grid.Column="0"
-                                Text="{h:Translate Cancel}"
-                                Style="{StaticResource DangerButton}"
-                                Command="{Binding CancelOrderCommand}"
-                                FontSize="14"
-                                Padding="8"/>
-                        <Button Grid.Column="1"
-                                Text="{h:Translate CreateOrder}"
+                        <Button Text="{h:Translate CreateOrder}"
                                 Style="{StaticResource SuccessButton}"
                                 Command="{Binding PayCommand}"/>
                     </Grid>
@@ -562,11 +513,44 @@
             <Grid Grid.Row="2"
                   x:Name="PhoneBottomBar"
                   Padding="12"
+                  IsVisible="{Binding HasItems}"
                   BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}">
-                <Button Text="{Binding Subtotal, StringFormat='Create Order  €{0:F2}'}"
-                        Style="{StaticResource SuccessButton}"
-                        Command="{Binding PayCommand}"
-                        HorizontalOptions="Fill"/>
+                <Border StrokeShape="RoundRectangle 12"
+                        BackgroundColor="{StaticResource Success}"
+                        Padding="16,14"
+                        HorizontalOptions="Fill">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCartTapped"/>
+                    </Border.GestureRecognizers>
+                    <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                        <!-- Circle with item count -->
+                        <Border WidthRequest="32"
+                                HeightRequest="32"
+                                StrokeShape="RoundRectangle 16"
+                                BackgroundColor="White"
+                                StrokeThickness="0">
+                            <Label Text="{Binding TotalItems}"
+                                   TextColor="{StaticResource Success}"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="14"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <!-- View order text -->
+                        <Label TextColor="White"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="16"
+                               VerticalOptions="Center">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{h:Translate ShowOrders}"/>
+                                    <Span Text=" - "/>
+                                    <Span Text="{Binding Subtotal, StringFormat='€{0:F2}'}"/>
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </HorizontalStackLayout>
+                </Border>
             </Grid>
         </Grid>
 
@@ -578,21 +562,23 @@
                 <TapGestureRecognizer Command="{Binding CancelCustomizationCommand}"/>
             </Grid.GestureRecognizers>
 
-            <Border VerticalOptions="Start"
+            <Border VerticalOptions="Center"
                     HorizontalOptions="Center"
                     StrokeShape="RoundRectangle 16"
                     StrokeThickness="0"
                     BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                     WidthRequest="700"
-                    Margin="16,30,16,16"
+                    MaximumHeightRequest="700"
+                    Margin="16"
                     Padding="0">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer/>
                 </Border.GestureRecognizers>
 
-                <VerticalStackLayout Spacing="0">
+                <Grid RowDefinitions="Auto,Auto,*,Auto">
                     <!-- Header with Item Name and Base Price -->
-                    <Grid Padding="24,20"
+                    <Grid Grid.Row="0"
+                          Padding="24,20"
                           ColumnDefinitions="*,Auto"
                           BackgroundColor="{StaticResource Primary}">
                         <Label Text="{Binding SelectedMenuItem.MenuItemName}"
@@ -608,7 +594,8 @@
                     </Grid>
 
                     <!-- Quantity Selector -->
-                    <Grid Padding="24,18"
+                    <Grid Grid.Row="1"
+                          Padding="24,18"
                           ColumnDefinitions="Auto,*,Auto"
                           BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}">
                         <Label Text="{h:Translate Quantity}"
@@ -639,10 +626,11 @@
                         </HorizontalStackLayout>
                     </Grid>
 
-                    <!-- Addition Groups - Use CollectionView for virtualized rendering -->
-                    <CollectionView ItemsSource="{Binding SelectableAdditionGroups}"
-                                    MaximumHeightRequest="500"
-                                    VerticalScrollBarVisibility="Default">
+                    <!-- Addition Groups in ScrollView -->
+                    <ScrollView Grid.Row="2"
+                                VerticalScrollBarVisibility="Default">
+                        <CollectionView ItemsSource="{Binding SelectableAdditionGroups}"
+                                        VerticalScrollBarVisibility="Never">
                         <CollectionView.ItemsLayout>
                             <LinearItemsLayout Orientation="Vertical" ItemSpacing="16"/>
                         </CollectionView.ItemsLayout>
@@ -854,11 +842,13 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+                    </ScrollView>
 
                     <!-- Footer with Total and Actions -->
-                    <Grid RowDefinitions="Auto,Auto"
-                          Padding="20,12"
-                          RowSpacing="12"
+                    <Grid Grid.Row="3"
+                          RowDefinitions="Auto,Auto,Auto"
+                          Padding="16,12"
+                          RowSpacing="10"
                           BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}">
                         <!-- Price Breakdown -->
                         <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
@@ -877,13 +867,22 @@
                             <Label Grid.Column="1"
                                    Text="{Binding CustomizationTotalPrice, StringFormat='€{0:F2}'}"
                                    FontFamily="OpenSansSemibold"
-                                   FontSize="24"
+                                   FontSize="22"
                                    TextColor="{StaticResource Primary}"
                                    VerticalOptions="Center"/>
                         </Grid>
 
+                        <!-- Validation Error Message -->
+                        <Label Grid.Row="1"
+                               Text="{Binding ValidationMessage}"
+                               TextColor="{StaticResource Danger}"
+                               FontSize="14"
+                               FontFamily="OpenSansSemibold"
+                               HorizontalOptions="Center"
+                               IsVisible="{Binding HasValidationError}"/>
+
                         <!-- Action Buttons -->
-                        <Grid Grid.Row="1"
+                        <Grid Grid.Row="2"
                               ColumnDefinitions="*,2*"
                               ColumnSpacing="12">
                             <Button Grid.Column="0"
@@ -896,7 +895,7 @@
                                     Command="{Binding ConfirmCustomizationCommand}"/>
                         </Grid>
                     </Grid>
-                </VerticalStackLayout>
+                </Grid>
             </Border>
         </Grid>
 

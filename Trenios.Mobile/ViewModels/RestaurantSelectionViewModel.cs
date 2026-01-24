@@ -29,6 +29,8 @@ public class RestaurantSelectionViewModel : BaseViewModel
 
     public string UserDisplayName => _authService.CurrentUser?.FullName ?? "User";
 
+    public string WelcomeMessage => $"{LocalizationService.Instance["Welcome"]}, {UserDisplayName}";
+
     public ICommand SelectRestaurantCommand { get; }
     public ICommand LogoutCommand { get; }
     public ICommand RefreshCommand { get; }
@@ -41,6 +43,9 @@ public class RestaurantSelectionViewModel : BaseViewModel
         SelectRestaurantCommand = new Command<RestaurantDto>(async (restaurant) => await SelectRestaurantAsync(restaurant));
         LogoutCommand = new Command(async () => await LogoutAsync());
         RefreshCommand = new Command(async () => await LoadRestaurantsAsync());
+
+        // Subscribe to language changes to update welcome message
+        LocalizationService.Instance.OnLanguageChanged += () => OnPropertyChanged(nameof(WelcomeMessage));
     }
 
     public async Task LoadRestaurantsAsync()

@@ -11,6 +11,18 @@ public partial class POSPage : ContentPage
     {
         InitializeComponent();
         BindingContext = viewModel;
+        UpdateLanguageLabel();
+        LocalizationService.Instance.OnLanguageChanged += UpdateLanguageLabel;
+    }
+
+    private void UpdateLanguageLabel()
+    {
+        var currentLanguage = LocalizationService.Instance.CurrentLanguage;
+        var languageCode = currentLanguage.ToUpper();
+
+        // Update labels
+        CurrentLanguageLabelTablet.Text = languageCode;
+        CurrentLanguageLabelPhone.Text = languageCode;
     }
 
     protected override void OnSizeAllocated(double width, double height)
@@ -32,16 +44,17 @@ public partial class POSPage : ContentPage
         {
             PhoneCartView.IsVisible = false;
             PhoneProductsView.IsVisible = true;
-            PhoneBottomBar.IsVisible = true;
+            PhoneHeader.IsVisible = true;
         }
     }
 
-    private void OnCartTapped(object? sender, TappedEventArgs e)
+    private void OnCartTapped(object? sender, EventArgs e)
     {
         // Show cart view on phone
         PhoneProductsView.IsVisible = false;
         PhoneCartView.IsVisible = true;
         PhoneBottomBar.IsVisible = false;
+        PhoneHeader.IsVisible = false;
     }
 
     private void OnBackToProducts(object? sender, EventArgs e)
@@ -49,28 +62,28 @@ public partial class POSPage : ContentPage
         // Show products view on phone
         PhoneCartView.IsVisible = false;
         PhoneProductsView.IsVisible = true;
-        PhoneBottomBar.IsVisible = true;
+        PhoneHeader.IsVisible = true;
+
+        // Restore the binding by clearing the local value
+        PhoneBottomBar.ClearValue(VisualElement.IsVisibleProperty);
     }
 
-    private void OnUserTapped(object? sender, TappedEventArgs e)
+    private async void OnUserTapped(object? sender, TappedEventArgs e)
     {
-        // Toggle user dropdown menu visibility
-        if (TabletLayout.IsVisible)
+        // Show logout popup
+        var result = await DisplayActionSheet("User Menu", "Cancel", "Logout");
+
+        if (result == "Logout" && BindingContext is POSViewModel viewModel)
         {
-            UserMenuTablet.IsVisible = !UserMenuTablet.IsVisible;
-        }
-        else
-        {
-            UserMenuPhone.IsVisible = !UserMenuPhone.IsVisible;
+            if (viewModel.LogoutCommand is Command command && command.CanExecute(null))
+            {
+                command.Execute(null);
+            }
         }
     }
 
     private async void OnLanguageTapped(object? sender, EventArgs e)
     {
-        // Hide dropdowns
-        UserMenuTablet.IsVisible = false;
-        UserMenuPhone.IsVisible = false;
-
         var localization = LocalizationService.Instance;
         var languages = localization.AvailableLanguages;
         var options = languages.Select(l => l.Name).ToArray();
@@ -83,6 +96,7 @@ public partial class POSPage : ContentPage
             if (selected != default)
             {
                 localization.SetLanguage(selected.Code);
+                UpdateLanguageLabel();
             }
         }
     }

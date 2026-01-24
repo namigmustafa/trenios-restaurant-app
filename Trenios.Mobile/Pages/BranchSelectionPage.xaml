@@ -18,7 +18,7 @@
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <HorizontalStackLayout Grid.Column="0" Spacing="12">
                     <!-- Back button (only for SuperAdmin) -->
-                    <Button Text="{h:Translate Back}"
+                    <Button Text="{h:Translate SelectRestaurant}"
                             Command="{Binding BackCommand}"
                             IsVisible="{Binding CanGoBack}"
                             BackgroundColor="Transparent"
@@ -29,15 +29,14 @@
                             HeightRequest="40"
                             Padding="16,0"/>
                     <VerticalStackLayout VerticalOptions="Center">
-                        <Label Text="TRENIOS"
+                        <Label Text="{Binding RestaurantName}"
                                TextColor="White"
                                FontSize="24"
                                FontFamily="OpenSansSemibold"/>
-                        <Label Text="{Binding RestaurantName}"
+                        <Label Text="{Binding WelcomeMessage}"
                                TextColor="White"
                                Opacity="0.8"
-                               FontSize="14"
-                               IsVisible="{Binding RestaurantName, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
+                               FontSize="14"/>
                     </VerticalStackLayout>
                 </HorizontalStackLayout>
 
@@ -169,6 +168,23 @@
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
             </CollectionView>
+        </Grid>
+
+        <!-- Full Screen Loading Overlay -->
+        <Grid Grid.RowSpan="2"
+              IsVisible="{Binding IsNavigating}"
+              BackgroundColor="#80000000">
+            <VerticalStackLayout HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                Spacing="16">
+                <ActivityIndicator IsRunning="True"
+                                  Color="White"
+                                  HeightRequest="50"
+                                  WidthRequest="50"/>
+                <Label Text="{h:Translate Loading}"
+                       TextColor="White"
+                       FontSize="16"/>
+            </VerticalStackLayout>
         </Grid>
     </Grid>
 

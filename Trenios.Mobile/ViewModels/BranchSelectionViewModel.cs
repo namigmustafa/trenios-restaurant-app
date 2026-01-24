@@ -13,6 +13,7 @@ public class BranchSelectionViewModel : BaseViewModel
     private string _errorMessage = string.Empty;
     private bool _hasError;
     private string _restaurantName = string.Empty;
+    private bool _isNavigating;
 
     public ObservableCollection<BranchDto> Branches { get; } = new();
 
@@ -34,7 +35,15 @@ public class BranchSelectionViewModel : BaseViewModel
         set => SetProperty(ref _restaurantName, value);
     }
 
+    public bool IsNavigating
+    {
+        get => _isNavigating;
+        set => SetProperty(ref _isNavigating, value);
+    }
+
     public string UserDisplayName => _authService.CurrentUser?.FullName ?? "User";
+
+    public string WelcomeMessage => $"{LocalizationService.Instance["Welcome"]}, {UserDisplayName}";
 
     public bool CanGoBack => _authService.CurrentUser?.NeedsRestaurantSelection == true;
 
@@ -52,6 +61,9 @@ public class BranchSelectionViewModel : BaseViewModel
         BackCommand = new Command(async () => await GoBackAsync());
         LogoutCommand = new Command(async () => await LogoutAsync());
         RefreshCommand = new Command(async () => await LoadBranchesAsync());
+
+        // Subscribe to language changes to update welcome message
+        LocalizationService.Instance.OnLanguageChanged += () => OnPropertyChanged(nameof(WelcomeMessage));
     }
 
     public async Task LoadBranchesAsync()
@@ -104,8 +116,9 @@ public class BranchSelectionViewModel : BaseViewModel
 
     private async Task SelectBranchAsync(BranchDto branch)
     {
-        if (branch == null) return;
+        if (branch == null || IsNavigating) return;
 
+        IsNavigating = true;
         _authService.SetSelectedBranch(branch.Id, branch.Name);
         await Shell.Current.GoToAsync("//MainPage");
     }
