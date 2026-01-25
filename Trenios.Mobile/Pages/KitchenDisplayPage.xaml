@@ -180,20 +180,21 @@
         <!-- Order Details Popup -->
         <Grid Grid.RowSpan="2"
               IsVisible="{Binding HasSelectedOrder}"
-              BackgroundColor="#80000000">
+              BackgroundColor="#80000000"
+              Padding="{OnPlatform Android='0,20,0,0', Default=0}">
             <Grid.GestureRecognizers>
                 <TapGestureRecognizer Command="{Binding ClosePopupCommand}"/>
             </Grid.GestureRecognizers>
 
             <Frame VerticalOptions="Center"
-                   HorizontalOptions="Center"
+                   HorizontalOptions="Fill"
                    BackgroundColor="#16213e"
                    CornerRadius="16"
                    Padding="0"
                    HasShadow="True"
-                   WidthRequest="1000"
-                   MaximumWidthRequest="1200"
-                   Margin="20">
+                   MaximumWidthRequest="900"
+                   MaximumHeightRequest="650"
+                   Margin="40,20">
                 <Frame.GestureRecognizers>
                     <TapGestureRecognizer/>
                 </Frame.GestureRecognizers>
@@ -211,11 +212,11 @@
                         <VerticalStackLayout>
                             <Label Text="{Binding SelectedOrder.OrderNumber}"
                                    TextColor="White"
-                                   FontSize="32"
+                                   FontSize="24"
                                    FontAttributes="Bold"/>
                             <Label Text="{Binding SelectedOrder.PlacedAtFullDisplay}"
                                    TextColor="#a0a0a0"
-                                   FontSize="18"/>
+                                   FontSize="14"/>
                         </VerticalStackLayout>
                         <Button Grid.Column="1"
                                 Text="X"
@@ -229,65 +230,90 @@
                     </Grid>
 
                     <!-- Status & Type -->
-                    <HorizontalStackLayout Grid.Row="1" Spacing="15" Padding="20,15">
+                    <HorizontalStackLayout Grid.Row="1" Spacing="10" Padding="20,15">
                         <Frame BackgroundColor="{Binding SelectedOrder.StatusColor}"
-                               CornerRadius="8"
-                               Padding="20,10"
+                               CornerRadius="5"
+                               Padding="12,6"
                                HasShadow="False">
                             <Label Text="{Binding SelectedOrder.StatusDisplay}"
                                    TextColor="White"
-                                   FontSize="20"
+                                   FontSize="14"
                                    FontAttributes="Bold"/>
                         </Frame>
                         <Frame BackgroundColor="#0f3460"
-                               CornerRadius="8"
-                               Padding="20,10"
+                               CornerRadius="5"
+                               Padding="12,6"
                                HasShadow="False">
                             <Label Text="{Binding SelectedOrder.OrderTypeDisplay}"
                                    TextColor="White"
-                                   FontSize="20"
+                                   FontSize="14"
                                    FontAttributes="Bold"/>
                         </Frame>
                     </HorizontalStackLayout>
 
-                    <!-- Items List -->
-                    <ScrollView Grid.Row="2" MaximumHeightRequest="600" Padding="20,0">
-                        <VerticalStackLayout Spacing="12"
+                    <!-- Items List - LARGE CONTENT AREA -->
+                    <ScrollView Grid.Row="2" MaximumHeightRequest="400" Padding="20,10">
+                        <VerticalStackLayout Spacing="20"
                                              BindableLayout.ItemsSource="{Binding SelectedOrder.Items}">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="models:OrderItemResponse">
                                     <Frame BackgroundColor="#0f3460"
-                                           CornerRadius="12"
-                                           Padding="24,18"
+                                           CornerRadius="10"
+                                           Padding="20,18"
                                            HasShadow="False">
-                                        <VerticalStackLayout Spacing="10">
+                                        <VerticalStackLayout Spacing="12">
                                             <Grid ColumnDefinitions="Auto,*">
                                                 <Frame Grid.Column="0"
                                                        BackgroundColor="#e94560"
-                                                       CornerRadius="8"
-                                                       Padding="18,10"
+                                                       CornerRadius="6"
+                                                       Padding="14,8"
                                                        HasShadow="False"
-                                                       Margin="0,0,16,0">
+                                                       Margin="0,0,15,0">
                                                     <Label Text="{Binding QuantityDisplay}"
                                                            TextColor="White"
-                                                           FontSize="28"
+                                                           FontSize="24"
                                                            FontAttributes="Bold"/>
                                                 </Frame>
                                                 <Label Grid.Column="1"
                                                        Text="{Binding MenuItemName}"
                                                        TextColor="White"
-                                                       FontSize="24"
+                                                       FontSize="22"
                                                        FontAttributes="Bold"
-                                                       VerticalOptions="Center"/>
+                                                       VerticalOptions="Center"
+                                                       LineBreakMode="WordWrap"/>
                                             </Grid>
 
-                                            <!-- Additions -->
-                                            <Label Text="{Binding AdditionsSummary}"
-                                                   TextColor="#c0c0c0"
-                                                   FontSize="20"
-                                                   IsVisible="{Binding HasAdditions}"
-                                                   Margin="0,5,0,0"
-                                                   LineBreakMode="WordWrap"/>
+                                            <!-- Additions with Bullets -->
+                                            <VerticalStackLayout Spacing="6"
+                                                                IsVisible="{Binding HasAdditions}"
+                                                                Margin="15,8,0,0">
+                                                <BindableLayout.ItemsSource>
+                                                    <Binding Path="Additions"/>
+                                                </BindableLayout.ItemsSource>
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate x:DataType="models:OrderItemAdditionResponse">
+                                                        <HorizontalStackLayout Spacing="8">
+                                                            <Label Text="•"
+                                                                   TextColor="#e94560"
+                                                                   FontSize="20"
+                                                                   FontAttributes="Bold"
+                                                                   VerticalOptions="Start"/>
+                                                            <Label TextColor="#ffffff"
+                                                                   FontSize="18"
+                                                                   LineBreakMode="WordWrap"
+                                                                   VerticalOptions="Center">
+                                                                <Label.FormattedText>
+                                                                    <FormattedString>
+                                                                        <Span Text="{Binding AdditionName}"/>
+                                                                        <Span Text=" x"/>
+                                                                        <Span Text="{Binding Quantity}" FontAttributes="Bold"/>
+                                                                    </FormattedString>
+                                                                </Label.FormattedText>
+                                                            </Label>
+                                                        </HorizontalStackLayout>
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </VerticalStackLayout>
                                         </VerticalStackLayout>
                                     </Frame>
                                 </DataTemplate>
@@ -298,27 +324,27 @@
                     <!-- Action Buttons -->
                     <Grid Grid.Row="3"
                           ColumnDefinitions="*,*"
-                          ColumnSpacing="15"
-                          Padding="20,20">
+                          ColumnSpacing="10"
+                          Padding="20,15">
                         <Button Grid.Column="0"
                                 Text="{h:Translate StartPreparing}"
                                 Command="{Binding StartPreparingCommand}"
                                 BackgroundColor="#e94560"
                                 TextColor="White"
-                                FontSize="20"
+                                FontSize="14"
                                 FontAttributes="Bold"
-                                HeightRequest="60"
-                                CornerRadius="10"/>
+                                HeightRequest="50"
+                                CornerRadius="8"/>
 
                         <Button Grid.Column="1"
                                 Text="{h:Translate MarkCompleted}"
                                 Command="{Binding MarkCompletedCommand}"
                                 BackgroundColor="#27ae60"
                                 TextColor="White"
-                                FontSize="20"
+                                FontSize="14"
                                 FontAttributes="Bold"
-                                HeightRequest="60"
-                                CornerRadius="10"/>
+                                HeightRequest="50"
+                                CornerRadius="8"/>
                     </Grid>
 
                     <!-- Close Button -->
@@ -327,8 +353,8 @@
                             Command="{Binding ClosePopupCommand}"
                             BackgroundColor="#0f3460"
                             TextColor="White"
-                            FontSize="18"
-                            HeightRequest="55"
+                            FontSize="14"
+                            HeightRequest="45"
                             CornerRadius="0"/>
                 </Grid>
             </Frame>
