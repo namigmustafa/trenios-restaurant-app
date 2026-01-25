@@ -28,6 +28,9 @@ public class POSViewModel : BaseViewModel
     private decimal _cachedTotalPrice;
     private string? _validationMessage;
 
+    // Cache built SelectableAdditionGroups by menuItemId for instant reopening
+    private readonly Dictionary<Guid, List<SelectableAdditionGroup>> _groupsCache = new();
+
     public ObservableCollection<CategoryDto> Categories { get; } = new();
     public ObservableCollection<BranchMenuItemDto> MenuItems { get; } = new();
     public ObservableCollection<CartItem> CartItems { get; } = new();
@@ -264,59 +267,89 @@ public class POSViewModel : BaseViewModel
 
         try
         {
+            // If reopening the same item, just reset and show - INSTANT!
+            if (SelectedMenuItem?.MenuItemId == menuItem.MenuItemId && SelectableAdditionGroups.Count > 0)
+            {
+                CustomizationQuantity = 1;
+
+                // Reset all selections without destroying UI
+                foreach (var group in SelectableAdditionGroups)
+                {
+                    group.ResetSelections();
+                }
+
+                RecalculateCustomizationTotals();
+                ((Command)ConfirmCustomizationCommand).ChangeCanExecute();
+                ShowCustomization = true;
+                return;
+            }
+
+            // Show loading spinner IMMEDIATELY
             IsLoadingAdditions = true;
+
+            // Small delay to ensure spinner shows before heavy work
+            await Task.Delay(50);
 
             SelectedMenuItem = menuItem;
             CustomizationQuantity = 1;
 
-            // Count total additions across all groups
-            var totalAdditionsCount = 0;
-            if (menuItem.AdditionGroups != null)
+            // Check if we have cached groups for a different menu item
+            if (_groupsCache.TryGetValue(menuItem.MenuItemId, out var cachedGroups))
             {
-                foreach (var group in menuItem.AdditionGroups)
+                // Swap to cached groups (still faster than building)
+                SelectableAdditionGroups.Clear();
+                foreach (var group in cachedGroups)
                 {
-                    if (group?.Additions != null)
+                    group.ResetSelections();
+                    SelectableAdditionGroups.Add(group);
+                }
+
+                RecalculateCustomizationTotals();
+                ((Command)ConfirmCustomizationCommand).ChangeCanExecute();
+                IsLoadingAdditions = false;
+                ShowCustomization = true;
+                return;
+            }
+
+            // First time opening this item - build groups
+            ShowCustomization = true;
+
+            await Task.Run(() =>
+            {
+                var tempGroups = new List<SelectableAdditionGroup>();
+
+                if (menuItem.AdditionGroups != null)
+                {
+                    foreach (var group in menuItem.AdditionGroups)
                     {
-                        totalAdditionsCount += group.Additions.Count;
+                        if (group == null || group.Additions == null || group.Additions.Count == 0) continue;
+                        tempGroups.Add(new SelectableAdditionGroup(group, OnAdditionSelectionChanged));
                     }
                 }
-            }
 
-            System.Diagnostics.Debug.WriteLine($"MenuItem: {menuItem.MenuItemName}, Groups: {menuItem.AdditionGroups?.Count ?? 0}, Total Additions: {totalAdditionsCount}");
+                // Cache these groups for future access
+                _groupsCache[menuItem.MenuItemId] = tempGroups;
 
-            // Always show customization popup
-            // Build selectable addition groups if there are any
-            SelectableAdditionGroups.Clear();
-
-            if (totalAdditionsCount > 0 && menuItem.AdditionGroups != null)
-            {
-                foreach (var group in menuItem.AdditionGroups)
+                // Update UI on main thread
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    if (group == null || group.Additions == null || group.Additions.Count == 0) continue;
-                    SelectableAdditionGroups.Add(new SelectableAdditionGroup(group, OnAdditionSelectionChanged));
-                }
-            }
+                    SelectableAdditionGroups.Clear();
+                    foreach (var group in tempGroups)
+                    {
+                        SelectableAdditionGroups.Add(group);
+                    }
 
-            // Update cached totals after groups are built
-            RecalculateCustomizationTotals();
-
-            // Evaluate button state initially (important for required groups)
-            ((Command)ConfirmCustomizationCommand).ChangeCanExecute();
-
-            // Small delay to show the loading spinner
-            await Task.Delay(100);
-
-            // Always show the customization popup (even if no additions)
-            ShowCustomization = true;
+                    RecalculateCustomizationTotals();
+                    ((Command)ConfirmCustomizationCommand).ChangeCanExecute();
+                    IsLoadingAdditions = false;
+                });
+            });
         }
         catch (Exception ex)
         {
-            await Application.Current!.MainPage!.DisplayAlert("Error",
-                $"{ex.GetType().Name}: {ex.Message}\n\n{ex.StackTrace}", "OK");
-        }
-        finally
-        {
             IsLoadingAdditions = false;
+            await Application.Current?.MainPage?.DisplayAlert("Error",
+                $"{ex.GetType().Name}: {ex.Message}\n\n{ex.StackTrace}", "OK");
         }
     }
 
@@ -449,8 +482,8 @@ public class POSViewModel : BaseViewModel
     private void CancelCustomization()
     {
         ShowCustomization = false;
-        SelectedMenuItem = null;
-        SelectableAdditionGroups.Clear();
+        // DON'T set SelectedMenuItem to null - keeps the same item check working
+        // DON'T clear SelectableAdditionGroups - keeps visual tree alive for instant reopen
         CustomizationQuantity = 1;
         ValidationMessage = null;
         OnPropertyChanged(nameof(HasValidationError));
@@ -508,6 +541,7 @@ public class POSViewModel : BaseViewModel
         {
             _orderService.ClearCart();
             _productService.ClearCache();
+            _groupsCache.Clear(); // Clear cached groups on logout
             await _authService.LogoutAsync();
             await Shell.Current.GoToAsync("//LoginPage");
         }
@@ -518,6 +552,7 @@ public class POSViewModel : BaseViewModel
         if (CanGoBack)
         {
             _productService.ClearCache();
+            _groupsCache.Clear(); // Clear cached groups when changing branch
             await Shell.Current.GoToAsync("//BranchSelection");
         }
     }
@@ -636,6 +671,7 @@ public class SelectableAdditionGroup : INotifyPropertyChanged
     private int _cachedTotalSelected;
     private string _cachedSelectionHint = string.Empty;
     private bool _cachedCanAddMore = true;
+    private bool _suppressNotifications; // Flag to suppress notifications during init
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -646,6 +682,9 @@ public class SelectableAdditionGroup : INotifyPropertyChanged
 
     public SelectableAdditionGroup(AdditionGroupDto group, Action onSelectionChanged)
     {
+        // Suppress all notifications during construction
+        _suppressNotifications = true;
+
         Id = group.Id;
         Name = group.Name ?? "Unknown";
         IsSingleSelect = group.IsSingleSelect;
@@ -654,39 +693,54 @@ public class SelectableAdditionGroup : INotifyPropertyChanged
         MinSelections = group.MinSelections;
         MaxSelections = group.MaxSelections;
 
-        if (group.Additions != null)
+        if (group.Additions != null && group.Additions.Count > 0)
         {
-            var availableAdditions = group.Additions
-                .Where(a => a != null && a.IsAvailable)
-                .OrderBy(a => a.DisplayOrder)
-                .ToList();
+            // Optimized: avoid LINQ, filter and sort in one pass with minimal allocations
+            var count = group.Additions.Count;
+            var tempList = new List<AdditionDto>(count);
 
-            HasOnlyOneAddition = availableAdditions.Count == 1;
-
-            // Create all additions first without any callbacks
-            foreach (var addition in availableAdditions)
+            for (int i = 0; i < count; i++)
             {
-                var selectable = new SelectableAddition(addition, this, onSelectionChanged);
-                _additions.Add(selectable);
-            }
-
-            // Auto-select first addition if needed (without triggering callbacks)
-            if (HasOnlyOneAddition || (IsRequired && IsSingleSelect))
-            {
-                if (_additions.Count > 0)
+                var addition = group.Additions[i];
+                if (addition != null && addition.IsAvailable)
                 {
-                    _additions[0].SetSelectedSilent(true);
+                    tempList.Add(addition);
                 }
             }
 
-            // Calculate initial cached values (no notifications during init)
-            RecalculateCachedValues();
+            // Sort by DisplayOrder in-place
+            tempList.Sort((a, b) => a.DisplayOrder.CompareTo(b.DisplayOrder));
+
+            HasOnlyOneAddition = tempList.Count == 1;
+
+            // Pre-allocate list with exact capacity
+            _additions.Capacity = tempList.Count;
+
+            // Create all additions without triggering change notifications
+            for (int i = 0; i < tempList.Count; i++)
+            {
+                _additions.Add(new SelectableAddition(tempList[i], this, onSelectionChanged));
+            }
+
+            // Auto-select first addition if needed (without triggering callbacks)
+            if ((HasOnlyOneAddition || (IsRequired && IsSingleSelect)) && _additions.Count > 0)
+            {
+                _additions[0].SetSelectedSilent(true);
+                _cachedTotalSelected = 1;
+            }
+
+            // Calculate other cached values
+            _cachedCanAddMore = MaxSelections == 0 || _cachedTotalSelected < MaxSelections;
+            _cachedSelectionHint = ComputeSelectionHint();
         }
         else
         {
             HasOnlyOneAddition = false;
             _cachedSelectionHint = ComputeSelectionHint();
         }
+
+        // Re-enable notifications after construction complete
+        _suppressNotifications = false;
     }
 
     /// <summary>
@@ -695,6 +749,8 @@ public class SelectableAdditionGroup : INotifyPropertyChanged
     /// </summary>
     internal void OnAdditionChanged()
     {
+        if (_suppressNotifications) return; // Skip during initialization
+
         var oldTotalSelected = _cachedTotalSelected;
         var oldCanAddMore = _cachedCanAddMore;
         var oldHint = _cachedSelectionHint;
@@ -761,6 +817,41 @@ public class SelectableAdditionGroup : INotifyPropertyChanged
         }
         return "Select any";
     }
+
+    /// <summary>
+    /// Reset all selections to initial state for reuse
+    /// </summary>
+    public void ResetSelections()
+    {
+        _suppressNotifications = true;
+
+        // Reset all additions to default state
+        foreach (var addition in _additions)
+        {
+            addition.ResetToDefault();
+        }
+
+        // Auto-select first if needed
+        if ((HasOnlyOneAddition || (IsRequired && IsSingleSelect)) && _additions.Count > 0)
+        {
+            _additions[0].SetSelectedSilent(true);
+            _cachedTotalSelected = 1;
+        }
+        else
+        {
+            _cachedTotalSelected = 0;
+        }
+
+        // Recalculate cached values
+        _cachedCanAddMore = MaxSelections == 0 || _cachedTotalSelected < MaxSelections;
+        _cachedSelectionHint = ComputeSelectionHint();
+
+        _suppressNotifications = false;
+
+        // Fire one batch update
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalSelected)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectionHint)));
+    }
 }
 
 /// <summary>
@@ -774,6 +865,7 @@ public class SelectableAddition : INotifyPropertyChanged
     private bool _isDisabled;
     private readonly SelectableAdditionGroup _parentGroup;
     private readonly Action _onSelectionChanged;
+    private bool _suppressNotifications; // Flag to suppress notifications during init
 
     public Guid AdditionId { get; }
     public string Name { get; }
@@ -794,6 +886,9 @@ public class SelectableAddition : INotifyPropertyChanged
 
             // Batch notify: fire all property changes first, then notify parent once
             NotifyPropertyChanged(nameof(IsSelected));
+            NotifyPropertyChanged(nameof(StrokeColor));
+            NotifyPropertyChanged(nameof(BackgroundColor));
+            NotifyPropertyChanged(nameof(CheckboxBackgroundColor));
             if (!value)
             {
                 NotifyPropertyChanged(nameof(Quantity));
@@ -814,6 +909,9 @@ public class SelectableAddition : INotifyPropertyChanged
         if (_isSelected == selected) return;
         _isSelected = selected;
         NotifyPropertyChanged(nameof(IsSelected));
+        NotifyPropertyChanged(nameof(StrokeColor));
+        NotifyPropertyChanged(nameof(BackgroundColor));
+        NotifyPropertyChanged(nameof(CheckboxBackgroundColor));
     }
 
     /// <summary>
@@ -832,6 +930,9 @@ public class SelectableAddition : INotifyPropertyChanged
             NotifyPropertyChanged(nameof(TotalPrice));
         }
         NotifyPropertyChanged(nameof(IsSelected));
+        NotifyPropertyChanged(nameof(StrokeColor));
+        NotifyPropertyChanged(nameof(BackgroundColor));
+        NotifyPropertyChanged(nameof(CheckboxBackgroundColor));
     }
 
     public int Quantity
@@ -892,22 +993,61 @@ public class SelectableAddition : INotifyPropertyChanged
     public bool HasPrice => UnitPrice > 0;
     public decimal Price => UnitPrice; // Backward compatibility
 
+    // Cached style properties to avoid converter overhead
+    private static readonly Color PrimaryColor = Application.Current?.Resources.TryGetValue("Primary", out var primary) == true && primary is Color c1 ? c1 : Colors.Orange;
+    private static readonly Color Gray200Color = Application.Current?.Resources.TryGetValue("Gray200", out var gray200) == true && gray200 is Color c2 ? c2 : Colors.LightGray;
+    private static readonly Color Gray50Color = Application.Current?.Resources.TryGetValue("Gray50", out var gray50) == true && gray50 is Color c3 ? c3 : Color.FromRgb(249, 249, 249);
+    private static readonly Color WhiteColor = Colors.White;
+    private static readonly Color TransparentColor = Colors.Transparent;
+
+    public Color StrokeColor => _isSelected ? PrimaryColor : Gray200Color;
+    public Color BackgroundColor => _isSelected ? Gray50Color : WhiteColor;
+    public Color CheckboxBackgroundColor => _isSelected ? PrimaryColor : TransparentColor;
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void NotifyPropertyChanged(string propertyName)
     {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        if (!_suppressNotifications)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 
     public SelectableAddition(AdditionDto addition, SelectableAdditionGroup parentGroup, Action onSelectionChanged)
     {
-        ArgumentNullException.ThrowIfNull(addition);
-        ArgumentNullException.ThrowIfNull(parentGroup);
+        // Suppress all notifications during construction
+        _suppressNotifications = true;
 
         AdditionId = addition.Id;
         Name = addition.Name ?? string.Empty;
         UnitPrice = addition.CurrentPrice;
         _parentGroup = parentGroup;
         _onSelectionChanged = onSelectionChanged;
+
+        // Re-enable notifications after construction
+        _suppressNotifications = false;
+    }
+
+    /// <summary>
+    /// Reset to default unselected state for reuse
+    /// </summary>
+    public void ResetToDefault()
+    {
+        _suppressNotifications = true;
+        _isSelected = false;
+        _quantity = 1;
+        _isDisabled = false;
+        _suppressNotifications = false;
+
+        // Fire property changes for UI update
+        NotifyPropertyChanged(nameof(IsSelected));
+        NotifyPropertyChanged(nameof(Quantity));
+        NotifyPropertyChanged(nameof(IsDisabled));
+        NotifyPropertyChanged(nameof(StrokeColor));
+        NotifyPropertyChanged(nameof(BackgroundColor));
+        NotifyPropertyChanged(nameof(CheckboxBackgroundColor));
+        NotifyPropertyChanged(nameof(ItemOpacity));
+        NotifyPropertyChanged(nameof(TotalPrice));
     }
 }

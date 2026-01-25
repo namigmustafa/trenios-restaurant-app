@@ -311,7 +311,8 @@
                       Padding="12">
                     <Button Text="{h:Translate CreateOrder}"
                             Style="{StaticResource SuccessButton}"
-                            Command="{Binding PayCommand}"/>
+                            Command="{Binding PayCommand}"
+                            IsVisible="{Binding HasItems}"/>
                 </Grid>
             </Grid>
         </Grid>
@@ -504,7 +505,8 @@
                           Padding="12">
                         <Button Text="{h:Translate CreateOrder}"
                                 Style="{StaticResource SuccessButton}"
-                                Command="{Binding PayCommand}"/>
+                                Command="{Binding PayCommand}"
+                                IsVisible="{Binding HasItems}"/>
                     </Grid>
                 </Grid>
             </Grid>
@@ -629,7 +631,16 @@
                     <!-- Addition Groups in ScrollView -->
                     <ScrollView Grid.Row="2"
                                 VerticalScrollBarVisibility="Default">
+                        <!-- Loading Indicator -->
+                        <ActivityIndicator IsRunning="{Binding IsLoadingAdditions}"
+                                           IsVisible="{Binding IsLoadingAdditions}"
+                                           Color="{StaticResource Primary}"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="Center"
+                                           HeightRequest="100"/>
+
                         <CollectionView ItemsSource="{Binding SelectableAdditionGroups}"
+                                        IsVisible="{Binding IsLoadingAdditions, Converter={StaticResource InvertedBoolConverter}}"
                                         VerticalScrollBarVisibility="Never">
                         <CollectionView.ItemsLayout>
                             <LinearItemsLayout Orientation="Vertical" ItemSpacing="16"/>
@@ -653,103 +664,98 @@
                                                VerticalOptions="Center"/>
                                     </HorizontalStackLayout>
 
-                                    <!-- Single Select Additions (Radio style) - Virtualized -->
-                                    <CollectionView ItemsSource="{Binding Additions}"
-                                                    IsVisible="{Binding IsSingleSelect}"
-                                                    SelectionMode="None"
-                                                    VerticalScrollBarVisibility="Never"
-                                                    HeightRequest="{Binding Additions.Count, Converter={StaticResource CountToHeightConverter}}">
-                                        <CollectionView.ItemsLayout>
-                                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
-                                        </CollectionView.ItemsLayout>
-                                        <CollectionView.ItemTemplate>
+                                    <!-- Single Select Additions (Radio style) - Fast BindableLayout -->
+                                    <VerticalStackLayout Spacing="4"
+                                                         IsVisible="{Binding IsSingleSelect}"
+                                                         BindableLayout.ItemsSource="{Binding Additions}">
+                                        <BindableLayout.ItemTemplate>
                                             <DataTemplate x:DataType="vm:SelectableAddition">
-                                                <Border Padding="14,12"
-                                                        StrokeShape="RoundRectangle 10"
+                                                <Border Padding="12,10"
+                                                        Margin="0,0,0,4"
+                                                        StrokeShape="RoundRectangle 8"
                                                         StrokeThickness="1"
-                                                        Stroke="{Binding IsSelected, Converter={StaticResource BoolToStrokeConverter}}"
-                                                        BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToBackgroundConverter}}">
+                                                        Stroke="{Binding StrokeColor}"
+                                                        BackgroundColor="{Binding BackgroundColor}">
                                                     <Border.GestureRecognizers>
                                                         <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
                                                                               CommandParameter="{Binding .}"/>
                                                     </Border.GestureRecognizers>
-                                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14" InputTransparent="True">
-                                                        <!-- Radio Circle -->
-                                                        <Border Grid.Column="0"
-                                                                WidthRequest="26"
-                                                                HeightRequest="26"
-                                                                StrokeShape="RoundRectangle 13"
-                                                                StrokeThickness="2"
-                                                                Stroke="{Binding IsSelected, Converter={StaticResource BoolToStrokeConverter}}"
-                                                                BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToCircleBackgroundConverter}}"
-                                                                VerticalOptions="Center"
-                                                                InputTransparent="True">
-                                                            <Label Text="✓"
-                                                                   FontSize="14"
-                                                                   TextColor="White"
-                                                                   HorizontalOptions="Center"
-                                                                   VerticalOptions="Center"
-                                                                   IsVisible="{Binding IsSelected}"
-                                                                   InputTransparent="True"/>
-                                                        </Border>
+                                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                                        <!-- Radio Circle - Simplified -->
+                                                        <Ellipse Grid.Column="0"
+                                                                 WidthRequest="22"
+                                                                 HeightRequest="22"
+                                                                 Fill="{Binding CheckboxBackgroundColor}"
+                                                                 Stroke="{Binding StrokeColor}"
+                                                                 StrokeThickness="2"
+                                                                 VerticalOptions="Center">
+                                                            <Ellipse.GestureRecognizers>
+                                                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
+                                                                                      CommandParameter="{Binding .}"/>
+                                                            </Ellipse.GestureRecognizers>
+                                                        </Ellipse>
+                                                        <Label Grid.Column="0"
+                                                               Text="✓"
+                                                               FontSize="12"
+                                                               TextColor="White"
+                                                               HorizontalOptions="Center"
+                                                               VerticalOptions="Center"
+                                                               IsVisible="{Binding IsSelected}"
+                                                               InputTransparent="True"/>
                                                         <!-- Name -->
                                                         <Label Grid.Column="1"
                                                                Text="{Binding Name}"
-                                                               FontSize="18"
-                                                               VerticalOptions="Center"
-                                                               InputTransparent="True"/>
+                                                               FontSize="16"
+                                                               VerticalOptions="Center"/>
                                                         <!-- Price -->
                                                         <Label Grid.Column="2"
                                                                Text="{Binding UnitPrice, StringFormat='+€{0:F2}'}"
-                                                               FontSize="16"
+                                                               FontSize="14"
                                                                TextColor="{StaticResource Primary}"
                                                                VerticalOptions="Center"
-                                                               IsVisible="{Binding HasPrice}"
-                                                               InputTransparent="True"/>
+                                                               IsVisible="{Binding HasPrice}"/>
                                                     </Grid>
                                                 </Border>
                                             </DataTemplate>
-                                        </CollectionView.ItemTemplate>
-                                    </CollectionView>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
 
-                                    <!-- Multi Select Additions (Checkbox style with +/-) - Virtualized -->
-                                    <CollectionView ItemsSource="{Binding Additions}"
-                                                    IsVisible="{Binding IsMultiSelect}"
-                                                    SelectionMode="None"
-                                                    VerticalScrollBarVisibility="Never"
-                                                    HeightRequest="{Binding Additions.Count, Converter={StaticResource CountToHeightMultiConverter}}">
-                                        <CollectionView.ItemsLayout>
-                                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
-                                        </CollectionView.ItemsLayout>
-                                        <CollectionView.ItemTemplate>
+                                    <!-- Multi Select Additions (Checkbox style with +/-) - Fast BindableLayout -->
+                                    <VerticalStackLayout Spacing="4"
+                                                         IsVisible="{Binding IsMultiSelect}"
+                                                         BindableLayout.ItemsSource="{Binding Additions}">
+                                        <BindableLayout.ItemTemplate>
                                             <DataTemplate x:DataType="vm:SelectableAddition">
-                                                <Border Padding="14,12"
-                                                        StrokeShape="RoundRectangle 10"
+                                                <Border Padding="12,10"
+                                                        Margin="0,0,0,4"
+                                                        StrokeShape="RoundRectangle 8"
                                                         StrokeThickness="1"
-                                                        Stroke="{Binding IsSelected, Converter={StaticResource BoolToStrokeConverter}}"
-                                                        BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToBackgroundConverter}}"
+                                                        Stroke="{Binding StrokeColor}"
+                                                        BackgroundColor="{Binding BackgroundColor}"
                                                         Opacity="{Binding ItemOpacity}">
-                                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
-                                                        <!-- Checkbox Square -->
-                                                        <Border Grid.Column="0"
-                                                                WidthRequest="26"
-                                                                HeightRequest="26"
-                                                                StrokeShape="RoundRectangle 5"
-                                                                StrokeThickness="2"
-                                                                Stroke="{Binding IsSelected, Converter={StaticResource BoolToStrokeConverter}}"
-                                                                BackgroundColor="{Binding IsSelected, Converter={StaticResource BoolToCircleBackgroundConverter}}"
-                                                                VerticalOptions="Center">
-                                                            <Border.GestureRecognizers>
+                                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                                        <!-- Checkbox Square - Simplified -->
+                                                        <RoundRectangle Grid.Column="0"
+                                                                        WidthRequest="22"
+                                                                        HeightRequest="22"
+                                                                        CornerRadius="4"
+                                                                        Fill="{Binding CheckboxBackgroundColor}"
+                                                                        Stroke="{Binding StrokeColor}"
+                                                                        StrokeThickness="2"
+                                                                        VerticalOptions="Center">
+                                                            <RoundRectangle.GestureRecognizers>
                                                                 <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
                                                                                       CommandParameter="{Binding .}"/>
-                                                            </Border.GestureRecognizers>
-                                                            <Label Text="✓"
-                                                                   FontSize="14"
-                                                                   TextColor="White"
-                                                                   HorizontalOptions="Center"
-                                                                   VerticalOptions="Center"
-                                                                   IsVisible="{Binding IsSelected}"/>
-                                                        </Border>
+                                                            </RoundRectangle.GestureRecognizers>
+                                                        </RoundRectangle>
+                                                        <Label Grid.Column="0"
+                                                               Text="✓"
+                                                               FontSize="12"
+                                                               TextColor="White"
+                                                               HorizontalOptions="Center"
+                                                               VerticalOptions="Center"
+                                                               IsVisible="{Binding IsSelected}"
+                                                               InputTransparent="True"/>
 
                                                         <!-- Name and Price (tappable to toggle) -->
                                                         <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
@@ -836,8 +842,8 @@
                                                     </Grid>
                                                 </Border>
                                             </DataTemplate>
-                                        </CollectionView.ItemTemplate>
-                                    </CollectionView>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
                                 </VerticalStackLayout>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -922,10 +928,10 @@
             </Frame>
         </Grid>
 
-        <!-- Loading Overlay for Menu Item Selection -->
+        <!-- Loading Overlay for Menu Item Selection (Click to Popup) -->
         <Grid IsVisible="{Binding IsLoadingAdditions}"
-              BackgroundColor="#80000000"
-              ZIndex="150">
+              BackgroundColor="#CC000000"
+              ZIndex="250">
             <Frame BackgroundColor="{StaticResource White}"
                    CornerRadius="16"
                    Padding="40,30"
