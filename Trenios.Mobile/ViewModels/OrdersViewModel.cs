@@ -15,6 +15,9 @@ public class OrdersViewModel : INotifyPropertyChanged
     private bool _isRefreshing;
     private OrderResponse? _selectedOrder;
     private OrderStatus? _statusFilter;
+    private DateTime _startDate = DateTime.Today;
+    private DateTime _endDate = DateTime.Today;
+    private bool _showTodayOnly = true;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -67,12 +70,59 @@ public class OrdersViewModel : INotifyPropertyChanged
     public bool FilterPreparing => StatusFilter == OrderStatus.Preparing;
     public bool FilterCompleted => StatusFilter == OrderStatus.Completed;
 
+    public bool ShowTodayOnly
+    {
+        get => _showTodayOnly;
+        set
+        {
+            _showTodayOnly = value;
+            OnPropertyChanged(nameof(ShowTodayOnly));
+            if (value)
+            {
+                // Reset to today
+                _startDate = DateTime.Today;
+                _endDate = DateTime.Today;
+                _ = LoadOrdersAsync();
+            }
+        }
+    }
+
+    public DateTime StartDate
+    {
+        get => _startDate;
+        set
+        {
+            _startDate = value;
+            OnPropertyChanged(nameof(StartDate));
+            if (!ShowTodayOnly)
+            {
+                _ = LoadOrdersAsync();
+            }
+        }
+    }
+
+    public DateTime EndDate
+    {
+        get => _endDate;
+        set
+        {
+            _endDate = value;
+            OnPropertyChanged(nameof(EndDate));
+            if (!ShowTodayOnly)
+            {
+                _ = LoadOrdersAsync();
+            }
+        }
+    }
+
     public ICommand LoadOrdersCommand { get; }
     public ICommand RefreshCommand { get; }
     public ICommand SelectOrderCommand { get; }
     public ICommand CloseDetailsCommand { get; }
     public ICommand SetStatusFilterCommand { get; }
     public ICommand UpdateStatusCommand { get; }
+    public ICommand CompleteOrderSwipeCommand { get; }
+    public ICommand CancelOrderSwipeCommand { get; }
     public ICommand BackCommand { get; }
 
     public OrdersViewModel(ApiService apiService, AuthService authService)
@@ -86,6 +136,8 @@ public class OrdersViewModel : INotifyPropertyChanged
         CloseDetailsCommand = new Command(() => SelectedOrder = null);
         SetStatusFilterCommand = new Command<string>(SetStatusFilter);
         UpdateStatusCommand = new Command<string>(async (status) => await UpdateOrderStatusAsync(status));
+        CompleteOrderSwipeCommand = new Command<OrderResponse>(async (order) => await CompleteOrderAsync(order));
+        CancelOrderSwipeCommand = new Command<OrderResponse>(async (order) => await CancelOrderAsync(order));
         BackCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
     }
 
@@ -103,6 +155,10 @@ public class OrdersViewModel : INotifyPropertyChanged
             {
                 url += $"&status={(int)StatusFilter.Value}";
             }
+
+            // Add date filter parameters
+            url += $"&startDate={StartDate:yyyy-MM-dd}";
+            url += $"&endDate={EndDate:yyyy-MM-dd}T23:59:59";
 
             var result = await _apiService.GetAsync<List<OrderResponse>>(url);
 
@@ -150,12 +206,32 @@ public class OrdersViewModel : INotifyPropertyChanged
         if (SelectedOrder == null) return;
         if (!Enum.TryParse<OrderStatus>(statusStr, out var newStatus)) return;
 
+        string? cancellationReason = null;
+
+        // If cancelling, prompt for reason
+        if (newStatus == OrderStatus.Cancelled)
+        {
+            var loc = LocalizationService.Instance;
+            cancellationReason = await Application.Current?.MainPage?.DisplayPromptAsync(
+                loc["CancelOrderTitle"],
+                loc["EnterCancellationReason"],
+                loc["CancelOrder"],
+                loc["Back"],
+                placeholder: loc["CancellationPlaceholder"]
+            );
+
+            // If user cancelled the prompt, don't proceed
+            if (string.IsNullOrWhiteSpace(cancellationReason))
+                return;
+        }
+
         var request = new UpdateOrderStatusRequest
         {
-            Status = (int)newStatus
+            Status = (int)newStatus,
+            CancellationReason = cancellationReason
         };
 
-        var result = await _apiService.PatchAsync<object>($"/api/orders/{SelectedOrder.Id}/status", request);
+        var result = await _apiService.PatchAsync<OrderResponse>($"/api/orders/{SelectedOrder.Id}/status", request);
 
         if (result.IsSuccess)
         {
@@ -164,6 +240,69 @@ public class OrdersViewModel : INotifyPropertyChanged
 
             // Update selected order
             SelectedOrder = Orders.FirstOrDefault(o => o.Id == SelectedOrder?.Id);
+        }
+        else if (!string.IsNullOrEmpty(result.ErrorMessage))
+        {
+            var loc = LocalizationService.Instance;
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], result.ErrorMessage, loc["OK"]);
+        }
+    }
+
+    private async Task CompleteOrderAsync(OrderResponse? order)
+    {
+        if (order == null) return;
+
+        var request = new UpdateOrderStatusRequest
+        {
+            Status = (int)OrderStatus.Completed
+        };
+
+        var result = await _apiService.PatchAsync<OrderResponse>($"/api/orders/{order.Id}/status", request);
+
+        if (result.IsSuccess)
+        {
+            await LoadOrdersAsync();
+        }
+        else if (!string.IsNullOrEmpty(result.ErrorMessage))
+        {
+            var loc = LocalizationService.Instance;
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], result.ErrorMessage, loc["OK"]);
+        }
+    }
+
+    private async Task CancelOrderAsync(OrderResponse? order)
+    {
+        if (order == null) return;
+
+        // Prompt for cancellation reason
+        var loc = LocalizationService.Instance;
+        var cancellationReason = await Application.Current?.MainPage?.DisplayPromptAsync(
+            loc["CancelOrderTitle"],
+            loc["EnterCancellationReason"],
+            loc["CancelOrder"],
+            loc["Back"],
+            placeholder: loc["CancellationPlaceholder"]
+        );
+
+        // If user cancelled the prompt, don't proceed
+        if (string.IsNullOrWhiteSpace(cancellationReason))
+            return;
+
+        var request = new UpdateOrderStatusRequest
+        {
+            Status = (int)OrderStatus.Cancelled,
+            CancellationReason = cancellationReason
+        };
+
+        var result = await _apiService.PatchAsync<OrderResponse>($"/api/orders/{order.Id}/status", request);
+
+        if (result.IsSuccess)
+        {
+            await LoadOrdersAsync();
+        }
+        else if (!string.IsNullOrEmpty(result.ErrorMessage))
+        {
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], result.ErrorMessage, loc["OK"]);
         }
     }
 

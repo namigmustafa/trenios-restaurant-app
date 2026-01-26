@@ -24,6 +24,10 @@
             <converters:BoolToCircleBackgroundConverter x:Key="BoolToCircleBackgroundConverter"/>
             <converters:CountToHeightConverter x:Key="CountToHeightConverter"/>
             <converters:CountToHeightMultiConverter x:Key="CountToHeightMultiConverter"/>
+            <converters:BoolToGridLengthConverter x:Key="BoolToGridLengthConverter"/>
+            <converters:BoolToColumnSpanConverter x:Key="BoolToColumnSpanConverter"/>
+            <converters:BoolToMarginConverter x:Key="BoolToMarginConverter"/>
+            <converters:BoolToWidthConverter x:Key="BoolToWidthConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

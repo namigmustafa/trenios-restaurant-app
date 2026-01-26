@@ -174,7 +174,13 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancelOrder"] = "Cancel Order",
             ["Complete"] = "Complete",
             ["RestaurantHome"] = "Restaurant Home",
-            ["ShowOrders"] = "Show Orders"
+            ["ShowOrders"] = "Show Orders",
+            ["From"] = "From",
+            ["To"] = "To",
+            ["ShowToday"] = "Show Today Only",
+            ["CancelOrderTitle"] = "Cancel Order",
+            ["EnterCancellationReason"] = "Please enter cancellation reason:",
+            ["CancellationPlaceholder"] = "e.g., Customer request, Out of stock"
         },
 
         ["az"] = new()
@@ -267,7 +273,13 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancelOrder"] = "Sifarişi Ləğv Et",
             ["Complete"] = "Tamamla",
             ["RestaurantHome"] = "Restoran Əsas Səhifə",
-            ["ShowOrders"] = "Sifarişləri Göstər"
+            ["ShowOrders"] = "Sifarişləri Göstər",
+            ["From"] = "-dan",
+            ["To"] = "-dək",
+            ["ShowToday"] = "Yalnız Bu Gün",
+            ["CancelOrderTitle"] = "Sifarişi Ləğv Et",
+            ["EnterCancellationReason"] = "Zəhmət olmasa ləğv səbəbini daxil edin:",
+            ["CancellationPlaceholder"] = "məs: Müştəri sorğusu, Stokda yoxdur"
         },
 
         ["ru"] = new()
@@ -360,7 +372,13 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancelOrder"] = "Отменить Заказ",
             ["Complete"] = "Завершить",
             ["RestaurantHome"] = "Главная Ресторана",
-            ["ShowOrders"] = "Показать Заказы"
+            ["ShowOrders"] = "Показать Заказы",
+            ["From"] = "От",
+            ["To"] = "До",
+            ["ShowToday"] = "Только Сегодня",
+            ["CancelOrderTitle"] = "Отменить Заказ",
+            ["EnterCancellationReason"] = "Пожалуйста, укажите причину отмены:",
+            ["CancellationPlaceholder"] = "напр: Запрос клиента, Нет в наличии"
         },
 
         ["tr"] = new()
@@ -453,7 +471,13 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancelOrder"] = "Siparişi İptal Et",
             ["Complete"] = "Tamamla",
             ["RestaurantHome"] = "Restoran Ana Sayfa",
-            ["ShowOrders"] = "Siparişleri Göster"
+            ["ShowOrders"] = "Siparişleri Göster",
+            ["From"] = "Başlangıç",
+            ["To"] = "Bitiş",
+            ["ShowToday"] = "Sadece Bugün",
+            ["CancelOrderTitle"] = "Siparişi İptal Et",
+            ["EnterCancellationReason"] = "Lütfen iptal nedenini girin:",
+            ["CancellationPlaceholder"] = "örn: Müşteri talebi, Stokta yok"
         },
 
         ["lv"] = new()
@@ -546,7 +570,13 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancelOrder"] = "Atcelt Pasūtījumu",
             ["Complete"] = "Pabeigt",
             ["RestaurantHome"] = "Restorāna Sākums",
-            ["ShowOrders"] = "Rādīt Pasūtījumus"
+            ["ShowOrders"] = "Rādīt Pasūtījumus",
+            ["From"] = "No",
+            ["To"] = "Līdz",
+            ["ShowToday"] = "Tikai Šodien",
+            ["CancelOrderTitle"] = "Atcelt Pasūtījumu",
+            ["EnterCancellationReason"] = "Lūdzu, ievadiet atcelšanas iemeslu:",
+            ["CancellationPlaceholder"] = "piem: Klienta pieprasījums, Nav noliktavā"
         }
     };
 }

@@ -84,6 +84,27 @@ public class ApiService
         }
     }
 
+    public async Task<ApiResult<T>> PutAsync<T>(string endpoint, object? data = null)
+    {
+        try
+        {
+            var content = data != null
+                ? new StringContent(JsonSerializer.Serialize(data, _jsonOptions), Encoding.UTF8, "application/json")
+                : null;
+
+            var response = await _httpClient.PutAsync(endpoint, content);
+            return await HandleResponse<T>(response);
+        }
+        catch (HttpRequestException ex)
+        {
+            return ApiResult<T>.Failure($"Network error: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            return ApiResult<T>.Failure($"Error: {ex.Message}");
+        }
+    }
+
     public async Task<ApiResult<T>> PatchAsync<T>(string endpoint, object? data = null)
     {
         try

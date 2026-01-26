@@ -11,6 +11,21 @@ public partial class OrdersPage : ContentPage
         InitializeComponent();
         _viewModel = viewModel;
         BindingContext = viewModel;
+
+        // Listen for HasSelectedOrder changes to force CollectionView layout refresh
+        _viewModel.PropertyChanged += async (s, e) =>
+        {
+            if (e.PropertyName == nameof(OrdersViewModel.HasSelectedOrder))
+            {
+                // Force complete refresh of CollectionView items
+                await Dispatcher.DispatchAsync(() =>
+                {
+                    var items = OrdersCollectionView.ItemsSource;
+                    OrdersCollectionView.ItemsSource = null;
+                    OrdersCollectionView.ItemsSource = items;
+                });
+            }
+        };
     }
 
     protected override async void OnAppearing()

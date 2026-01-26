@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Trenios.Mobile.Services;
 
 namespace Trenios.Mobile.Models.Api;
 
@@ -93,24 +94,38 @@ public class OrderResponse
     public OrderStatus OrderStatus => (OrderStatus)Status;
 
     [JsonIgnore]
-    public string OrderTypeDisplay => OrderType switch
+    public string OrderTypeDisplay
     {
-        OrderType.DineIn => "Dine In",
-        OrderType.TakeAway => "Take Away",
-        OrderType.Delivery => "Delivery",
-        _ => "Unknown"
-    };
+        get
+        {
+            var loc = LocalizationService.Instance;
+            return OrderType switch
+            {
+                OrderType.DineIn => loc["DineIn"],
+                OrderType.TakeAway => loc["TakeAway"],
+                OrderType.Delivery => loc["Delivery"],
+                _ => "Unknown"
+            };
+        }
+    }
 
     [JsonIgnore]
-    public string StatusDisplay => OrderStatus switch
+    public string StatusDisplay
     {
-        OrderStatus.Created => "Created",
-        OrderStatus.Confirmed => "Confirmed",
-        OrderStatus.Preparing => "Preparing",
-        OrderStatus.Completed => "Completed",
-        OrderStatus.Cancelled => "Cancelled",
-        _ => "Unknown"
-    };
+        get
+        {
+            var loc = LocalizationService.Instance;
+            return OrderStatus switch
+            {
+                OrderStatus.Created => loc["Created"],
+                OrderStatus.Confirmed => loc["Confirmed"],
+                OrderStatus.Preparing => loc["Preparing"],
+                OrderStatus.Completed => loc["Completed"],
+                OrderStatus.Cancelled => loc["Cancelled"],
+                _ => "Unknown"
+            };
+        }
+    }
 
     [JsonIgnore]
     public Color StatusColor => OrderStatus switch
@@ -193,6 +208,10 @@ public class OrderResponse
     // Helper for kitchen display
     [JsonIgnore]
     public bool CanStartPreparing => OrderStatus == OrderStatus.Created || OrderStatus == OrderStatus.Confirmed;
+
+    // Helper for orders page
+    [JsonIgnore]
+    public bool CanSwipe => OrderStatus != OrderStatus.Completed && OrderStatus != OrderStatus.Cancelled;
 }
 
 public class OrderItemResponse
