@@ -131,6 +131,64 @@ public class OrderResponse
 
     [JsonIgnore]
     public int TotalItems => Items.Sum(i => i.Quantity);
+
+    // Kitchen-optimized urgency properties
+    [JsonIgnore]
+    public int AgeInMinutes => (int)(DateTime.UtcNow - PlacedAt).TotalMinutes;
+
+    [JsonIgnore]
+    public string AgeDisplay
+    {
+        get
+        {
+            var minutes = AgeInMinutes;
+            if (minutes < 1) return "Just now";
+            if (minutes == 1) return "1 min";
+            if (minutes < 60) return $"{minutes} mins";
+            var hours = minutes / 60;
+            var remainingMins = minutes % 60;
+            return remainingMins > 0 ? $"{hours}h {remainingMins}m" : $"{hours}h";
+        }
+    }
+
+    [JsonIgnore]
+    public Color UrgencyColor
+    {
+        get
+        {
+            var minutes = AgeInMinutes;
+            if (minutes >= 15) return Color.FromRgb(220, 38, 38);      // Red - URGENT
+            if (minutes >= 10) return Color.FromRgb(251, 146, 60);     // Orange - Soon
+            if (minutes >= 5) return Color.FromRgb(250, 204, 21);      // Yellow - Watch
+            return Color.FromRgb(34, 197, 94);                          // Green - Fresh
+        }
+    }
+
+    [JsonIgnore]
+    public Color UrgencyBackgroundColor
+    {
+        get
+        {
+            var minutes = AgeInMinutes;
+            if (minutes >= 15) return Color.FromRgb(254, 242, 242);    // Light red
+            if (minutes >= 10) return Color.FromRgb(255, 247, 237);    // Light orange
+            if (minutes >= 5) return Color.FromRgb(254, 252, 232);     // Light yellow
+            return Color.FromRgb(240, 253, 244);                        // Light green
+        }
+    }
+
+    [JsonIgnore]
+    public string UrgencyText
+    {
+        get
+        {
+            var minutes = AgeInMinutes;
+            if (minutes >= 15) return "⚠ URGENT";
+            if (minutes >= 10) return "⏰ SOON";
+            if (minutes >= 5) return "⏱ WATCH";
+            return "✓ FRESH";
+        }
+    }
 }
 
 public class OrderItemResponse

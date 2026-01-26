@@ -7,14 +7,14 @@
              x:Class="Trenios.Mobile.Pages.KitchenDisplayPage"
              x:DataType="viewmodels:KitchenDisplayViewModel"
              Title="{h:Translate KitchenDisplay}"
-             BackgroundColor="#1a1a2e">
+             BackgroundColor="#ecf0f1">
 
     <Grid RowDefinitions="Auto,*">
 
         <!-- Header -->
         <Grid Grid.Row="0"
-              BackgroundColor="#16213e"
-              Padding="20,15">
+              BackgroundColor="White"
+              Padding="16,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -25,28 +25,30 @@
             <Button Grid.Column="0"
                     Text="{h:Translate Back}"
                     Command="{Binding BackCommand}"
-                    BackgroundColor="#0f3460"
+                    BackgroundColor="#e67e22"
                     TextColor="White"
                     FontSize="14"
                     HeightRequest="40"
-                    CornerRadius="5"/>
+                    CornerRadius="6"
+                    Padding="16,0"/>
 
             <Label Grid.Column="1"
                    Text="{h:Translate KitchenDisplay}"
-                   FontSize="24"
+                   FontSize="22"
                    FontAttributes="Bold"
-                   TextColor="White"
+                   TextColor="#2c3e50"
                    HorizontalOptions="Center"
                    VerticalOptions="Center"/>
 
             <!-- Connection Status -->
             <Frame Grid.Column="2"
                    BackgroundColor="{Binding ConnectionStatusColor}"
-                   CornerRadius="10"
-                   Padding="10,5"
+                   CornerRadius="6"
+                   Padding="10,6"
                    HasShadow="False"
                    VerticalOptions="Center"
-                   Margin="0,0,10,0">
+                   Margin="0,0,10,0"
+                   BorderColor="#bdc3c7">
                 <Label Text="{Binding ConnectionStatusText}"
                        TextColor="White"
                        FontSize="12"
@@ -56,122 +58,171 @@
             <Button Grid.Column="3"
                     Text="{h:Translate Refresh}"
                     Command="{Binding RefreshCommand}"
-                    BackgroundColor="#0f3460"
+                    BackgroundColor="#e67e22"
                     TextColor="White"
                     FontSize="14"
                     HeightRequest="40"
-                    CornerRadius="5"/>
+                    CornerRadius="6"
+                    Padding="16,0"/>
         </Grid>
 
-        <!-- Orders Grid (Full Width) -->
-        <Grid Grid.Row="1" BackgroundColor="#1a1a2e" Padding="10">
+        <!-- Orders Grid -->
+        <Grid Grid.Row="1" BackgroundColor="#ecf0f1" Padding="14">
             <CollectionView ItemsSource="{Binding ActiveOrders}"
                             SelectionMode="None">
                 <CollectionView.ItemsLayout>
                     <GridItemsLayout Orientation="Vertical"
-                                     Span="4"
-                                     HorizontalItemSpacing="10"
-                                     VerticalItemSpacing="10"/>
+                                     Span="3"
+                                     HorizontalItemSpacing="14"
+                                     VerticalItemSpacing="14"/>
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:OrderResponse">
-                        <Frame BackgroundColor="#16213e"
-                               CornerRadius="10"
-                               Padding="15"
+                        <Frame BackgroundColor="White"
+                               CornerRadius="8"
+                               Padding="18"
                                HasShadow="True"
-                               MinimumHeightRequest="180">
+                               BorderColor="{Binding UrgencyColor}">
                             <Frame.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:KitchenDisplayViewModel}}, Path=SelectOrderCommand}"
                                                       CommandParameter="{Binding .}"/>
                             </Frame.GestureRecognizers>
-                            <Grid RowDefinitions="Auto,Auto,*,Auto">
+                            <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
 
-                                <!-- Order Number & Time -->
-                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-                                    <Label Text="{Binding OrderNumber}"
-                                           TextColor="White"
-                                           FontSize="20"
-                                           FontAttributes="Bold"/>
-                                    <Label Grid.Column="1"
-                                           Text="{Binding PlacedAtDisplay}"
-                                           TextColor="#a0a0a0"
-                                           FontSize="14"/>
+                                <!-- Order Number & Timer -->
+                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                                    <Label Grid.Column="0"
+                                           Text="{Binding OrderNumber}"
+                                           TextColor="#2c3e50"
+                                           FontSize="16"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center"
+                                           LineBreakMode="NoWrap"
+                                           Margin="0,0,6,0"/>
+                                    <Frame Grid.Column="1"
+                                           BackgroundColor="{Binding UrgencyColor}"
+                                           CornerRadius="4"
+                                           Padding="6,3"
+                                           HasShadow="False"
+                                           VerticalOptions="Center"
+                                           BorderColor="{Binding UrgencyColor}">
+                                        <Label Text="{Binding AgeDisplay}"
+                                               TextColor="White"
+                                               FontSize="11"
+                                               FontAttributes="Bold"
+                                               HorizontalTextAlignment="Center"
+                                               LineBreakMode="NoWrap"/>
+                                    </Frame>
                                 </Grid>
 
-                                <!-- Status Badge -->
-                                <Frame Grid.Row="1"
-                                       BackgroundColor="{Binding StatusColor}"
-                                       CornerRadius="5"
-                                       Padding="8,4"
-                                       HasShadow="False"
-                                       HorizontalOptions="Start"
-                                       Margin="0,8,0,8">
-                                    <Label Text="{Binding StatusDisplay}"
-                                           TextColor="White"
-                                           FontSize="12"
-                                           FontAttributes="Bold"/>
-                                </Frame>
+                                <!-- Separator Line -->
+                                <BoxView Grid.Row="1"
+                                         Color="#dee2e6"
+                                         HeightRequest="1"
+                                         Margin="0,0,0,12"/>
 
                                 <!-- Items List -->
-                                <VerticalStackLayout Grid.Row="2" Spacing="4">
+                                <VerticalStackLayout Grid.Row="2" Spacing="10">
                                     <BindableLayout.ItemsSource>
                                         <Binding Path="Items"/>
                                     </BindableLayout.ItemsSource>
                                     <BindableLayout.ItemTemplate>
                                         <DataTemplate x:DataType="models:OrderItemResponse">
-                                            <VerticalStackLayout>
-                                                <Label TextColor="White" FontSize="14">
-                                                    <Label.FormattedText>
-                                                        <FormattedString>
-                                                            <Span Text="{Binding QuantityDisplay}" FontAttributes="Bold" TextColor="#e94560"/>
-                                                            <Span Text=" "/>
-                                                            <Span Text="{Binding MenuItemName}"/>
-                                                        </FormattedString>
-                                                    </Label.FormattedText>
-                                                </Label>
+                                            <VerticalStackLayout Spacing="4">
+                                                <Grid ColumnDefinitions="Auto,*">
+                                                    <Frame Grid.Column="0"
+                                                           BackgroundColor="#e67e22"
+                                                           CornerRadius="4"
+                                                           Padding="8,4"
+                                                           HasShadow="False"
+                                                           VerticalOptions="Center"
+                                                           Margin="0,0,10,0"
+                                                           BorderColor="#d35400">
+                                                        <Label Text="{Binding QuantityDisplay}"
+                                                               TextColor="White"
+                                                               FontSize="18"
+                                                               FontAttributes="Bold"
+                                                               HorizontalTextAlignment="Center"/>
+                                                    </Frame>
+                                                    <Label Grid.Column="1"
+                                                           Text="{Binding MenuItemName}"
+                                                           TextColor="#2c3e50"
+                                                           FontSize="18"
+                                                           FontAttributes="Bold"
+                                                           VerticalOptions="Center"
+                                                           LineBreakMode="WordWrap"/>
+                                                </Grid>
                                                 <Label Text="{Binding AdditionsSummary}"
-                                                       TextColor="#a0a0a0"
-                                                       FontSize="11"
+                                                       TextColor="#7f8c8d"
+                                                       FontSize="14"
                                                        IsVisible="{Binding HasAdditions}"
-                                                       Margin="20,0,0,0"/>
+                                                       Margin="0,0,0,0"
+                                                       LineBreakMode="WordWrap"/>
                                             </VerticalStackLayout>
                                         </DataTemplate>
                                     </BindableLayout.ItemTemplate>
                                 </VerticalStackLayout>
 
-                                <!-- Order Type -->
-                                <Label Grid.Row="3"
-                                       Text="{Binding OrderTypeDisplay}"
-                                       TextColor="#a0a0a0"
-                                       FontSize="12"
-                                       Margin="0,8,0,0"/>
+                                <!-- Separator Line Before Status -->
+                                <BoxView Grid.Row="3"
+                                         Color="#dee2e6"
+                                         HeightRequest="1"
+                                         Margin="0,12,0,0"/>
+
+                                <!-- Status & Time (Bottom) -->
+                                <HorizontalStackLayout Grid.Row="4" Spacing="10" Margin="0,10,0,0">
+                                    <Frame BackgroundColor="{Binding StatusColor}"
+                                           CornerRadius="4"
+                                           Padding="8,4"
+                                           HasShadow="False"
+                                           BorderColor="{Binding StatusColor}">
+                                        <Label Text="{Binding StatusDisplay}"
+                                               TextColor="White"
+                                               FontSize="12"
+                                               FontAttributes="Bold"/>
+                                    </Frame>
+                                    <Label Text="{Binding PlacedAtDisplay}"
+                                           TextColor="#7f8c8d"
+                                           FontSize="13"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
                             </Grid>
                         </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
 
                 <CollectionView.EmptyView>
-                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
-                        <Label Text="{h:Translate NoActiveOrders}"
-                               TextColor="#a0a0a0"
-                               FontSize="20"
-                               HorizontalOptions="Center"/>
-                        <Label Text="{h:Translate NewOrdersAppear}"
-                               TextColor="#606060"
-                               FontSize="14"
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="40">
+                        <Label Text="✓"
+                               TextColor="#27ae60"
+                               FontSize="64"
                                HorizontalOptions="Center"
-                               Margin="0,10,0,0"/>
+                               FontAttributes="Bold"/>
+                        <Label Text="{h:Translate NoActiveOrders}"
+                               TextColor="#2c3e50"
+                               FontSize="22"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               Margin="0,16,0,0"/>
+                        <Label Text="{h:Translate NewOrdersAppear}"
+                               TextColor="#7f8c8d"
+                               FontSize="15"
+                               HorizontalOptions="Center"
+                               Margin="0,8,0,0"/>
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
             </CollectionView>
 
             <!-- Loading Overlay -->
-            <Frame BackgroundColor="#80000000"
+            <Frame BackgroundColor="#CC000000"
                    IsVisible="{Binding IsLoading}"
                    CornerRadius="0"
                    HasShadow="False">
                 <ActivityIndicator IsRunning="{Binding IsLoading}"
                                    Color="White"
+                                   HeightRequest="40"
+                                   WidthRequest="40"
                                    HorizontalOptions="Center"
                                    VerticalOptions="Center"/>
             </Frame>
@@ -180,7 +231,7 @@
         <!-- Order Details Popup -->
         <Grid Grid.RowSpan="2"
               IsVisible="{Binding HasSelectedOrder}"
-              BackgroundColor="#80000000"
+              BackgroundColor="#DD000000"
               Padding="{OnPlatform Android='0,20,0,0', Default=0}">
             <Grid.GestureRecognizers>
                 <TapGestureRecognizer Command="{Binding ClosePopupCommand}"/>
@@ -188,124 +239,140 @@
 
             <Frame VerticalOptions="Center"
                    HorizontalOptions="Fill"
-                   BackgroundColor="#16213e"
-                   CornerRadius="16"
+                   BackgroundColor="White"
+                   CornerRadius="10"
                    Padding="0"
                    HasShadow="True"
-                   MaximumWidthRequest="900"
+                   MaximumWidthRequest="850"
                    MaximumHeightRequest="650"
-                   Margin="40,20">
+                   Margin="40">
                 <Frame.GestureRecognizers>
                     <TapGestureRecognizer/>
                 </Frame.GestureRecognizers>
 
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                <Grid RowDefinitions="Auto,*,Auto">
 
-                    <!-- Popup Header -->
+                    <!-- Header -->
                     <Grid Grid.Row="0"
-                          BackgroundColor="#0f3460"
-                          Padding="20,15">
+                          BackgroundColor="White"
+                          Padding="24,20">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <VerticalStackLayout>
                             <Label Text="{Binding SelectedOrder.OrderNumber}"
-                                   TextColor="White"
-                                   FontSize="24"
+                                   TextColor="#2c3e50"
+                                   FontSize="28"
                                    FontAttributes="Bold"/>
-                            <Label Text="{Binding SelectedOrder.PlacedAtFullDisplay}"
-                                   TextColor="#a0a0a0"
-                                   FontSize="14"/>
+                            <HorizontalStackLayout Spacing="10" Margin="0,8,0,0">
+                                <Frame BackgroundColor="{Binding SelectedOrder.StatusColor}"
+                                       CornerRadius="4"
+                                       Padding="8,4"
+                                       HasShadow="False"
+                                       BorderColor="{Binding SelectedOrder.StatusColor}">
+                                    <Label Text="{Binding SelectedOrder.StatusDisplay}"
+                                           TextColor="White"
+                                           FontSize="12"
+                                           FontAttributes="Bold"/>
+                                </Frame>
+                                <Label Text="{Binding SelectedOrder.OrderTypeDisplay}"
+                                       TextColor="#7f8c8d"
+                                       FontSize="14"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"/>
+                                <Label Text="•"
+                                       TextColor="#bdc3c7"
+                                       FontSize="14"
+                                       VerticalOptions="Center"/>
+                                <Label Text="{Binding SelectedOrder.PlacedAtFullDisplay}"
+                                       TextColor="#7f8c8d"
+                                       FontSize="14"
+                                       VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
                         </VerticalStackLayout>
-                        <Button Grid.Column="1"
-                                Text="X"
+                        <Frame Grid.Column="1"
+                               BackgroundColor="{Binding SelectedOrder.UrgencyColor}"
+                               CornerRadius="8"
+                               Padding="14,8"
+                               HasShadow="False"
+                               VerticalOptions="Center"
+                               Margin="0,0,14,0"
+                               BorderColor="{Binding SelectedOrder.UrgencyColor}">
+                            <Label Text="{Binding SelectedOrder.AgeDisplay}"
+                                   TextColor="White"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"/>
+                        </Frame>
+                        <Button Grid.Column="2"
+                                Text="✕"
                                 Command="{Binding ClosePopupCommand}"
-                                BackgroundColor="Transparent"
+                                BackgroundColor="#e74c3c"
                                 TextColor="White"
-                                FontSize="18"
-                                FontAttributes="Bold"
-                                WidthRequest="40"
-                                HeightRequest="40"/>
+                                FontSize="20"
+                                WidthRequest="44"
+                                HeightRequest="44"
+                                CornerRadius="22"
+                                VerticalOptions="Center"/>
                     </Grid>
 
-                    <!-- Status & Type -->
-                    <HorizontalStackLayout Grid.Row="1" Spacing="10" Padding="20,15">
-                        <Frame BackgroundColor="{Binding SelectedOrder.StatusColor}"
-                               CornerRadius="5"
-                               Padding="12,6"
-                               HasShadow="False">
-                            <Label Text="{Binding SelectedOrder.StatusDisplay}"
-                                   TextColor="White"
-                                   FontSize="14"
-                                   FontAttributes="Bold"/>
-                        </Frame>
-                        <Frame BackgroundColor="#0f3460"
-                               CornerRadius="5"
-                               Padding="12,6"
-                               HasShadow="False">
-                            <Label Text="{Binding SelectedOrder.OrderTypeDisplay}"
-                                   TextColor="White"
-                                   FontSize="14"
-                                   FontAttributes="Bold"/>
-                        </Frame>
-                    </HorizontalStackLayout>
-
-                    <!-- Items List - LARGE CONTENT AREA -->
-                    <ScrollView Grid.Row="2" MaximumHeightRequest="400" Padding="20,10">
-                        <VerticalStackLayout Spacing="20"
+                    <!-- Items List -->
+                    <ScrollView Grid.Row="1" Padding="24,16">
+                        <VerticalStackLayout Spacing="14"
                                              BindableLayout.ItemsSource="{Binding SelectedOrder.Items}">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="models:OrderItemResponse">
-                                    <Frame BackgroundColor="#0f3460"
-                                           CornerRadius="10"
-                                           Padding="20,18"
-                                           HasShadow="False">
+                                    <Frame BackgroundColor="#f8f9fa"
+                                           CornerRadius="8"
+                                           Padding="18"
+                                           HasShadow="False"
+                                           BorderColor="#dee2e6">
                                         <VerticalStackLayout Spacing="12">
                                             <Grid ColumnDefinitions="Auto,*">
                                                 <Frame Grid.Column="0"
-                                                       BackgroundColor="#e94560"
+                                                       BackgroundColor="#e67e22"
                                                        CornerRadius="6"
-                                                       Padding="14,8"
+                                                       Padding="12,8"
                                                        HasShadow="False"
-                                                       Margin="0,0,15,0">
+                                                       VerticalOptions="Center"
+                                                       Margin="0,0,14,0"
+                                                       BorderColor="#d35400">
                                                     <Label Text="{Binding QuantityDisplay}"
                                                            TextColor="White"
-                                                           FontSize="24"
-                                                           FontAttributes="Bold"/>
+                                                           FontSize="22"
+                                                           FontAttributes="Bold"
+                                                           HorizontalTextAlignment="Center"/>
                                                 </Frame>
                                                 <Label Grid.Column="1"
                                                        Text="{Binding MenuItemName}"
-                                                       TextColor="White"
+                                                       TextColor="#2c3e50"
                                                        FontSize="22"
                                                        FontAttributes="Bold"
                                                        VerticalOptions="Center"
                                                        LineBreakMode="WordWrap"/>
                                             </Grid>
 
-                                            <!-- Additions with Bullets -->
-                                            <VerticalStackLayout Spacing="6"
+                                            <!-- Additions -->
+                                            <VerticalStackLayout Spacing="8"
                                                                 IsVisible="{Binding HasAdditions}"
-                                                                Margin="15,8,0,0">
+                                                                Margin="0,4,0,0">
                                                 <BindableLayout.ItemsSource>
                                                     <Binding Path="Additions"/>
                                                 </BindableLayout.ItemsSource>
                                                 <BindableLayout.ItemTemplate>
                                                     <DataTemplate x:DataType="models:OrderItemAdditionResponse">
                                                         <HorizontalStackLayout Spacing="8">
-                                                            <Label Text="•"
-                                                                   TextColor="#e94560"
-                                                                   FontSize="20"
-                                                                   FontAttributes="Bold"
-                                                                   VerticalOptions="Start"/>
-                                                            <Label TextColor="#ffffff"
-                                                                   FontSize="18"
-                                                                   LineBreakMode="WordWrap"
-                                                                   VerticalOptions="Center">
+                                                            <Label Text="+"
+                                                                   TextColor="#e67e22"
+                                                                   FontSize="16"
+                                                                   FontAttributes="Bold"/>
+                                                            <Label TextColor="#2c3e50" FontSize="16">
                                                                 <Label.FormattedText>
                                                                     <FormattedString>
-                                                                        <Span Text="{Binding AdditionName}"/>
-                                                                        <Span Text=" x"/>
+                                                                        <Span Text="{Binding AdditionName}" FontAttributes="Bold"/>
+                                                                        <Span Text=" ×" FontAttributes="Bold"/>
                                                                         <Span Text="{Binding Quantity}" FontAttributes="Bold"/>
                                                                     </FormattedString>
                                                                 </Label.FormattedText>
@@ -322,18 +389,19 @@
                     </ScrollView>
 
                     <!-- Action Buttons -->
-                    <Grid Grid.Row="3"
+                    <Grid Grid.Row="2"
                           ColumnDefinitions="*,*"
-                          ColumnSpacing="10"
-                          Padding="20,15">
+                          ColumnSpacing="14"
+                          Padding="24,20"
+                          BackgroundColor="White">
                         <Button Grid.Column="0"
                                 Text="{h:Translate StartPreparing}"
                                 Command="{Binding StartPreparingCommand}"
-                                BackgroundColor="#e94560"
+                                BackgroundColor="#f39c12"
                                 TextColor="White"
-                                FontSize="14"
+                                FontSize="16"
                                 FontAttributes="Bold"
-                                HeightRequest="50"
+                                HeightRequest="54"
                                 CornerRadius="8"/>
 
                         <Button Grid.Column="1"
@@ -341,21 +409,11 @@
                                 Command="{Binding MarkCompletedCommand}"
                                 BackgroundColor="#27ae60"
                                 TextColor="White"
-                                FontSize="14"
+                                FontSize="16"
                                 FontAttributes="Bold"
-                                HeightRequest="50"
+                                HeightRequest="54"
                                 CornerRadius="8"/>
                     </Grid>
-
-                    <!-- Close Button -->
-                    <Button Grid.Row="4"
-                            Text="{h:Translate Close}"
-                            Command="{Binding ClosePopupCommand}"
-                            BackgroundColor="#0f3460"
-                            TextColor="White"
-                            FontSize="14"
-                            HeightRequest="45"
-                            CornerRadius="0"/>
                 </Grid>
             </Frame>
         </Grid>
