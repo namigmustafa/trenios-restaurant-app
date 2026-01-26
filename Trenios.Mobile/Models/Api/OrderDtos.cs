@@ -189,6 +189,10 @@ public class OrderResponse
             return "✓ FRESH";
         }
     }
+
+    // Helper for kitchen display
+    [JsonIgnore]
+    public bool CanStartPreparing => OrderStatus == OrderStatus.Created || OrderStatus == OrderStatus.Confirmed;
 }
 
 public class OrderItemResponse

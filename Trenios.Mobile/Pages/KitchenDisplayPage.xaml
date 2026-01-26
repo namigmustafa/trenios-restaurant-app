@@ -232,20 +232,20 @@
         <Grid Grid.RowSpan="2"
               IsVisible="{Binding HasSelectedOrder}"
               BackgroundColor="#DD000000"
-              Padding="{OnPlatform Android='0,20,0,0', Default=0}">
+              Padding="40">
             <Grid.GestureRecognizers>
                 <TapGestureRecognizer Command="{Binding ClosePopupCommand}"/>
             </Grid.GestureRecognizers>
 
             <Frame VerticalOptions="Center"
-                   HorizontalOptions="Fill"
+                   HorizontalOptions="Center"
                    BackgroundColor="White"
                    CornerRadius="10"
                    Padding="0"
                    HasShadow="True"
                    MaximumWidthRequest="850"
                    MaximumHeightRequest="650"
-                   Margin="40">
+                   Margin="0">
                 <Frame.GestureRecognizers>
                     <TapGestureRecognizer/>
                 </Frame.GestureRecognizers>
@@ -388,26 +388,14 @@
                         </VerticalStackLayout>
                     </ScrollView>
 
-                    <!-- Action Buttons -->
+                    <!-- Action Button -->
                     <Grid Grid.Row="2"
-                          ColumnDefinitions="*,*"
-                          ColumnSpacing="14"
                           Padding="24,20"
-                          BackgroundColor="White">
-                        <Button Grid.Column="0"
-                                Text="{h:Translate StartPreparing}"
+                          BackgroundColor="White"
+                          IsVisible="{Binding SelectedOrder.CanStartPreparing}">
+                        <Button Text="{h:Translate StartPreparing}"
                                 Command="{Binding StartPreparingCommand}"
                                 BackgroundColor="#f39c12"
-                                TextColor="White"
-                                FontSize="16"
-                                FontAttributes="Bold"
-                                HeightRequest="54"
-                                CornerRadius="8"/>
-
-                        <Button Grid.Column="1"
-                                Text="{h:Translate MarkCompleted}"
-                                Command="{Binding MarkCompletedCommand}"
-                                BackgroundColor="#27ae60"
                                 TextColor="White"
                                 FontSize="16"
                                 FontAttributes="Bold"
