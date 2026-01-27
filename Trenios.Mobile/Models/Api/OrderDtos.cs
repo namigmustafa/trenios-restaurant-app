@@ -209,9 +209,13 @@ public class OrderResponse
     [JsonIgnore]
     public bool CanStartPreparing => OrderStatus == OrderStatus.Created || OrderStatus == OrderStatus.Confirmed;
 
-    // Helper for orders page
+    // Helper for orders page - only allow swiping for Created and Preparing statuses
     [JsonIgnore]
-    public bool CanSwipe => OrderStatus != OrderStatus.Completed && OrderStatus != OrderStatus.Cancelled;
+    public bool CanSwipe => OrderStatus == OrderStatus.Created || OrderStatus == OrderStatus.Preparing;
+
+    // Helper for order details buttons - disable only when Cancelled or Completed
+    [JsonIgnore]
+    public bool CanChangeStatus => OrderStatus != OrderStatus.Cancelled && OrderStatus != OrderStatus.Completed;
 }
 
 public class OrderItemResponse

@@ -135,8 +135,7 @@
                                     <SwipeItem Text="{h:Translate Cancel}"
                                                BackgroundColor="#e74c3c"
                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, Path=CancelOrderSwipeCommand}"
-                                               CommandParameter="{Binding .}"
-                                               IsEnabled="{Binding CanSwipe}"/>
+                                               CommandParameter="{Binding .}"/>
                                 </SwipeItems>
                             </SwipeView.LeftItems>
 
@@ -146,8 +145,7 @@
                                     <SwipeItem Text="{h:Translate Complete}"
                                                BackgroundColor="#27ae60"
                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, Path=CompleteOrderSwipeCommand}"
-                                               CommandParameter="{Binding .}"
-                                               IsEnabled="{Binding CanSwipe}"/>
+                                               CommandParameter="{Binding .}"/>
                                 </SwipeItems>
                             </SwipeView.RightItems>
 
@@ -331,7 +329,8 @@
                       Padding="16"
                       ColumnDefinitions="*,*"
                       ColumnSpacing="12"
-                      BackgroundColor="{StaticResource Gray100}">
+                      BackgroundColor="{StaticResource Gray100}"
+                      IsVisible="{Binding SelectedOrder.CanChangeStatus}">
                     <Button Grid.Column="0"
                             Text="{h:Translate CancelOrder}"
                             Style="{StaticResource DangerButton}"

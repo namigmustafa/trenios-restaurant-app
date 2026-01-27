@@ -25,6 +25,16 @@ public partial class OrdersPage : ContentPage
                     OrdersCollectionView.ItemsSource = items;
                 });
             }
+            else if (e.PropertyName == nameof(OrdersViewModel.Orders))
+            {
+                // When orders list changes (after cancel/complete), force refresh to close swipes
+                await Dispatcher.DispatchAsync(() =>
+                {
+                    var items = OrdersCollectionView.ItemsSource;
+                    OrdersCollectionView.ItemsSource = null;
+                    OrdersCollectionView.ItemsSource = items;
+                });
+            }
         };
     }
 

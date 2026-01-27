@@ -240,6 +240,9 @@ public class OrdersViewModel : INotifyPropertyChanged
 
             // Update selected order
             SelectedOrder = Orders.FirstOrDefault(o => o.Id == SelectedOrder?.Id);
+
+            // Notify to close swipes
+            OnPropertyChanged(nameof(Orders));
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
@@ -250,7 +253,7 @@ public class OrdersViewModel : INotifyPropertyChanged
 
     private async Task CompleteOrderAsync(OrderResponse? order)
     {
-        if (order == null) return;
+        if (order == null || !order.CanSwipe) return;
 
         var request = new UpdateOrderStatusRequest
         {
@@ -262,6 +265,8 @@ public class OrdersViewModel : INotifyPropertyChanged
         if (result.IsSuccess)
         {
             await LoadOrdersAsync();
+            // Notify to close swipes
+            OnPropertyChanged(nameof(Orders));
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
@@ -272,7 +277,7 @@ public class OrdersViewModel : INotifyPropertyChanged
 
     private async Task CancelOrderAsync(OrderResponse? order)
     {
-        if (order == null) return;
+        if (order == null || !order.CanSwipe) return;
 
         // Prompt for cancellation reason
         var loc = LocalizationService.Instance;
@@ -299,6 +304,8 @@ public class OrdersViewModel : INotifyPropertyChanged
         if (result.IsSuccess)
         {
             await LoadOrdersAsync();
+            // Notify to close swipes
+            OnPropertyChanged(nameof(Orders));
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
