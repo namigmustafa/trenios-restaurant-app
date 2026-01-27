@@ -206,7 +206,7 @@
                 BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                 StrokeThickness="1"
                 Stroke="{StaticResource Gray300}">
-            <Grid RowDefinitions="Auto,*,Auto">
+            <Grid RowDefinitions="Auto,*,Auto,Auto">
                 <!-- Details Header -->
                 <Grid Grid.Row="0"
                       Padding="16,12"
@@ -305,27 +305,33 @@
                             </BindableLayout.ItemTemplate>
                         </VerticalStackLayout>
 
-                        <BoxView HeightRequest="1" Color="{StaticResource Gray200}" Margin="0,8"/>
-
-                        <!-- Price Summary -->
-                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
-                            <Label Grid.Row="0" Grid.Column="0" Text="{h:Translate Subtotal}" FontSize="13"/>
-                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding SelectedOrder.SubTotal, StringFormat='€{0:F2}'}" FontSize="13"/>
-
-                            <Label Grid.Row="1" Grid.Column="0" Text="{h:Translate Tax}" FontSize="13"/>
-                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedOrder.TaxAmount, StringFormat='€{0:F2}'}" FontSize="13"/>
-
-                            <Label Grid.Row="2" Grid.Column="0" Text="{h:Translate Discount}" FontSize="13" IsVisible="{Binding SelectedOrder.DiscountAmount, Converter={StaticResource IsNotNullConverter}}"/>
-                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding SelectedOrder.DiscountAmount, StringFormat='-€{0:F2}'}" FontSize="13" TextColor="{StaticResource Success}" IsVisible="{Binding SelectedOrder.DiscountAmount, Converter={StaticResource IsNotNullConverter}}"/>
-
-                            <Label Grid.Row="3" Grid.Column="0" Text="{h:Translate Total}" FontFamily="OpenSansSemibold" FontSize="16"/>
-                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding SelectedOrder.TotalAmount, StringFormat='€{0:F2}'}" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource Primary}"/>
-                        </Grid>
                     </VerticalStackLayout>
                 </ScrollView>
 
-                <!-- Actions -->
+                <!-- Price Summary (Fixed at bottom) -->
                 <Grid Grid.Row="2"
+                      Padding="16,12"
+                      ColumnDefinitions="*,Auto"
+                      RowDefinitions="Auto,Auto,Auto,Auto"
+                      RowSpacing="6"
+                      BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}">
+                    <BoxView Grid.ColumnSpan="2" HeightRequest="1" Color="{StaticResource Gray200}" VerticalOptions="Start" Margin="0,-12,0,8"/>
+
+                    <Label Grid.Row="0" Grid.Column="0" Text="{h:Translate Subtotal}" FontSize="13"/>
+                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding SelectedOrder.SubTotal, StringFormat='€{0:F2}'}" FontSize="13"/>
+
+                    <Label Grid.Row="1" Grid.Column="0" Text="{h:Translate Tax}" FontSize="13"/>
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedOrder.TaxAmount, StringFormat='€{0:F2}'}" FontSize="13"/>
+
+                    <Label Grid.Row="2" Grid.Column="0" Text="{h:Translate Discount}" FontSize="13" IsVisible="{Binding SelectedOrder.DiscountAmount, Converter={StaticResource IsNotNullConverter}}"/>
+                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding SelectedOrder.DiscountAmount, StringFormat='-€{0:F2}'}" FontSize="13" TextColor="{StaticResource Success}" IsVisible="{Binding SelectedOrder.DiscountAmount, Converter={StaticResource IsNotNullConverter}}"/>
+
+                    <Label Grid.Row="3" Grid.Column="0" Text="{h:Translate Total}" FontFamily="OpenSansSemibold" FontSize="16"/>
+                    <Label Grid.Row="3" Grid.Column="1" Text="{Binding SelectedOrder.TotalAmount, StringFormat='€{0:F2}'}" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource Primary}"/>
+                </Grid>
+
+                <!-- Actions -->
+                <Grid Grid.Row="3"
                       Padding="16"
                       ColumnDefinitions="*,*"
                       ColumnSpacing="12"
