@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Trenios.Mobile.Pages.SplashPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#DD0033">
+
+    <Grid VerticalOptions="Center" HorizontalOptions="Center">
+        <VerticalStackLayout Spacing="20" HorizontalOptions="Center">
+
+            <!-- Food icons around logo -->
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="20">
+                <Label x:Name="Icon1" Text="&#x1F374;" FontSize="40" TextColor="White" TranslationX="100" Opacity="0"/>
+                <Label x:Name="Icon2" Text="&#x1F355;" FontSize="50" TextColor="White" TranslationX="50" Opacity="0"/>
+                <Label x:Name="Icon3" Text="&#x1F354;" FontSize="50" TextColor="White" TranslationX="-50" Opacity="0"/>
+                <Label x:Name="Icon4" Text="&#x1F52A;" FontSize="40" TextColor="White" TranslationX="-100" Opacity="0"/>
+            </HorizontalStackLayout>
+
+            <!-- Trenios text -->
+            <Label x:Name="LogoText"
+                   Text="Trenios"
+                   FontSize="56"
+                   FontFamily="OpenSansBold"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   Opacity="0"
+                   Scale="0.5"/>
+
+            <!-- Tagline -->
+            <Label x:Name="Tagline"
+                   Text="Restaurant Management"
+                   FontSize="18"
+                   FontFamily="OpenSansRegular"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   Opacity="0"/>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

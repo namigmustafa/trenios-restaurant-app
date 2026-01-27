@@ -1,4 +1,6 @@
-﻿namespace Trenios.Mobile
+﻿using Trenios.Mobile.Pages;
+
+namespace Trenios.Mobile
 {
     public partial class App : Application
     {
@@ -22,7 +24,8 @@
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new AppShell());
+            // Show animated splash page first
+            return new Window(new SplashPage());
         }
     }
 }
