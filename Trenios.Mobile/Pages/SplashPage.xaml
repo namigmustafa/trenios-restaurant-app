@@ -16,24 +16,13 @@
                 <Label x:Name="Icon4" Text="&#x1F52A;" FontSize="40" TextColor="White" TranslationX="-100" Opacity="0"/>
             </HorizontalStackLayout>
 
-            <!-- Trenios text -->
-            <Label x:Name="LogoText"
-                   Text="Trenios"
-                   FontSize="56"
-                   FontFamily="OpenSansBold"
-                   TextColor="White"
+            <!-- Trenios logo -->
+            <Image x:Name="LogoImage"
+                   Source="trenioslogo.png"
+                   HeightRequest="50"
                    HorizontalOptions="Center"
                    Opacity="0"
                    Scale="0.5"/>
-
-            <!-- Tagline -->
-            <Label x:Name="Tagline"
-                   Text="Restaurant Management"
-                   FontSize="18"
-                   FontFamily="OpenSansRegular"
-                   TextColor="White"
-                   HorizontalOptions="Center"
-                   Opacity="0"/>
         </VerticalStackLayout>
     </Grid>
 </ContentPage>

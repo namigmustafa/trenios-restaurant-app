@@ -18,8 +18,7 @@ public partial class SplashPage : ContentPage
         // Run all animations together
         await Task.WhenAll(
             AnimateIcons(),
-            AnimateLogoText(),
-            AnimateTagline()
+            AnimateLogoText()
         );
 
         // Navigate to main app
@@ -70,18 +69,13 @@ public partial class SplashPage : ContentPage
     {
         // Fade in and scale up
         await Task.WhenAll(
-            LogoText.FadeTo(1, 800, Easing.CubicOut),
-            LogoText.ScaleTo(1, 800, Easing.SpringOut)
+            LogoImage.FadeTo(1, 800, Easing.CubicOut),
+            LogoImage.ScaleTo(1, 800, Easing.SpringOut)
         );
 
         // Subtle pulse
-        await LogoText.ScaleTo(1.05, 200, Easing.CubicInOut);
-        await LogoText.ScaleTo(1, 200, Easing.CubicInOut);
-    }
-
-    private async Task AnimateTagline()
-    {
-        await Tagline.FadeTo(1, 800, Easing.CubicOut);
+        await LogoImage.ScaleTo(1.05, 200, Easing.CubicInOut);
+        await LogoImage.ScaleTo(1, 200, Easing.CubicInOut);
     }
 
     private async Task NavigateToMainApp()

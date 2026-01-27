@@ -13,18 +13,16 @@
         <VerticalStackLayout Grid.Row="1"
                              VerticalOptions="End"
                              HorizontalOptions="Center"
-                             Spacing="8"
-                             Padding="20">
-            <Label Text="TRENIOS"
-                   TextColor="White"
-                   FontSize="42"
-                   FontFamily="OpenSansSemibold"
+                             Spacing="2"
+                             Padding="2">
+            <Image Source="trenioslogo.png"
+                   HeightRequest="50"
                    HorizontalOptions="Center"/>
-            <Label Text="Restaurant POS"
+            <!--<Label Text="Restaurant POS"
                    TextColor="White"
                    Opacity="0.8"
                    FontSize="18"
-                   HorizontalOptions="Center"/>
+                   HorizontalOptions="Center"/>-->
         </VerticalStackLayout>
 
         <!-- Login Form Card -->

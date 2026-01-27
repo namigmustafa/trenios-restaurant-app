@@ -24,7 +24,6 @@ namespace Trenios.Mobile
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            // Show animated splash page first
             return new Window(new SplashPage());
         }
     }
