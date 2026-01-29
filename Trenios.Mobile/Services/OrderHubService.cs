@@ -9,7 +9,7 @@ public class OrderHubService : IAsyncDisposable
     private HubConnection? _hubConnection;
     private Guid? _currentBranchId;
 
-    private const string HubUrl = "https://trenios-api-prod.azurewebsites.net/hubs/orders";
+    private const string HubUrl = "https://app-trenios-test.azurewebsites.net/hubs/orders";
 
     public event Action<OrderResponse>? OnOrderCreated;
     public event Action<OrderResponse>? OnOrderStatusUpdated;

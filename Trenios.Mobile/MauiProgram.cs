@@ -8,7 +8,7 @@ namespace Trenios.Mobile;
 public static class MauiProgram
 {
     // Configure your API base URL here
-    private const string ApiBaseUrl = "https://trenios-api-prod.azurewebsites.net";
+    private const string ApiBaseUrl = "https://app-trenios-test.azurewebsites.net";
 
     public static MauiApp CreateMauiApp()
     {

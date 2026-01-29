@@ -690,8 +690,8 @@ public class SelectableAdditionGroup : INotifyPropertyChanged
         IsSingleSelect = group.IsSingleSelect;
         IsMultiSelect = group.IsMultiSelect;
         IsRequired = group.IsRequired;
-        MinSelections = group.MinSelections;
-        MaxSelections = group.MaxSelections;
+        MinSelections = group.MinSelections ?? 0;
+        MaxSelections = group.MaxSelections ?? 0;
 
         if (group.Additions != null && group.Additions.Count > 0)
         {

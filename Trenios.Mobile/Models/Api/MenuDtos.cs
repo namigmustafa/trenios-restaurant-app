@@ -151,16 +151,16 @@ public class AdditionGroupDto
     public bool IsRequired { get; set; }
 
     [JsonPropertyName("minSelections")]
-    public int MinSelections { get; set; }
+    public int? MinSelections { get; set; }
 
     [JsonPropertyName("maxSelections")]
-    public int MaxSelections { get; set; }
+    public int? MaxSelections { get; set; }
 
     [JsonPropertyName("additions")]
     public List<AdditionDto>? Additions { get; set; }
 
     [JsonIgnore]
-    public bool IsSingleSelect => MaxSelections == 1 || SelectionType == (int)Api.SelectionType.Single || SelectionType == 0;
+    public bool IsSingleSelect => MaxSelections == 1 || MaxSelections == null || SelectionType == (int)Api.SelectionType.Single || SelectionType == 0;
 
     [JsonIgnore]
     public bool IsMultiSelect => !IsSingleSelect;
