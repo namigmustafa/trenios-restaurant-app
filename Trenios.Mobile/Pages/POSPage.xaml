@@ -733,6 +733,10 @@
                                                         Stroke="{Binding StrokeColor}"
                                                         BackgroundColor="{Binding BackgroundColor}"
                                                         Opacity="{Binding ItemOpacity}">
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
+                                                                              CommandParameter="{Binding .}"/>
+                                                    </Border.GestureRecognizers>
                                                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
                                                         <!-- Checkbox Square - Simplified -->
                                                         <RoundRectangle Grid.Column="0"
