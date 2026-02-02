@@ -23,8 +23,28 @@
         ContentTemplate="{DataTemplate pages:BranchSelectionPage}" />
 
     <ShellContent
+        Title="Mobile Menu"
+        Route="MobileMenu"
+        ContentTemplate="{DataTemplate pages:MobileMenuPage}" />
+
+    <ShellContent
         Title="POS"
         Route="MainPage"
         ContentTemplate="{DataTemplate pages:POSPage}" />
+
+    <ShellContent
+        Title="POS Phone"
+        Route="POSPhone"
+        ContentTemplate="{DataTemplate pages:POSPagePhone}" />
+
+    <ShellContent
+        Title="Orders"
+        Route="OrdersPage"
+        ContentTemplate="{DataTemplate pages:OrdersPage}" />
+
+    <ShellContent
+        Title="Kitchen"
+        Route="KitchenPage"
+        ContentTemplate="{DataTemplate pages:KitchenDisplayPage}" />
 
 </Shell>

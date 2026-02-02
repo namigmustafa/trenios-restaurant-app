@@ -14,11 +14,13 @@
         <Border Grid.Row="0"
                 StrokeThickness="0"
                 BackgroundColor="{StaticResource Primary}"
-                Padding="16">
-            <Grid ColumnDefinitions="Auto,*,Auto">
-                <HorizontalStackLayout Grid.Column="0" Spacing="12">
+                Padding="{OnIdiom Phone='12,10', Default='16'}">
+            <Grid ColumnDefinitions="{OnIdiom Phone='*,Auto', Default='Auto,*,Auto'}"
+                  RowDefinitions="{OnIdiom Phone='Auto,Auto', Default='Auto'}"
+                  RowSpacing="{OnIdiom Phone=6, Default=0}">
+                <HorizontalStackLayout Grid.Column="0" Spacing="{OnIdiom Phone=8, Default=12}">
                     <!-- Back button (only for SuperAdmin) -->
-                    <Button Text="{h:Translate SelectRestaurant}"
+                    <Button Text="{OnIdiom Phone='←', Default={h:Translate SelectRestaurant}}"
                             Command="{Binding BackCommand}"
                             IsVisible="{Binding CanGoBack}"
                             BackgroundColor="Transparent"
@@ -26,29 +28,34 @@
                             BorderColor="White"
                             BorderWidth="1"
                             CornerRadius="8"
-                            HeightRequest="40"
-                            Padding="16,0"/>
+                            HeightRequest="{OnIdiom Phone=36, Default=40}"
+                            FontSize="{OnIdiom Phone=14, Default=14}"
+                            Padding="{OnIdiom Phone='10,0', Default='16,0'}"/>
                     <VerticalStackLayout VerticalOptions="Center">
                         <Label Text="{Binding RestaurantName}"
                                TextColor="White"
-                               FontSize="24"
-                               FontFamily="OpenSansSemibold"/>
+                               FontSize="{OnIdiom Phone=16, Default=24}"
+                               FontFamily="OpenSansSemibold"
+                               LineBreakMode="TailTruncation"/>
                         <Label Text="{Binding WelcomeMessage}"
                                TextColor="White"
                                Opacity="0.8"
-                               FontSize="14"/>
+                               FontSize="{OnIdiom Phone=11, Default=14}"
+                               LineBreakMode="TailTruncation"/>
                     </VerticalStackLayout>
                 </HorizontalStackLayout>
 
                 <Label Grid.Column="1"
                        Text="{h:Translate SelectBranch}"
                        TextColor="White"
-                       FontSize="20"
+                       FontSize="{OnIdiom Phone=14, Default=20}"
                        FontFamily="OpenSansSemibold"
                        HorizontalOptions="Center"
-                       VerticalOptions="Center"/>
+                       VerticalOptions="Center"
+                       IsVisible="{OnIdiom Phone=False, Default=True}"/>
 
-                <Button Grid.Column="2"
+                <Button Grid.Column="1"
+                        Grid.Row="0"
                         Text="{h:Translate Logout}"
                         Command="{Binding LogoutCommand}"
                         BackgroundColor="Transparent"
@@ -56,13 +63,14 @@
                         BorderColor="White"
                         BorderWidth="1"
                         CornerRadius="8"
-                        HeightRequest="40"
-                        Padding="16,0"/>
+                        HeightRequest="{OnIdiom Phone=36, Default=40}"
+                        FontSize="{OnIdiom Phone=12, Default=14}"
+                        Padding="{OnIdiom Phone='12,0', Default='16,0'}"/>
             </Grid>
         </Border>
 
         <!-- Content -->
-        <Grid Grid.Row="1" Padding="16">
+        <Grid Grid.Row="1" Padding="{OnIdiom Phone=12, Default=16}">
             <!-- Error Message -->
             <Border IsVisible="{Binding HasError}"
                     BackgroundColor="{StaticResource Danger}"
@@ -106,30 +114,30 @@
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="api:BranchDto">
-                        <Border StrokeShape="RoundRectangle 16"
+                        <Border StrokeShape="RoundRectangle 12"
                                 StrokeThickness="0"
                                 BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
-                                Padding="20"
+                                Padding="{OnIdiom Phone=14, Default=20}"
                                 Shadow="{Shadow Brush=Black, Opacity=0.1, Radius=8, Offset='0,4'}">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer
                                     Command="{Binding Source={RelativeSource AncestorType={x:Type vm:BranchSelectionViewModel}}, Path=SelectBranchCommand}"
                                     CommandParameter="{Binding .}"/>
                             </Border.GestureRecognizers>
-                            <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="{OnIdiom Phone=6, Default=8}">
                                 <Label Grid.Row="0"
                                        Text="{Binding Name}"
-                                       FontSize="20"
+                                       FontSize="{OnIdiom Phone=16, Default=20}"
                                        FontFamily="OpenSansSemibold"
                                        TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
                                 <Label Grid.Row="1"
                                        Text="{Binding Code, StringFormat='Code: {0}'}"
-                                       FontSize="14"
+                                       FontSize="{OnIdiom Phone=12, Default=14}"
                                        TextColor="{StaticResource Primary}"
                                        IsVisible="{Binding Code, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
                                 <Label Grid.Row="2"
                                        Text="{Binding Address}"
-                                       FontSize="14"
+                                       FontSize="{OnIdiom Phone=12, Default=14}"
                                        TextColor="{StaticResource Gray500}"
                                        LineBreakMode="TailTruncation"
                                        MaxLines="2"
@@ -138,13 +146,13 @@
                                     <Border BackgroundColor="{StaticResource Success}"
                                             StrokeThickness="0"
                                             StrokeShape="RoundRectangle 4"
-                                            Padding="8,4">
+                                            Padding="{OnIdiom Phone='6,3', Default='8,4'}">
                                         <Label Text="{h:Translate Active}"
                                                TextColor="White"
-                                               FontSize="12"/>
+                                               FontSize="{OnIdiom Phone=11, Default=12}"/>
                                     </Border>
                                     <Label Text="{Binding Phone}"
-                                           FontSize="12"
+                                           FontSize="{OnIdiom Phone=11, Default=12}"
                                            TextColor="{StaticResource Gray500}"
                                            VerticalOptions="Center"
                                            IsVisible="{Binding Phone, Converter={StaticResource IsNotNullOrEmptyConverter}}"/>
@@ -158,13 +166,13 @@
                                          HorizontalOptions="Center"
                                          Spacing="12">
                         <Label Text="{h:Translate NoBranchesFound}"
-                               FontSize="18"
+                               FontSize="{OnIdiom Phone=16, Default=18}"
                                TextColor="{StaticResource Gray500}"
                                HorizontalOptions="Center"/>
                         <Button Text="{h:Translate Refresh}"
                                 Command="{Binding RefreshCommand}"
                                 Style="{StaticResource PrimaryButton}"
-                                WidthRequest="120"/>
+                                WidthRequest="{OnIdiom Phone=100, Default=120}"/>
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
             </CollectionView>
@@ -176,14 +184,14 @@
               BackgroundColor="#80000000">
             <VerticalStackLayout HorizontalOptions="Center"
                                 VerticalOptions="Center"
-                                Spacing="16">
+                                Spacing="{OnIdiom Phone=12, Default=16}">
                 <ActivityIndicator IsRunning="True"
                                   Color="White"
-                                  HeightRequest="50"
-                                  WidthRequest="50"/>
+                                  HeightRequest="{OnIdiom Phone=40, Default=50}"
+                                  WidthRequest="{OnIdiom Phone=40, Default=50}"/>
                 <Label Text="{h:Translate Loading}"
                        TextColor="White"
-                       FontSize="16"/>
+                       FontSize="{OnIdiom Phone=14, Default=16}"/>
             </VerticalStackLayout>
         </Grid>
     </Grid>

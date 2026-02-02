@@ -46,17 +46,20 @@ public static class MauiProgram
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<RestaurantSelectionViewModel>();
         builder.Services.AddTransient<BranchSelectionViewModel>();
-        builder.Services.AddTransient<POSViewModel>();
-        builder.Services.AddTransient<OrdersViewModel>();
-        builder.Services.AddTransient<KitchenDisplayViewModel>();
+        builder.Services.AddSingleton<MobileMenuViewModel>();
+        builder.Services.AddSingleton<POSViewModel>();
+        builder.Services.AddSingleton<OrdersViewModel>();
+        builder.Services.AddSingleton<KitchenDisplayViewModel>();
 
         // Register Pages
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<RestaurantSelectionPage>();
         builder.Services.AddTransient<BranchSelectionPage>();
-        builder.Services.AddTransient<POSPage>();
-        builder.Services.AddTransient<OrdersPage>();
-        builder.Services.AddTransient<KitchenDisplayPage>();
+        builder.Services.AddSingleton<MobileMenuPage>();
+        builder.Services.AddSingleton<POSPage>();
+        builder.Services.AddSingleton<POSPagePhone>();
+        builder.Services.AddSingleton<OrdersPage>();
+        builder.Services.AddSingleton<KitchenDisplayPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();

@@ -13,10 +13,11 @@ public partial class KitchenDisplayPage : ContentPage
         BindingContext = viewModel;
     }
 
-    protected override async void OnAppearing()
+    protected override void OnAppearing()
     {
         base.OnAppearing();
-        await _viewModel.InitializeAsync();
+        // Fire-and-forget: page appears immediately, data loads in background
+        _ = _viewModel.InitializeAsync();
     }
 
     protected override async void OnDisappearing()

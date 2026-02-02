@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Trenios.Mobile.ViewModels"
+             xmlns:h="clr-namespace:Trenios.Mobile.Helpers"
+             x:Class="Trenios.Mobile.Pages.MobileMenuPage"
+             x:DataType="vm:MobileMenuViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header -->
+        <Border Grid.Row="0"
+                StrokeThickness="0"
+                BackgroundColor="{StaticResource Primary}"
+                Padding="16,14">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- Back Button -->
+                <Button Grid.Column="0"
+                        Text="←"
+                        Command="{Binding BackCommand}"
+                        IsVisible="{Binding CanGoBack}"
+                        BackgroundColor="Transparent"
+                        TextColor="White"
+                        BorderColor="White"
+                        BorderWidth="1"
+                        CornerRadius="8"
+                        HeightRequest="38"
+                        FontSize="16"
+                        Padding="12,0"/>
+
+                <!-- Restaurant & Branch Info -->
+                <VerticalStackLayout Grid.Column="1"
+                                     VerticalOptions="Center"
+                                     HorizontalOptions="Center">
+                    <Label Text="{Binding RestaurantName}"
+                           TextColor="White"
+                           FontSize="18"
+                           FontFamily="OpenSansSemibold"
+                           HorizontalTextAlignment="Center"/>
+                    <Label Text="{Binding BranchName}"
+                           TextColor="White"
+                           Opacity="0.8"
+                           FontSize="13"
+                           HorizontalTextAlignment="Center"/>
+                </VerticalStackLayout>
+
+                <!-- Language Button -->
+                <Border Grid.Column="2"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1"
+                        Stroke="White"
+                        BackgroundColor="Transparent"
+                        Padding="10,6">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageTapped"/>
+                    </Border.GestureRecognizers>
+                    <HorizontalStackLayout Spacing="6">
+                        <Label Text="🌐"
+                               FontSize="16"
+                               VerticalOptions="Center"/>
+                        <Label x:Name="CurrentLanguageLabel"
+                               Text="EN"
+                               FontFamily="OpenSansSemibold"
+                               TextColor="White"
+                               FontSize="13"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Main Menu Buttons -->
+        <VerticalStackLayout Grid.Row="1"
+                             Spacing="16"
+                             Padding="20"
+                             VerticalOptions="Center">
+
+            <!-- Create Order Button -->
+            <Border StrokeShape="RoundRectangle 16"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource Primary}"
+                    Padding="24,28"
+                    Shadow="{Shadow Brush=Black, Opacity=0.15, Radius=10, Offset='0,4'}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding CreateOrderCommand}"/>
+                </Border.GestureRecognizers>
+                <HorizontalStackLayout Spacing="16" HorizontalOptions="Center">
+                    <Label Text="🛒"
+                           FontSize="28"
+                           VerticalOptions="Center"/>
+                    <Label Text="{h:Translate CreateOrder}"
+                           TextColor="White"
+                           FontSize="20"
+                           FontFamily="OpenSansSemibold"
+                           VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+            </Border>
+
+            <!-- Show Orders Button -->
+            <Border StrokeShape="RoundRectangle 16"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource Success}"
+                    Padding="24,28"
+                    Shadow="{Shadow Brush=Black, Opacity=0.15, Radius=10, Offset='0,4'}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ShowOrdersCommand}"/>
+                </Border.GestureRecognizers>
+                <HorizontalStackLayout Spacing="16" HorizontalOptions="Center">
+                    <Label Text="📋"
+                           FontSize="28"
+                           VerticalOptions="Center"/>
+                    <Label Text="{h:Translate Orders}"
+                           TextColor="White"
+                           FontSize="20"
+                           FontFamily="OpenSansSemibold"
+                           VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+            </Border>
+
+            <!-- Kitchen Button -->
+            <Border StrokeShape="RoundRectangle 16"
+                    StrokeThickness="0"
+                    BackgroundColor="{StaticResource Warning}"
+                    Padding="24,28"
+                    Shadow="{Shadow Brush=Black, Opacity=0.15, Radius=10, Offset='0,4'}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding KitchenCommand}"/>
+                </Border.GestureRecognizers>
+                <HorizontalStackLayout Spacing="16" HorizontalOptions="Center">
+                    <Label Text="👨‍🍳"
+                           FontSize="28"
+                           VerticalOptions="Center"/>
+                    <Label Text="{h:Translate Kitchen}"
+                           TextColor="White"
+                           FontSize="20"
+                           FontFamily="OpenSansSemibold"
+                           VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+
+        <!-- Footer with User Info -->
+        <Border Grid.Row="2"
+                StrokeThickness="0"
+                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                Padding="20,16">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding LogoutCommand}"/>
+            </Border.GestureRecognizers>
+            <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                <Label Text="👤"
+                       FontSize="20"
+                       VerticalOptions="Center"/>
+                <Label Text="{Binding UserDisplayName}"
+                       FontSize="16"
+                       FontFamily="OpenSansSemibold"
+                       VerticalOptions="Center"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
+                <Label Text="•"
+                       FontSize="16"
+                       TextColor="{StaticResource Gray400}"
+                       VerticalOptions="Center"/>
+                <Label Text="{h:Translate Logout}"
+                       FontSize="14"
+                       TextColor="{StaticResource Danger}"
+                       VerticalOptions="Center"/>
+            </HorizontalStackLayout>
+        </Border>
+
+        <!-- Loading Overlay -->
+        <Grid Grid.RowSpan="3"
+              IsVisible="{Binding IsNavigating}"
+              BackgroundColor="#80000000">
+            <VerticalStackLayout HorizontalOptions="Center"
+                                 VerticalOptions="Center"
+                                 Spacing="12">
+                <ActivityIndicator IsRunning="True"
+                                   Color="White"
+                                   HeightRequest="50"
+                                   WidthRequest="50"/>
+                <Label Text="{h:Translate Loading}"
+                       TextColor="White"
+                       FontSize="16"/>
+            </VerticalStackLayout>
+        </Grid>
+    </Grid>
+
+</ContentPage>

@@ -14,28 +14,24 @@
         <Border Grid.Row="0"
                 StrokeThickness="0"
                 BackgroundColor="{StaticResource Primary}"
-                Padding="16">
-            <Grid ColumnDefinitions="Auto,*,Auto">
+                Padding="{OnIdiom Phone='12,10', Default='16'}">
+            <Grid ColumnDefinitions="{OnIdiom Phone='*,Auto', Default='Auto,*,Auto'}"
+                  RowDefinitions="{OnIdiom Phone='Auto,Auto', Default='Auto'}"
+                  RowSpacing="{OnIdiom Phone=8, Default=0}">
                 <VerticalStackLayout Grid.Column="0" VerticalOptions="Center">
                     <Label Text="TRENIOS"
                            TextColor="White"
-                           FontSize="24"
+                           FontSize="{OnIdiom Phone=18, Default=24}"
                            FontFamily="OpenSansSemibold"/>
                     <Label Text="{Binding WelcomeMessage}"
                            TextColor="White"
                            Opacity="0.8"
-                           FontSize="14"/>
+                           FontSize="{OnIdiom Phone=12, Default=14}"
+                           LineBreakMode="TailTruncation"/>
                 </VerticalStackLayout>
 
-                <Label Grid.Column="1"
-                       Text="{h:Translate SelectRestaurant}"
-                       TextColor="White"
-                       FontSize="20"
-                       FontFamily="OpenSansSemibold"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"/>
-
-                <Button Grid.Column="2"
+                <Button Grid.Column="1"
+                        Grid.Row="0"
                         Text="{h:Translate Logout}"
                         Command="{Binding LogoutCommand}"
                         BackgroundColor="Transparent"
@@ -43,13 +39,25 @@
                         BorderColor="White"
                         BorderWidth="1"
                         CornerRadius="8"
-                        HeightRequest="40"
-                        Padding="16,0"/>
+                        HeightRequest="{OnIdiom Phone=36, Default=40}"
+                        FontSize="{OnIdiom Phone=12, Default=14}"
+                        Padding="{OnIdiom Phone='12,0', Default='16,0'}"/>
+
+                <Label Grid.Column="0"
+                       Grid.ColumnSpan="{OnIdiom Phone=2, Default=1}"
+                       Grid.Row="{OnIdiom Phone=1, Default=0}"
+                       Text="{h:Translate SelectRestaurant}"
+                       TextColor="White"
+                       FontSize="{OnIdiom Phone=16, Default=20}"
+                       FontFamily="OpenSansSemibold"
+                       HorizontalOptions="{OnIdiom Phone=Start, Default=Center}"
+                       VerticalOptions="Center"
+                       IsVisible="{OnIdiom Phone=False, Default=True}"/>
             </Grid>
         </Border>
 
         <!-- Content -->
-        <Grid Grid.Row="1" Padding="16">
+        <Grid Grid.Row="1" Padding="{OnIdiom Phone=12, Default=16}">
             <!-- Error Message -->
             <Border IsVisible="{Binding HasError}"
                     BackgroundColor="{StaticResource Danger}"
@@ -93,25 +101,25 @@
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="api:RestaurantDto">
-                        <Border StrokeShape="RoundRectangle 16"
+                        <Border StrokeShape="RoundRectangle 12"
                                 StrokeThickness="0"
                                 BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
-                                Padding="20"
+                                Padding="{OnIdiom Phone=14, Default=20}"
                                 Shadow="{Shadow Brush=Black, Opacity=0.1, Radius=8, Offset='0,4'}">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer
                                     Command="{Binding Source={RelativeSource AncestorType={x:Type vm:RestaurantSelectionViewModel}}, Path=SelectRestaurantCommand}"
                                     CommandParameter="{Binding .}"/>
                             </Border.GestureRecognizers>
-                            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="{OnIdiom Phone=6, Default=8}">
                                 <Label Grid.Row="0"
                                        Text="{Binding Name}"
-                                       FontSize="20"
+                                       FontSize="{OnIdiom Phone=16, Default=20}"
                                        FontFamily="OpenSansSemibold"
                                        TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
                                 <Label Grid.Row="1"
                                        Text="{Binding Description}"
-                                       FontSize="14"
+                                       FontSize="{OnIdiom Phone=13, Default=14}"
                                        TextColor="{StaticResource Gray500}"
                                        LineBreakMode="TailTruncation"
                                        MaxLines="2"/>
@@ -119,10 +127,10 @@
                                     <Border BackgroundColor="{StaticResource Success}"
                                             StrokeThickness="0"
                                             StrokeShape="RoundRectangle 4"
-                                            Padding="8,4">
+                                            Padding="{OnIdiom Phone='6,3', Default='8,4'}">
                                         <Label Text="{h:Translate Active}"
                                                TextColor="White"
-                                               FontSize="12"/>
+                                               FontSize="{OnIdiom Phone=11, Default=12}"/>
                                     </Border>
                                 </HorizontalStackLayout>
                             </Grid>

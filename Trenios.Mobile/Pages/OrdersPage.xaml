@@ -200,34 +200,51 @@
             </CollectionView>
         </RefreshView>
 
-        <!-- Order Details Panel -->
-        <Border Grid.Row="3" Grid.Column="1"
-                IsVisible="{Binding HasSelectedOrder}"
+        <!-- Order Details Panel - Full screen on Phone, Side panel on Tablet -->
+        <Border IsVisible="{Binding HasSelectedOrder}"
                 BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                 StrokeThickness="1"
-                Stroke="{StaticResource Gray300}">
+                Stroke="{StaticResource Gray300}"
+                Grid.Row="{OnIdiom Phone=0, Default=3}"
+                Grid.Column="{OnIdiom Phone=0, Default=1}"
+                Grid.RowSpan="{OnIdiom Phone=4, Default=1}"
+                Grid.ColumnSpan="{OnIdiom Phone=2, Default=1}">
             <Grid RowDefinitions="Auto,*,Auto,Auto">
                 <!-- Details Header -->
                 <Grid Grid.Row="0"
                       Padding="16,12"
-                      BackgroundColor="{StaticResource Gray100}"
-                      ColumnDefinitions="*,Auto">
-                    <VerticalStackLayout>
+                      BackgroundColor="{OnIdiom Phone={StaticResource Primary}, Default={StaticResource Gray100}}"
+                      ColumnDefinitions="Auto,*,Auto">
+                    <!-- Back button for Phone -->
+                    <Button Grid.Column="0"
+                            Text="&lt;"
+                            FontSize="16"
+                            Padding="10,8"
+                            BackgroundColor="Transparent"
+                            TextColor="{OnIdiom Phone=White, Default={StaticResource Gray700}}"
+                            Command="{Binding CloseDetailsCommand}"
+                            IsVisible="{OnIdiom Phone=True, Default=False}"/>
+                    <VerticalStackLayout Grid.Column="1"
+                                         HorizontalOptions="{OnIdiom Phone=Center, Default=Start}">
                         <Label Text="{Binding SelectedOrder.OrderNumber}"
                                FontFamily="OpenSansSemibold"
-                               FontSize="18"/>
+                               FontSize="18"
+                               TextColor="{OnIdiom Phone=White, Default={StaticResource Gray900}}"/>
                         <Label Text="{Binding SelectedOrder.PlacedAtFullDisplay}"
                                FontSize="12"
-                               TextColor="{StaticResource Gray500}"/>
+                               TextColor="{OnIdiom Phone={StaticResource Gray200}, Default={StaticResource Gray500}}"
+                               HorizontalOptions="{OnIdiom Phone=Center, Default=Start}"/>
                     </VerticalStackLayout>
-                    <Button Grid.Column="1"
+                    <!-- Close button for Tablet -->
+                    <Button Grid.Column="2"
                             Text="X"
                             WidthRequest="40"
                             HeightRequest="40"
                             CornerRadius="20"
                             BackgroundColor="{StaticResource Gray200}"
                             TextColor="{StaticResource Gray700}"
-                            Command="{Binding CloseDetailsCommand}"/>
+                            Command="{Binding CloseDetailsCommand}"
+                            IsVisible="{OnIdiom Phone=False, Default=True}"/>
                 </Grid>
 
                 <!-- Order Items -->

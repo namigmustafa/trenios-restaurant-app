@@ -120,7 +120,10 @@ public class BranchSelectionViewModel : BaseViewModel
 
         IsNavigating = true;
         _authService.SetSelectedBranch(branch.Id, branch.Name);
-        await Shell.Current.GoToAsync("//MainPage");
+
+        // Navigate to MobileMenu on phones, MainPage on tablets
+        var isPhone = DeviceInfo.Idiom == DeviceIdiom.Phone;
+        await Shell.Current.GoToAsync(isPhone ? "//MobileMenu" : "//MainPage");
     }
 
     private async Task GoBackAsync()

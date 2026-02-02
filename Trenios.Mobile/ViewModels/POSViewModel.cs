@@ -39,8 +39,9 @@ public class POSViewModel : BaseViewModel
     public string UserName => _authService.CurrentUser?.FullName ?? "Cashier";
     public string BranchName => _authService.GetEffectiveBranchName() ?? "Branch";
 
-    // Back button visible for SuperAdmin and RestaurantOwner only
-    public bool CanGoBack => _authService.CurrentUser?.UserRole == UserRole.SuperAdmin ||
+    // Back button visible on phones always, on tablets only for SuperAdmin and RestaurantOwner
+    public bool CanGoBack => DeviceInfo.Idiom == DeviceIdiom.Phone ||
+                             _authService.CurrentUser?.UserRole == UserRole.SuperAdmin ||
                              _authService.CurrentUser?.UserRole == UserRole.RestaurantOwner;
 
     public Guid? SelectedCategoryId
@@ -551,9 +552,17 @@ public class POSViewModel : BaseViewModel
     {
         if (CanGoBack)
         {
-            _productService.ClearCache();
-            _groupsCache.Clear(); // Clear cached groups when changing branch
-            await Shell.Current.GoToAsync("//BranchSelection");
+            // On phones, go to MobileMenu. On tablets, go to BranchSelection
+            if (DeviceInfo.Idiom == DeviceIdiom.Phone)
+            {
+                await Shell.Current.GoToAsync("//MobileMenu");
+            }
+            else
+            {
+                _productService.ClearCache();
+                _groupsCache.Clear(); // Clear cached groups when changing branch
+                await Shell.Current.GoToAsync("//BranchSelection");
+            }
         }
     }
 

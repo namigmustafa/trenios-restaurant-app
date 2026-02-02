@@ -38,9 +38,10 @@ public partial class OrdersPage : ContentPage
         };
     }
 
-    protected override async void OnAppearing()
+    protected override void OnAppearing()
     {
         base.OnAppearing();
-        await _viewModel.LoadOrdersAsync();
+        // Fire-and-forget: page appears immediately, data loads in background
+        _ = _viewModel.LoadOrdersAsync();
     }
 }
