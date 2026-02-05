@@ -12,6 +12,7 @@ public class POSViewModel : BaseViewModel
     private readonly ProductService _productService;
     private readonly OrderService _orderService;
     private readonly AuthService _authService;
+    private readonly TableService _tableService;
 
     private Guid? _selectedCategoryId;
     private BranchMenuItemDto? _selectedMenuItem;
@@ -31,10 +32,20 @@ public class POSViewModel : BaseViewModel
     // Cache built SelectableAdditionGroups by menuItemId for instant reopening
     private readonly Dictionary<Guid, List<SelectableAdditionGroup>> _groupsCache = new();
 
+    // Order Type Selection
+    private bool _showOrderTypeSelection;
+    private OrderType _selectedOrderType = OrderType.TakeAway;
+
+    // Table Selection
+    private bool _showTableSelection;
+    private TableDto? _selectedTable;
+    private bool _isLoadingTables;
+
     public ObservableCollection<CategoryDto> Categories { get; } = new();
     public ObservableCollection<BranchMenuItemDto> MenuItems { get; } = new();
     public ObservableCollection<CartItem> CartItems { get; } = new();
     public ObservableCollection<SelectableAdditionGroup> SelectableAdditionGroups { get; } = new();
+    public ObservableCollection<TableDto> Tables { get; } = new();
 
     public string UserName => _authService.CurrentUser?.FullName ?? "Cashier";
     public string BranchName => _authService.GetEffectiveBranchName() ?? "Branch";
@@ -135,6 +146,45 @@ public class POSViewModel : BaseViewModel
     public bool CanRepeat => _orderService.LastCompletedOrder != null;
     public int HeldOrdersCount => _orderService.HeldOrdersCount;
 
+    // Order Type Selection Properties
+    public bool ShowOrderTypeSelection
+    {
+        get => _showOrderTypeSelection;
+        set => SetProperty(ref _showOrderTypeSelection, value);
+    }
+
+    public OrderType SelectedOrderType
+    {
+        get => _selectedOrderType;
+        set => SetProperty(ref _selectedOrderType, value);
+    }
+
+    public bool IsDineInEnabled => _authService.CurrentBranch?.IsDineInEnabled ?? false;
+    public bool IsTakeAwayEnabled => _authService.CurrentBranch?.IsTakeAwayEnabled ?? true;
+    public bool IsDeliveryEnabled => _authService.CurrentBranch?.IsDeliveryEnabled ?? false;
+
+    // Table Selection Properties
+    public bool ShowTableSelection
+    {
+        get => _showTableSelection;
+        set => SetProperty(ref _showTableSelection, value);
+    }
+
+    public TableDto? SelectedTable
+    {
+        get => _selectedTable;
+        set => SetProperty(ref _selectedTable, value);
+    }
+
+    public bool IsLoadingTables
+    {
+        get => _isLoadingTables;
+        set => SetProperty(ref _isLoadingTables, value);
+    }
+
+    // Backend always requires tableId for DineIn orders, so table selection is always required
+    public bool IsTableRequired => true;
+
     // Commands
     public ICommand SelectCategoryCommand { get; }
     public ICommand SelectMenuItemCommand { get; }
@@ -158,11 +208,20 @@ public class POSViewModel : BaseViewModel
     public ICommand ViewOrdersCommand { get; }
     public ICommand ViewKitchenCommand { get; }
 
-    public POSViewModel(ProductService productService, OrderService orderService, AuthService authService)
+    // Order Type & Table Selection Commands
+    public ICommand SelectOrderTypeCommand { get; }
+    public ICommand CancelOrderTypeCommand { get; }
+    public ICommand SelectTableCommand { get; }
+    public ICommand SkipTableSelectionCommand { get; }
+    public ICommand ConfirmTableSelectionCommand { get; }
+    public ICommand CancelTableSelectionCommand { get; }
+
+    public POSViewModel(ProductService productService, OrderService orderService, AuthService authService, TableService tableService)
     {
         _productService = productService;
         _orderService = orderService;
         _authService = authService;
+        _tableService = tableService;
 
         // Initialize commands
         SelectCategoryCommand = new Command<CategoryDto>(cat => SelectedCategoryId = cat.Id);
@@ -170,7 +229,7 @@ public class POSViewModel : BaseViewModel
         IncreaseQuantityCommand = new Command<CartItem>(item => _orderService.UpdateQuantity(item.Id, item.Quantity + 1));
         DecreaseQuantityCommand = new Command<CartItem>(item => _orderService.UpdateQuantity(item.Id, item.Quantity - 1));
         RemoveItemCommand = new Command<CartItem>(item => _orderService.RemoveItem(item.Id));
-        PayCommand = new Command(async () => await PayAsync(), () => HasItems);
+        PayCommand = new Command(async () => await CreateOrderAsync(), () => HasItems);
         HoldOrderCommand = new Command(() => _orderService.HoldOrder(), () => HasItems);
         CancelOrderCommand = new Command(() => _orderService.ClearCart(), () => HasItems);
         RepeatLastOrderCommand = new Command(() => _orderService.RepeatLastOrder(), () => CanRepeat);
@@ -186,6 +245,14 @@ public class POSViewModel : BaseViewModel
         BackCommand = new Command(async () => await GoBackAsync(), () => CanGoBack);
         ViewOrdersCommand = new Command(async () => await Shell.Current.GoToAsync("orders"));
         ViewKitchenCommand = new Command(async () => await Shell.Current.GoToAsync("kitchen"));
+
+        // Order Type & Table Selection Commands
+        SelectOrderTypeCommand = new Command<object>(async (param) => await SelectOrderTypeAsync(param));
+        CancelOrderTypeCommand = new Command(() => ShowOrderTypeSelection = false);
+        SelectTableCommand = new Command<TableDto>(table => SelectedTable = table);
+        SkipTableSelectionCommand = new Command(async () => await SkipTableSelectionAsync());
+        ConfirmTableSelectionCommand = new Command(async () => await ConfirmTableSelectionAsync());
+        CancelTableSelectionCommand = new Command(CancelTableSelection);
 
         // Subscribe to cart changes
         _orderService.OnCartChanged += RefreshCart;
@@ -490,7 +557,107 @@ public class POSViewModel : BaseViewModel
         OnPropertyChanged(nameof(HasValidationError));
     }
 
-    private async Task PayAsync()
+    private async Task CreateOrderAsync()
+    {
+        if (IsBusy) return;
+
+        // Check if we need to show order type selection (if DineIn is enabled)
+        if (IsDineInEnabled)
+        {
+            ShowOrderTypeSelection = true;
+            return;
+        }
+
+        // If only TakeAway enabled (no DineIn), proceed directly
+        await SubmitOrderAsync(OrderType.TakeAway, null);
+    }
+
+    private async Task SelectOrderTypeAsync(object param)
+    {
+        if (param is int typeInt)
+        {
+            var orderType = (OrderType)typeInt;
+            SelectedOrderType = orderType;
+            ShowOrderTypeSelection = false;
+
+            if (orderType == OrderType.DineIn)
+            {
+                // Load tables and show selection
+                await LoadTablesAsync();
+                ShowTableSelection = true;
+                return;
+            }
+
+            // For TakeAway/Delivery, submit directly
+            await SubmitOrderAsync(orderType, null);
+        }
+        else if (param is string typeStr && int.TryParse(typeStr, out var parsed))
+        {
+            await SelectOrderTypeAsync(parsed);
+        }
+    }
+
+    private async Task LoadTablesAsync()
+    {
+        IsLoadingTables = true;
+        SelectedTable = null;
+
+        try
+        {
+            var branchId = _authService.GetEffectiveBranchId();
+            if (branchId.HasValue)
+            {
+                var (tables, error) = await _tableService.GetTablesAsync(branchId.Value);
+
+                Tables.Clear();
+                if (tables != null)
+                {
+                    foreach (var table in tables)
+                    {
+                        Tables.Add(table);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            IsLoadingTables = false;
+        }
+    }
+
+    private async Task ConfirmTableSelectionAsync()
+    {
+        // If required but no table selected, show error
+        if (IsTableRequired && SelectedTable == null)
+        {
+            await Application.Current!.MainPage!.DisplayAlert(
+                LocalizationService.Instance["Error"],
+                LocalizationService.Instance["TableRequired"],
+                LocalizationService.Instance["OK"]);
+            return;
+        }
+
+        ShowTableSelection = false;
+        await SubmitOrderAsync(OrderType.DineIn, SelectedTable?.Id);
+    }
+
+    private async Task SkipTableSelectionAsync()
+    {
+        // Backend requires tableId for DineIn, so skip is not allowed
+        // This method is kept for future use if backend changes
+        await Application.Current!.MainPage!.DisplayAlert(
+            LocalizationService.Instance["Error"],
+            LocalizationService.Instance["TableRequired"],
+            LocalizationService.Instance["OK"]);
+    }
+
+    private void CancelTableSelection()
+    {
+        ShowTableSelection = false;
+        SelectedTable = null;
+    }
+
+    private async Task SubmitOrderAsync(OrderType orderType, Guid? tableId)
     {
         if (IsBusy) return;
 
@@ -498,35 +665,36 @@ public class POSViewModel : BaseViewModel
         {
             IsBusy = true;
 
-            // Show confirmation
-            var confirm = await Application.Current!.MainPage!.DisplayAlert(
-                "Complete Order",
-                $"Total: €{Total:F2}\n\nSubmit order?",
-                "Submit",
-                "Cancel");
-
-            if (!confirm) return;
-
-            var (order, error) = await _orderService.SubmitOrderAsync();
+            var (order, error) = await _orderService.SubmitOrderAsync(orderType, tableId);
 
             if (order != null)
             {
-                await Application.Current.MainPage.DisplayAlert(
-                    "Order Submitted",
-                    $"Order #{order.OrderNumber}\nTotal: €{order.TotalAmount:F2}",
-                    "OK");
+                var message = $"Order #{order.OrderNumber}\nTotal: €{order.TotalAmount:F2}";
+                if (order.HasTable)
+                {
+                    message += $"\n{order.TableDisplay}";
+                }
+
+                await Application.Current!.MainPage!.DisplayAlert(
+                    LocalizationService.Instance["OrderSubmitted"],
+                    message,
+                    LocalizationService.Instance["OK"]);
             }
             else
             {
-                await Application.Current.MainPage.DisplayAlert(
-                    "Error",
-                    error ?? "Failed to submit order",
-                    "OK");
+                var errorMessage = string.IsNullOrWhiteSpace(error)
+                    ? LocalizationService.Instance["FailedToSubmit"]
+                    : error;
+                await Application.Current!.MainPage!.DisplayAlert(
+                    LocalizationService.Instance["Error"],
+                    errorMessage,
+                    LocalizationService.Instance["OK"]);
             }
         }
         finally
         {
             IsBusy = false;
+            SelectedTable = null;
         }
     }
 
@@ -542,6 +710,7 @@ public class POSViewModel : BaseViewModel
         {
             _orderService.ClearCart();
             _productService.ClearCache();
+            _tableService.ClearCache();
             _groupsCache.Clear(); // Clear cached groups on logout
             await _authService.LogoutAsync();
             await Shell.Current.GoToAsync("//LoginPage");
@@ -560,6 +729,7 @@ public class POSViewModel : BaseViewModel
             else
             {
                 _productService.ClearCache();
+                _tableService.ClearCache();
                 _groupsCache.Clear(); // Clear cached groups when changing branch
                 await Shell.Current.GoToAsync("//BranchSelection");
             }

@@ -562,6 +562,227 @@
                 </VerticalStackLayout>
             </Frame>
         </Grid>
+
+        <!-- Order Type Selection Overlay -->
+        <Grid IsVisible="{Binding ShowOrderTypeSelection}"
+              BackgroundColor="#80000000"
+              Grid.RowSpan="3">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CancelOrderTypeCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <Border VerticalOptions="Center"
+                    HorizontalOptions="Fill"
+                    StrokeShape="RoundRectangle 16"
+                    StrokeThickness="0"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                    Margin="16"
+                    Padding="0">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer/>
+                </Border.GestureRecognizers>
+
+                <VerticalStackLayout Spacing="0">
+                    <!-- Header -->
+                    <Grid Padding="20,16" BackgroundColor="{StaticResource Primary}">
+                        <Label Text="{h:Translate SelectOrderType}"
+                               TextColor="White"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="18"
+                               HorizontalOptions="Center"/>
+                    </Grid>
+
+                    <!-- Options -->
+                    <VerticalStackLayout Spacing="10" Padding="20,16">
+                        <!-- DineIn Button -->
+                        <Button Text="{h:Translate DineIn}"
+                                Style="{StaticResource PrimaryButton}"
+                                IsVisible="{Binding IsDineInEnabled}"
+                                Command="{Binding SelectOrderTypeCommand}"
+                                CommandParameter="1"
+                                HeightRequest="46"
+                                FontSize="16"/>
+
+                        <!-- TakeAway Button -->
+                        <Button Text="{h:Translate TakeAway}"
+                                Style="{StaticResource SecondaryButton}"
+                                IsVisible="{Binding IsTakeAwayEnabled}"
+                                Command="{Binding SelectOrderTypeCommand}"
+                                CommandParameter="2"
+                                HeightRequest="46"
+                                FontSize="16"/>
+
+                        <!-- Delivery Button -->
+                        <Button Text="{h:Translate Delivery}"
+                                Style="{StaticResource SecondaryButton}"
+                                IsVisible="{Binding IsDeliveryEnabled}"
+                                Command="{Binding SelectOrderTypeCommand}"
+                                CommandParameter="3"
+                                HeightRequest="46"
+                                FontSize="16"/>
+
+                        <!-- Cancel Button -->
+                        <Button Text="{h:Translate Cancel}"
+                                Style="{StaticResource GhostButton}"
+                                Command="{Binding CancelOrderTypeCommand}"
+                                HeightRequest="40"
+                                Margin="0,6,0,0"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- Table Selection Overlay -->
+        <Grid IsVisible="{Binding ShowTableSelection}"
+              BackgroundColor="#80000000"
+              Grid.RowSpan="3">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CancelTableSelectionCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <Border VerticalOptions="Center"
+                    HorizontalOptions="Fill"
+                    StrokeShape="RoundRectangle 16"
+                    StrokeThickness="0"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                    MaximumHeightRequest="500"
+                    Margin="12"
+                    Padding="0">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer/>
+                </Border.GestureRecognizers>
+
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <!-- Header -->
+                    <Grid Grid.Row="0" Padding="20,14" BackgroundColor="{StaticResource Primary}">
+                        <VerticalStackLayout HorizontalOptions="Center">
+                            <Label Text="{h:Translate SelectTable}"
+                                   TextColor="White"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="18"
+                                   HorizontalOptions="Center"/>
+                            <Label TextColor="#FFCCCC"
+                                   FontSize="12"
+                                   HorizontalOptions="Center"
+                                   IsVisible="{Binding IsTableRequired}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="(" FontSize="12"/>
+                                        <Span Text="{h:Translate TableRequired}" FontSize="12"/>
+                                        <Span Text=")" FontSize="12"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Loading indicator -->
+                    <ActivityIndicator Grid.Row="1"
+                                       IsVisible="{Binding IsLoadingTables}"
+                                       IsRunning="{Binding IsLoadingTables}"
+                                       Color="{StaticResource Primary}"
+                                       VerticalOptions="Center"/>
+
+                    <!-- Tables Grid -->
+                    <CollectionView Grid.Row="1"
+                                    ItemsSource="{Binding Tables}"
+                                    SelectedItem="{Binding SelectedTable, Mode=TwoWay}"
+                                    SelectionMode="Single"
+                                    IsVisible="{Binding IsLoadingTables, Converter={StaticResource InvertedBoolConverter}}"
+                                    Margin="12,10">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Vertical"
+                                             Span="3"
+                                             HorizontalItemSpacing="8"
+                                             VerticalItemSpacing="8"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="api:TableDto">
+                                <Border Padding="10"
+                                        StrokeShape="RoundRectangle 8"
+                                        StrokeThickness="2"
+                                        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray700}}">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup Name="CommonStates">
+                                            <VisualState Name="Normal"/>
+                                            <VisualState Name="Selected">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                                                    <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
+                                        <Label Text="{Binding Number}"
+                                               FontSize="18"
+                                               FontFamily="OpenSansSemibold"
+                                               HorizontalOptions="Center"/>
+                                        <Label Text="{Binding CapacityDisplay}"
+                                               FontSize="11"
+                                               TextColor="{StaticResource Gray500}"
+                                               HorizontalOptions="Center"
+                                               IsVisible="{Binding Capacity, Converter={StaticResource IsNotNullConverter}}"/>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                        <CollectionView.EmptyView>
+                            <Label Text="No tables available"
+                                   Style="{StaticResource Caption}"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+
+                    <!-- Footer Buttons -->
+                    <Grid Grid.Row="2"
+                          Padding="16,12"
+                          RowDefinitions="Auto,Auto"
+                          ColumnDefinitions="*,Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="10"
+                          BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}">
+
+                        <!-- Selected Table Display -->
+                        <HorizontalStackLayout Grid.Row="0" Grid.ColumnSpan="3"
+                                               HorizontalOptions="Center"
+                                               Spacing="6"
+                                               IsVisible="{Binding SelectedTable, Converter={StaticResource IsNotNullConverter}}">
+                            <Label Text="{h:Translate Table}"
+                                   FontSize="14"
+                                   TextColor="{StaticResource Gray600}"/>
+                            <Label Text="{Binding SelectedTable.Number}"
+                                   FontSize="16"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource Primary}"/>
+                        </HorizontalStackLayout>
+
+                        <!-- Skip button (only if not required) -->
+                        <Button Grid.Row="1" Grid.Column="0"
+                                Text="{h:Translate Skip}"
+                                Style="{StaticResource GhostButton}"
+                                IsVisible="{Binding IsTableRequired, Converter={StaticResource InvertedBoolConverter}}"
+                                Command="{Binding SkipTableSelectionCommand}"
+                                HorizontalOptions="Start"
+                                FontSize="14"/>
+
+                        <Button Grid.Row="1" Grid.Column="1"
+                                Text="{h:Translate Cancel}"
+                                Style="{StaticResource GhostButton}"
+                                Command="{Binding CancelTableSelectionCommand}"
+                                FontSize="14"/>
+
+                        <Button Grid.Row="1" Grid.Column="2"
+                                Text="{h:Translate Confirm}"
+                                Style="{StaticResource PrimaryButton}"
+                                Command="{Binding ConfirmTableSelectionCommand}"
+                                FontSize="14"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 
 </ContentPage>

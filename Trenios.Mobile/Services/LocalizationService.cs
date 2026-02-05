@@ -161,6 +161,15 @@ public class LocalizationService : INotifyPropertyChanged
             ["Active"] = "Active",
             ["Welcome"] = "Welcome",
 
+            // Table Selection
+            ["SelectOrderType"] = "Select Order Type",
+            ["SelectTable"] = "Select Table",
+            ["TableRequired"] = "Please select a table",
+            ["Skip"] = "Skip",
+            ["Confirm"] = "Confirm",
+            ["Seats"] = "seats",
+            ["Table"] = "Table",
+
             // Misc
             ["OK"] = "OK",
             ["Language"] = "Language",
@@ -189,6 +198,15 @@ public class LocalizationService : INotifyPropertyChanged
             ["Orders"] = "Sifarişlər",
             ["Kitchen"] = "Mətbəx",
             ["Logout"] = "Çıxış",
+
+            // Table Selection
+            ["SelectOrderType"] = "Sifariş Növünü Seçin",
+            ["SelectTable"] = "Masa Seçin",
+            ["TableRequired"] = "Zəhmət olmasa masa seçin",
+            ["Skip"] = "Keç",
+            ["Confirm"] = "Təsdiqlə",
+            ["Seats"] = "nəfərlik",
+            ["Table"] = "Masa",
 
             // POS
             ["NewOrder"] = "Yeni Sifariş",
@@ -289,6 +307,15 @@ public class LocalizationService : INotifyPropertyChanged
             ["Kitchen"] = "Кухня",
             ["Logout"] = "Выйти",
 
+            // Table Selection
+            ["SelectOrderType"] = "Выберите тип заказа",
+            ["SelectTable"] = "Выберите столик",
+            ["TableRequired"] = "Пожалуйста, выберите столик",
+            ["Skip"] = "Пропустить",
+            ["Confirm"] = "Подтвердить",
+            ["Seats"] = "мест",
+            ["Table"] = "Столик",
+
             // POS
             ["NewOrder"] = "Новый Заказ",
             ["CreateOrder"] = "Создать Заказ",
@@ -388,6 +415,15 @@ public class LocalizationService : INotifyPropertyChanged
             ["Kitchen"] = "Mutfak",
             ["Logout"] = "Çıkış",
 
+            // Table Selection
+            ["SelectOrderType"] = "Sipariş Türünü Seçin",
+            ["SelectTable"] = "Masa Seçin",
+            ["TableRequired"] = "Lütfen bir masa seçin",
+            ["Skip"] = "Atla",
+            ["Confirm"] = "Onayla",
+            ["Seats"] = "kişilik",
+            ["Table"] = "Masa",
+
             // POS
             ["NewOrder"] = "Yeni Sipariş",
             ["CreateOrder"] = "Sipariş Oluştur",
@@ -486,6 +522,15 @@ public class LocalizationService : INotifyPropertyChanged
             ["Orders"] = "Pasūtījumi",
             ["Kitchen"] = "Virtuve",
             ["Logout"] = "Iziet",
+
+            // Table Selection
+            ["SelectOrderType"] = "Izvēlieties pasūtījuma veidu",
+            ["SelectTable"] = "Izvēlieties galdiņu",
+            ["TableRequired"] = "Lūdzu, izvēlieties galdiņu",
+            ["Skip"] = "Izlaist",
+            ["Confirm"] = "Apstiprināt",
+            ["Seats"] = "vietas",
+            ["Table"] = "Galdiņš",
 
             // POS
             ["NewOrder"] = "Jauns Pasūtījums",

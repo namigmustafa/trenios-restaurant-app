@@ -30,6 +30,11 @@ public static class MauiProgram
                 Timeout = TimeSpan.FromSeconds(30)
             };
             client.DefaultRequestHeaders.Add("Accept", "application/json");
+            client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue
+            {
+                NoCache = true,
+                NoStore = true
+            };
             return client;
         });
 
@@ -39,6 +44,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<SelectionService>();
         builder.Services.AddSingleton<ProductService>();
         builder.Services.AddSingleton<OrderService>();
+        builder.Services.AddSingleton<TableService>();
         builder.Services.AddSingleton<OrderHubService>();
         builder.Services.AddSingleton(_ => LocalizationService.Instance);
 

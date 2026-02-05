@@ -119,7 +119,7 @@ public class BranchSelectionViewModel : BaseViewModel
         if (branch == null || IsNavigating) return;
 
         IsNavigating = true;
-        _authService.SetSelectedBranch(branch.Id, branch.Name);
+        _authService.SetSelectedBranch(branch.Id, branch.Name, branch);
 
         // Navigate to MobileMenu on phones, MainPage on tablets
         var isPhone = DeviceInfo.Idiom == DeviceIdiom.Phone;

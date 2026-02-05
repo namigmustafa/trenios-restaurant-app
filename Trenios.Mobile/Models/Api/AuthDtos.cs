@@ -124,4 +124,16 @@ public class BranchDto
 
     [JsonPropertyName("isActive")]
     public bool IsActive { get; set; } = true;
+
+    [JsonPropertyName("isDineInEnabled")]
+    public bool IsDineInEnabled { get; set; } = true;
+
+    [JsonPropertyName("isTakeAwayEnabled")]
+    public bool IsTakeAwayEnabled { get; set; } = true;
+
+    [JsonPropertyName("isDeliveryEnabled")]
+    public bool IsDeliveryEnabled { get; set; } = true;
+
+    [JsonPropertyName("requireTableForDineIn")]
+    public bool RequireTableForDineIn { get; set; } = false;
 }

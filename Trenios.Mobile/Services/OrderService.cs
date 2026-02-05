@@ -129,7 +129,7 @@ public class OrderService
     }
 
     public async Task<(OrderResponse? Order, string? Error)> SubmitOrderAsync(
-        OrderType orderType = OrderType.TakeAway, string? notes = null)
+        OrderType orderType = OrderType.TakeAway, Guid? tableId = null, string? notes = null)
     {
         var branchId = _authService.GetEffectiveBranchId();
         if (branchId == null)
@@ -146,6 +146,7 @@ public class OrderService
         {
             BranchId = branchId.Value,
             Type = (int)orderType,
+            TableId = tableId,
             Notes = notes,
             Items = _cartItems.Select(item => new CreateOrderItemRequest
             {

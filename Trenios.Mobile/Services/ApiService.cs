@@ -146,7 +146,7 @@ public class ApiService
         try
         {
             var error = JsonSerializer.Deserialize<ApiError>(content, _jsonOptions);
-            if (error != null)
+            if (error != null && !string.IsNullOrWhiteSpace(error.Message))
             {
                 return ApiResult<T>.Failure(error.Message, error.Code);
             }
@@ -154,6 +154,13 @@ public class ApiService
         catch
         {
             // Ignore parse error
+        }
+
+        // If we have content but couldn't parse it as ApiError, show the raw content (truncated)
+        if (!string.IsNullOrWhiteSpace(content))
+        {
+            var truncated = content.Length > 200 ? content.Substring(0, 200) + "..." : content;
+            return ApiResult<T>.Failure($"HTTP {(int)response.StatusCode}: {truncated}");
         }
 
         return ApiResult<T>.Failure($"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}");

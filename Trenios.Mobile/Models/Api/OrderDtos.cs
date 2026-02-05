@@ -11,6 +11,9 @@ public class CreateOrderRequest
     [JsonPropertyName("type")]
     public int Type { get; set; } = (int)OrderType.TakeAway;
 
+    [JsonPropertyName("tableId")]
+    public Guid? TableId { get; set; }
+
     [JsonPropertyName("notes")]
     public string? Notes { get; set; }
 
@@ -65,6 +68,12 @@ public class OrderResponse
     [JsonPropertyName("type")]
     public int Type { get; set; }
 
+    [JsonPropertyName("tableId")]
+    public Guid? TableId { get; set; }
+
+    [JsonPropertyName("tableNumber")]
+    public string? TableNumber { get; set; }
+
     [JsonPropertyName("status")]
     public int Status { get; set; }
 
@@ -108,6 +117,12 @@ public class OrderResponse
             };
         }
     }
+
+    [JsonIgnore]
+    public bool HasTable => !string.IsNullOrEmpty(TableNumber);
+
+    [JsonIgnore]
+    public string TableDisplay => HasTable ? $"Table {TableNumber}" : string.Empty;
 
     [JsonIgnore]
     public string StatusDisplay

@@ -17,6 +17,7 @@ public class AuthService
     public string? SelectedRestaurantName { get; private set; }
     public Guid? SelectedBranchId { get; private set; }
     public string? SelectedBranchName { get; private set; }
+    public BranchDto? CurrentBranch { get; private set; }
 
     public bool IsLoggedIn => CurrentUser != null && _apiService.HasToken;
 
@@ -80,15 +81,18 @@ public class AuthService
             Preferences.Set(SelectedRestaurantNameKey, restaurantName);
     }
 
-    public void SetSelectedBranch(Guid branchId, string? branchName = null)
+    public void SetSelectedBranch(Guid branchId, string? branchName = null, BranchDto? branchDto = null)
     {
         SelectedBranchId = branchId;
         SelectedBranchName = branchName;
+        CurrentBranch = branchDto;
         Preferences.Set(SelectedBranchKey, branchId.ToString());
         if (branchName != null)
             Preferences.Set(SelectedBranchNameKey, branchName);
         OnAuthStateChanged?.Invoke();
     }
+
+    public BranchDto? GetCurrentBranch() => CurrentBranch;
 
     /// <summary>
     /// Gets the effective branch name based on user role.
@@ -160,6 +164,7 @@ public class AuthService
         SelectedRestaurantName = null;
         SelectedBranchId = null;
         SelectedBranchName = null;
+        CurrentBranch = null;
         Preferences.Remove(SelectedRestaurantKey);
         Preferences.Remove(SelectedRestaurantNameKey);
         Preferences.Remove(SelectedBranchKey);
