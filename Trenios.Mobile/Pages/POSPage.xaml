@@ -124,7 +124,7 @@
                 <!-- Header -->
                 <Grid Grid.Row="0"
                       Style="{StaticResource HeaderGrid}"
-                      ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
+                      ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto">
                     <!-- Back Button -->
                     <Button Grid.Column="0"
                             Text="&lt;"
@@ -151,8 +151,17 @@
                             Padding="16,10"
                             Margin="8,0,0,0"/>
 
+                    <!-- Tables -->
+                    <Button Grid.Column="3"
+                            Text="{h:Translate Tables}"
+                            Style="{StaticResource NavButton}"
+                            Command="{Binding ViewTablesCommand}"
+                            FontSize="14"
+                            Padding="16,10"
+                            Margin="8,0,0,0"/>
+
                     <!-- Language Flag Button -->
-                    <Border Grid.Column="4"
+                    <Border Grid.Column="5"
                             StrokeShape="RoundRectangle 8"
                             StrokeThickness="1"
                             Stroke="{StaticResource Gray300}"
@@ -175,7 +184,7 @@
                     </Border>
 
                     <!-- User Button -->
-                    <Border Grid.Column="5"
+                    <Border Grid.Column="6"
                             StrokeShape="RoundRectangle 8"
                             StrokeThickness="1"
                             Stroke="{StaticResource Gray300}"

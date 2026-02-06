@@ -122,7 +122,7 @@ public class OrderResponse
     public bool HasTable => !string.IsNullOrEmpty(TableNumber);
 
     [JsonIgnore]
-    public string TableDisplay => HasTable ? $"Table {TableNumber}" : string.Empty;
+    public string TableDisplay => HasTable ? $"{LocalizationService.Instance["Table"]} {TableNumber}" : string.Empty;
 
     [JsonIgnore]
     public string StatusDisplay

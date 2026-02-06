@@ -56,6 +56,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<POSViewModel>();
         builder.Services.AddSingleton<OrdersViewModel>();
         builder.Services.AddSingleton<KitchenDisplayViewModel>();
+        builder.Services.AddSingleton<TablesViewModel>();
 
         // Register Pages
         builder.Services.AddTransient<LoginPage>();
@@ -66,6 +67,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<POSPagePhone>();
         builder.Services.AddSingleton<OrdersPage>();
         builder.Services.AddSingleton<KitchenDisplayPage>();
+        builder.Services.AddSingleton<TablesPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();

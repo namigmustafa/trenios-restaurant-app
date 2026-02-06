@@ -138,6 +138,27 @@
                            VerticalOptions="Center"/>
                 </HorizontalStackLayout>
             </Border>
+
+            <!-- Tables Button -->
+            <Border StrokeShape="RoundRectangle 16"
+                    StrokeThickness="0"
+                    BackgroundColor="#9b59b6"
+                    Padding="24,28"
+                    Shadow="{Shadow Brush=Black, Opacity=0.15, Radius=10, Offset='0,4'}">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding TablesCommand}"/>
+                </Border.GestureRecognizers>
+                <HorizontalStackLayout Spacing="16" HorizontalOptions="Center">
+                    <Label Text="🪑"
+                           FontSize="28"
+                           VerticalOptions="Center"/>
+                    <Label Text="{h:Translate Tables}"
+                           TextColor="White"
+                           FontSize="20"
+                           FontFamily="OpenSansSemibold"
+                           VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+            </Border>
         </VerticalStackLayout>
 
         <!-- Footer with User Info -->

@@ -21,6 +21,7 @@ public class MobileMenuViewModel : BaseViewModel
     public ICommand CreateOrderCommand { get; }
     public ICommand ShowOrdersCommand { get; }
     public ICommand KitchenCommand { get; }
+    public ICommand TablesCommand { get; }
     public ICommand LogoutCommand { get; }
     public ICommand BackCommand { get; }
 
@@ -33,6 +34,7 @@ public class MobileMenuViewModel : BaseViewModel
         CreateOrderCommand = new Command(() => NavigateToAsync("//POSPhone"));
         ShowOrdersCommand = new Command(() => NavigateToAsync("orders"));
         KitchenCommand = new Command(() => NavigateToAsync("kitchen"));
+        TablesCommand = new Command(() => NavigateToAsync("tables"));
         LogoutCommand = new Command(() => NavigateWithSpinner(async () =>
         {
             await _authService.LogoutAsync();

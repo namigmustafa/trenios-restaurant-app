@@ -180,11 +180,27 @@
                                            FontSize="12"
                                            TextColor="{StaticResource Gray500}"/>
 
-                                    <!-- Items Summary -->
-                                    <Label Grid.Row="1" Grid.ColumnSpan="2"
-                                           Text="{Binding TotalItems, StringFormat='{0} items'}"
-                                           FontSize="13"
-                                           TextColor="{StaticResource Gray600}"/>
+                                    <!-- Order Type & Table -->
+                                    <HorizontalStackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="6">
+                                        <Label Text="{Binding OrderTypeDisplay}"
+                                               FontSize="12"
+                                               TextColor="{StaticResource Gray500}"/>
+                                        <Label Text="·"
+                                               FontSize="12"
+                                               TextColor="{StaticResource Gray400}"
+                                               IsVisible="{Binding HasTable}"/>
+                                        <Label Text="{Binding TableDisplay}"
+                                               FontSize="12"
+                                               FontFamily="OpenSansSemibold"
+                                               TextColor="{StaticResource Primary}"
+                                               IsVisible="{Binding HasTable}"/>
+                                        <Label Text="·"
+                                               FontSize="12"
+                                               TextColor="{StaticResource Gray400}"/>
+                                        <Label Text="{Binding TotalItems, StringFormat='{0} items'}"
+                                               FontSize="12"
+                                               TextColor="{StaticResource Gray500}"/>
+                                    </HorizontalStackLayout>
 
                                     <!-- Total -->
                                     <Label Grid.Row="2" Grid.Column="0"
@@ -226,10 +242,24 @@
                             IsVisible="{OnIdiom Phone=True, Default=False}"/>
                     <VerticalStackLayout Grid.Column="1"
                                          HorizontalOptions="{OnIdiom Phone=Center, Default=Start}">
-                        <Label Text="{Binding SelectedOrder.OrderNumber}"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="18"
-                               TextColor="{OnIdiom Phone=White, Default={StaticResource Gray900}}"/>
+                        <HorizontalStackLayout Spacing="8"
+                                               HorizontalOptions="{OnIdiom Phone=Center, Default=Start}">
+                            <Label Text="{Binding SelectedOrder.OrderNumber}"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="18"
+                                   TextColor="{OnIdiom Phone=White, Default={StaticResource Gray900}}"/>
+                            <Label Text="·"
+                                   FontSize="18"
+                                   TextColor="{OnIdiom Phone={StaticResource Gray200}, Default={StaticResource Gray500}}"
+                                   VerticalOptions="Center"
+                                   IsVisible="{Binding SelectedOrder.HasTable}"/>
+                            <Label Text="{Binding SelectedOrder.TableDisplay}"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="16"
+                                   TextColor="{OnIdiom Phone=White, Default={StaticResource Primary}}"
+                                   VerticalOptions="Center"
+                                   IsVisible="{Binding SelectedOrder.HasTable}"/>
+                        </HorizontalStackLayout>
                         <Label Text="{Binding SelectedOrder.PlacedAtFullDisplay}"
                                FontSize="12"
                                TextColor="{OnIdiom Phone={StaticResource Gray200}, Default={StaticResource Gray500}}"

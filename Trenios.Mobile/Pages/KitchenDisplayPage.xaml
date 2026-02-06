@@ -7,63 +7,50 @@
              x:Class="Trenios.Mobile.Pages.KitchenDisplayPage"
              x:DataType="viewmodels:KitchenDisplayViewModel"
              Title="{h:Translate KitchenDisplay}"
+             Shell.NavBarIsVisible="False"
              BackgroundColor="#ecf0f1">
 
     <Grid RowDefinitions="Auto,*">
 
         <!-- Header -->
         <Grid Grid.Row="0"
-              BackgroundColor="White"
-              Padding="{OnIdiom Phone='10,8', Default='16,14'}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+              Padding="16,12"
+              BackgroundColor="{StaticResource Primary}"
+              ColumnDefinitions="Auto,Auto,*,Auto,Auto">
 
             <Button Grid.Column="0"
-                    Text="{OnIdiom Phone='&lt;', Default={h:Translate Back}}"
-                    Command="{Binding BackCommand}"
-                    BackgroundColor="#e67e22"
+                    Text="{h:Translate Back}"
+                    Style="{StaticResource GhostButton}"
                     TextColor="White"
-                    FontSize="{OnIdiom Phone=14, Default=14}"
-                    HeightRequest="{OnIdiom Phone=36, Default=40}"
-                    CornerRadius="6"
-                    Padding="{OnIdiom Phone='10,0', Default='16,0'}"/>
+                    Command="{Binding BackCommand}"/>
 
-            <Label Grid.Column="1"
+            <!-- Connection Status -->
+            <Border Grid.Column="1"
+                    Padding="8,4"
+                    StrokeShape="RoundRectangle 6"
+                    StrokeThickness="0"
+                    BackgroundColor="{Binding ConnectionStatusColor}"
+                    VerticalOptions="Center"
+                    Margin="8,0,0,0">
+                <Label Text="{Binding ConnectionStatusText}"
+                       TextColor="White"
+                       FontSize="11"
+                       FontFamily="OpenSansSemibold"/>
+            </Border>
+
+            <Label Grid.Column="2"
                    Text="{h:Translate KitchenDisplay}"
-                   FontSize="{OnIdiom Phone=16, Default=22}"
-                   FontAttributes="Bold"
-                   TextColor="#2c3e50"
+                   FontFamily="OpenSansSemibold"
+                   FontSize="20"
+                   TextColor="White"
                    HorizontalOptions="Center"
                    VerticalOptions="Center"/>
 
-            <!-- Connection Status -->
-            <Frame Grid.Column="2"
-                   BackgroundColor="{Binding ConnectionStatusColor}"
-                   CornerRadius="6"
-                   Padding="{OnIdiom Phone='6,4', Default='10,6'}"
-                   HasShadow="False"
-                   VerticalOptions="Center"
-                   Margin="0,0,10,0"
-                   BorderColor="#bdc3c7">
-                <Label Text="{Binding ConnectionStatusText}"
-                       TextColor="White"
-                       FontSize="{OnIdiom Phone=10, Default=12}"
-                       FontAttributes="Bold"/>
-            </Frame>
-
-            <Button Grid.Column="3"
-                    Text="{OnIdiom Phone='↻', Default={h:Translate Refresh}}"
-                    Command="{Binding RefreshCommand}"
-                    BackgroundColor="#e67e22"
+            <Button Grid.Column="4"
+                    Text="{h:Translate Refresh}"
+                    Style="{StaticResource GhostButton}"
                     TextColor="White"
-                    FontSize="{OnIdiom Phone=16, Default=14}"
-                    HeightRequest="{OnIdiom Phone=36, Default=40}"
-                    CornerRadius="6"
-                    Padding="{OnIdiom Phone='10,0', Default='16,0'}"/>
+                    Command="{Binding RefreshCommand}"/>
         </Grid>
 
         <!-- Orders Grid -->
@@ -89,8 +76,8 @@
                             </Frame.GestureRecognizers>
                             <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
 
-                                <!-- Order Number & Timer -->
-                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                                <!-- Order Number, Table & Timer -->
+                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" Margin="0,0,0,10">
                                     <Label Grid.Column="0"
                                            Text="{Binding OrderNumber}"
                                            TextColor="#2c3e50"
@@ -113,6 +100,13 @@
                                                HorizontalTextAlignment="Center"
                                                LineBreakMode="NoWrap"/>
                                     </Frame>
+                                    <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                           Text="{Binding TableDisplay}"
+                                           TextColor="#e67e22"
+                                           FontSize="13"
+                                           FontAttributes="Bold"
+                                           IsVisible="{Binding HasTable}"
+                                           Margin="0,4,0,0"/>
                                 </Grid>
 
                                 <!-- Separator Line -->
@@ -282,6 +276,22 @@
                                        FontSize="{OnIdiom Phone=12, Default=14}"
                                        FontAttributes="Bold"
                                        VerticalOptions="Center"/>
+                                <Label Text="•"
+                                       TextColor="#bdc3c7"
+                                       FontSize="{OnIdiom Phone=12, Default=14}"
+                                       VerticalOptions="Center"
+                                       IsVisible="{Binding SelectedOrder.HasTable}"/>
+                                <Frame BackgroundColor="#e67e22"
+                                       CornerRadius="4"
+                                       Padding="{OnIdiom Phone='6,3', Default='8,4'}"
+                                       HasShadow="False"
+                                       BorderColor="#d35400"
+                                       IsVisible="{Binding SelectedOrder.HasTable}">
+                                    <Label Text="{Binding SelectedOrder.TableDisplay}"
+                                           TextColor="White"
+                                           FontSize="{OnIdiom Phone=10, Default=12}"
+                                           FontAttributes="Bold"/>
+                                </Frame>
                                 <Label Text="•"
                                        TextColor="#bdc3c7"
                                        FontSize="{OnIdiom Phone=12, Default=14}"

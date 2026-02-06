@@ -11,6 +11,7 @@ namespace Trenios.Mobile
             // Register routes
             Routing.RegisterRoute("orders", typeof(OrdersPage));
             Routing.RegisterRoute("kitchen", typeof(KitchenDisplayPage));
+            Routing.RegisterRoute("tables", typeof(TablesPage));
         }
     }
 }

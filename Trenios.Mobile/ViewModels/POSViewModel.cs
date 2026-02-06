@@ -207,6 +207,7 @@ public class POSViewModel : BaseViewModel
     public ICommand BackCommand { get; }
     public ICommand ViewOrdersCommand { get; }
     public ICommand ViewKitchenCommand { get; }
+    public ICommand ViewTablesCommand { get; }
 
     // Order Type & Table Selection Commands
     public ICommand SelectOrderTypeCommand { get; }
@@ -245,6 +246,7 @@ public class POSViewModel : BaseViewModel
         BackCommand = new Command(async () => await GoBackAsync(), () => CanGoBack);
         ViewOrdersCommand = new Command(async () => await Shell.Current.GoToAsync("orders"));
         ViewKitchenCommand = new Command(async () => await Shell.Current.GoToAsync("kitchen"));
+        ViewTablesCommand = new Command(async () => await Shell.Current.GoToAsync("tables"));
 
         // Order Type & Table Selection Commands
         SelectOrderTypeCommand = new Command<object>(async (param) => await SelectOrderTypeAsync(param));
