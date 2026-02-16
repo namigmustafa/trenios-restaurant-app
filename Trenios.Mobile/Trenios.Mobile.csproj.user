@@ -2,10 +2,12 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <IsFirstTimeProjectOpen>False</IsFirstTimeProjectOpen>
-    <ActiveDebugFramework>net9.0-android</ActiveDebugFramework>
-    <ActiveDebugProfile>Xiaomi Mi A3 (Android 11.0 - API 30)</ActiveDebugProfile>
-    <SelectedPlatformGroup>PhysicalDevice</SelectedPlatformGroup>
+    <ActiveDebugFramework>net9.0-ios</ActiveDebugFramework>
+    <ActiveDebugProfile>Namiq’s iPhone</ActiveDebugProfile>
+    <SelectedPlatformGroup>LocalDevice</SelectedPlatformGroup>
     <DefaultDevice>tablet_h-dpi_13_5in_-_api_35</DefaultDevice>
+    <DeveloperId>NJJXK59W6Y</DeveloperId>
+    <DevelopmentTeamId>NJJXK59W6Y</DevelopmentTeamId>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetPlatformIdentifier)'=='iOS'">
     <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>

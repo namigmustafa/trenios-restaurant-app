@@ -280,24 +280,50 @@ public class POSViewModel : BaseViewModel
 
         try
         {
+            System.Diagnostics.Debug.WriteLine($"[LoadCategoriesAsync] Starting, forceRefresh: {forceRefresh}");
             var (categories, error) = await _productService.GetCategoriesAsync(forceRefresh);
+            System.Diagnostics.Debug.WriteLine($"[LoadCategoriesAsync] Received {categories?.Count ?? 0} categories, Error: {error}");
 
-            if (categories != null)
+            if (categories != null && categories.Count > 0)
             {
-                Categories.Clear();
-                foreach (var cat in categories)
+                await MainThread.InvokeOnMainThreadAsync(() =>
                 {
-                    Categories.Add(cat);
-                }
+                    try
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[LoadCategoriesAsync] Updating Categories collection. Current: {Categories.Count}");
+
+                        Categories.Clear();
+
+                        foreach (var cat in categories)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[LoadCategoriesAsync] Adding category: {cat.Name}");
+                            Categories.Add(cat);
+                        }
+
+                        System.Diagnostics.Debug.WriteLine($"[LoadCategoriesAsync] Categories updated. Final count: {Categories.Count}");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[LoadCategoriesAsync] Collection update ERROR: {ex.Message}");
+                        ErrorMessage = $"Failed to update categories: {ex.Message}";
+                    }
+                });
             }
             else
             {
                 ErrorMessage = error;
+                System.Diagnostics.Debug.WriteLine($"[LoadCategoriesAsync] Service returned error: {error}");
             }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LoadCategoriesAsync] EXCEPTION: {ex.Message}\nStack: {ex.StackTrace}");
+            ErrorMessage = $"Failed to load categories: {ex.Message}";
         }
         finally
         {
             IsLoadingCategories = false;
+            System.Diagnostics.Debug.WriteLine("[LoadCategoriesAsync] Completed");
         }
     }
 
@@ -310,24 +336,41 @@ public class POSViewModel : BaseViewModel
 
         try
         {
+            System.Diagnostics.Debug.WriteLine($"[LoadMenuItemsAsync] Loading menu items for category: {SelectedCategoryId}");
             var (items, error) = await _productService.GetMenuItemsByCategoryAsync(SelectedCategoryId.Value);
+            System.Diagnostics.Debug.WriteLine($"[LoadMenuItemsAsync] Received {items?.Count ?? 0} items, Error: {error}");
 
             if (items != null)
             {
-                MenuItems.Clear();
-                foreach (var item in items)
+                await MainThread.InvokeOnMainThreadAsync(() =>
                 {
-                    MenuItems.Add(item);
-                }
+                    System.Diagnostics.Debug.WriteLine($"[LoadMenuItemsAsync] Updating MenuItems collection. Current: {MenuItems.Count}");
+                    MenuItems.Clear();
+
+                    foreach (var item in items)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[LoadMenuItemsAsync] Adding item: {item.MenuItemName}");
+                        MenuItems.Add(item);
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"[LoadMenuItemsAsync] MenuItems updated. Final count: {MenuItems.Count}");
+                });
             }
             else
             {
                 ErrorMessage = error;
+                System.Diagnostics.Debug.WriteLine($"[LoadMenuItemsAsync] Service returned error: {error}");
             }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LoadMenuItemsAsync] EXCEPTION: {ex.Message}\nStack: {ex.StackTrace}");
+            ErrorMessage = $"Failed to load menu items: {ex.Message}";
         }
         finally
         {
             IsLoadingProducts = false;
+            System.Diagnostics.Debug.WriteLine("[LoadMenuItemsAsync] Completed");
         }
     }
 
@@ -584,9 +627,10 @@ public class POSViewModel : BaseViewModel
 
             if (orderType == OrderType.DineIn)
             {
-                // Load tables and show selection
-                await LoadTablesAsync();
+                // Show table selection overlay first so CollectionView can layout,
+                // then load tables into it (avoids iOS UICollectionView zero-frame crash)
                 ShowTableSelection = true;
+                await LoadTablesAsync();
                 return;
             }
 
@@ -808,24 +852,49 @@ public class POSViewModel : BaseViewModel
 
     private void RefreshCart()
     {
-        CartItems.Clear();
-        foreach (var item in _orderService.CartItems)
+        MainThread.BeginInvokeOnMainThread(() =>
         {
-            CartItems.Add(item);
-        }
+            try
+            {
+                System.Diagnostics.Debug.WriteLine($"[RefreshCart] Starting. Current: {CartItems.Count}, New: {_orderService.CartItems.Count}");
 
-        OnPropertyChanged(nameof(Subtotal));
-        OnPropertyChanged(nameof(Tax));
-        OnPropertyChanged(nameof(Total));
-        OnPropertyChanged(nameof(TotalItems));
-        OnPropertyChanged(nameof(HasItems));
-        OnPropertyChanged(nameof(CanRepeat));
-        OnPropertyChanged(nameof(HeldOrdersCount));
+                // iOS CRITICAL FIX: Don't update CartItems collection to avoid UICollectionView crash
+                // The cart view is only shown when user taps the button, and we can refresh it then
+                if (DeviceInfo.Platform != DevicePlatform.iOS)
+                {
+                    CartItems.Clear();
+                    foreach (var item in _orderService.CartItems)
+                    {
+                        CartItems.Add(item);
+                    }
+                    System.Diagnostics.Debug.WriteLine($"[RefreshCart] CartItems updated: {CartItems.Count}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("[RefreshCart] iOS: Skipping CartItems update to avoid UICollectionView crash");
+                }
 
-        ((Command)PayCommand).ChangeCanExecute();
-        ((Command)HoldOrderCommand).ChangeCanExecute();
-        ((Command)CancelOrderCommand).ChangeCanExecute();
-        ((Command)RepeatLastOrderCommand).ChangeCanExecute();
+                // Fire property changes
+                OnPropertyChanged(nameof(Subtotal));
+                OnPropertyChanged(nameof(Tax));
+                OnPropertyChanged(nameof(Total));
+                OnPropertyChanged(nameof(TotalItems));
+                OnPropertyChanged(nameof(HasItems));
+                OnPropertyChanged(nameof(CanRepeat));
+                OnPropertyChanged(nameof(HeldOrdersCount));
+
+                ((Command)PayCommand).ChangeCanExecute();
+                ((Command)HoldOrderCommand).ChangeCanExecute();
+                ((Command)CancelOrderCommand).ChangeCanExecute();
+                ((Command)RepeatLastOrderCommand).ChangeCanExecute();
+
+                System.Diagnostics.Debug.WriteLine($"[RefreshCart] Completed. HasItems: {HasItems}, TotalItems: {TotalItems}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[RefreshCart] ERROR: {ex.Message}");
+            }
+        });
     }
 }
 

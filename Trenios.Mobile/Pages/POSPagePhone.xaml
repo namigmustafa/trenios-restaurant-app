@@ -104,7 +104,7 @@
         <Grid Grid.Row="0"
               x:Name="PhoneHeader"
               Style="{StaticResource HeaderGrid}"
-              ColumnDefinitions="Auto,*">
+              ColumnDefinitions="Auto,*,Auto">
             <Button Grid.Column="0"
                     Text="&lt;"
                     Style="{StaticResource NavButton}"
@@ -118,6 +118,14 @@
                    FontSize="16"
                    HorizontalOptions="Center"
                    VerticalOptions="Center"/>
+            <Label Grid.Column="2"
+                   Text="v1.0.1"
+                   TextColor="White"
+                   FontSize="12"
+                   Opacity="0.7"
+                   HorizontalOptions="End"
+                   VerticalOptions="Center"
+                   Margin="0,0,12,0"/>
         </Grid>
 
         <!-- Main Content Area -->
@@ -128,14 +136,14 @@
                             Orientation="Horizontal"
                             HorizontalScrollBarVisibility="Never"
                             BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
-                            Padding="8,8">
+                            Padding="8,8"
+                            HeightRequest="64">
                     <HorizontalStackLayout Spacing="8"
                                            BindableLayout.ItemsSource="{Binding Categories}">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="api:CategoryDto">
                                 <Button Text="{Binding Name}"
                                         Style="{StaticResource CategoryButton}"
-                                        BackgroundColor="{Binding Color}"
                                         Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectCategoryCommand}"
                                         CommandParameter="{Binding .}"/>
                             </DataTemplate>
@@ -684,57 +692,42 @@
                                        VerticalOptions="Center"/>
 
                     <!-- Tables Grid -->
-                    <CollectionView Grid.Row="1"
-                                    ItemsSource="{Binding Tables}"
-                                    SelectedItem="{Binding SelectedTable, Mode=TwoWay}"
-                                    SelectionMode="Single"
-                                    IsVisible="{Binding IsLoadingTables, Converter={StaticResource InvertedBoolConverter}}"
-                                    Margin="12,10">
-                        <CollectionView.ItemsLayout>
-                            <GridItemsLayout Orientation="Vertical"
-                                             Span="3"
-                                             HorizontalItemSpacing="8"
-                                             VerticalItemSpacing="8"/>
-                        </CollectionView.ItemsLayout>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="api:TableDto">
-                                <Border Padding="10"
-                                        StrokeShape="RoundRectangle 8"
-                                        StrokeThickness="2"
-                                        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
-                                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray700}}">
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup Name="CommonStates">
-                                            <VisualState Name="Normal"/>
-                                            <VisualState Name="Selected">
-                                                <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
-                                                    <Setter Property="Stroke" Value="{StaticResource Primary}"/>
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
-                                    <VerticalStackLayout HorizontalOptions="Center" Spacing="2">
-                                        <Label Text="{Binding Number}"
-                                               FontSize="18"
-                                               FontFamily="OpenSansSemibold"
-                                               HorizontalOptions="Center"/>
-                                        <Label Text="{Binding CapacityDisplay}"
-                                               FontSize="11"
-                                               TextColor="{StaticResource Gray500}"
-                                               HorizontalOptions="Center"
-                                               IsVisible="{Binding Capacity, Converter={StaticResource IsNotNullConverter}}"/>
-                                    </VerticalStackLayout>
-                                </Border>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                        <CollectionView.EmptyView>
-                            <Label Text="No tables available"
-                                   Style="{StaticResource Caption}"
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center"/>
-                        </CollectionView.EmptyView>
-                    </CollectionView>
+                    <ScrollView Grid.Row="1"
+                                IsVisible="{Binding IsLoadingTables, Converter={StaticResource InvertedBoolConverter}}"
+                                Margin="12,10">
+                        <FlexLayout Wrap="Wrap"
+                                    JustifyContent="Start"
+                                    AlignContent="Start"
+                                    BindableLayout.ItemsSource="{Binding Tables}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="api:TableDto">
+                                    <Border Padding="10"
+                                            StrokeShape="RoundRectangle 8"
+                                            StrokeThickness="2"
+                                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray700}}"
+                                            WidthRequest="100"
+                                            HeightRequest="70"
+                                            Margin="4">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnTableTapped"/>
+                                        </Border.GestureRecognizers>
+                                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="2">
+                                            <Label Text="{Binding Number}"
+                                                   FontSize="18"
+                                                   FontFamily="OpenSansSemibold"
+                                                   HorizontalOptions="Center"/>
+                                            <Label Text="{Binding CapacityDisplay}"
+                                                   FontSize="11"
+                                                   TextColor="{StaticResource Gray500}"
+                                                   HorizontalOptions="Center"
+                                                   IsVisible="{Binding Capacity, Converter={StaticResource IsNotNullConverter}}"/>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </FlexLayout>
+                    </ScrollView>
 
                     <!-- Footer Buttons -->
                     <Grid Grid.Row="2"
