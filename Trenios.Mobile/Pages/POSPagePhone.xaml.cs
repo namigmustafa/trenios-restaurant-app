@@ -19,6 +19,9 @@ public partial class POSPagePhone : ContentPage
 
         // Subscribe to cart changes for button visibility
         _orderService.OnCartChanged += OnCartChanged;
+
+        // Return to products view after order is submitted
+        _viewModel.OnOrderCompleted += OnOrderCompleted;
     }
 
     protected override void OnAppearing()
@@ -37,11 +40,25 @@ public partial class POSPagePhone : ContentPage
 
     private void OnCartChanged()
     {
-        // On iOS, the binding doesn't always update properly, so manually refresh button visibility
         MainThread.BeginInvokeOnMainThread(() =>
         {
             System.Diagnostics.Debug.WriteLine($"[POSPagePhone.OnCartChanged] Cart changed - HasItems: {_viewModel.HasItems}, TotalItems: {_viewModel.TotalItems}");
-            PhoneBottomBar.IsVisible = _viewModel.HasItems;
+
+            if (PhoneCartView.IsVisible)
+            {
+                // Cart view is open - refresh items so +/- quantity changes are visible (iOS fix)
+                var tempItems = _orderService.CartItems.ToList();
+                _viewModel.CartItems.Clear();
+                foreach (var item in tempItems)
+                {
+                    _viewModel.CartItems.Add(item);
+                }
+            }
+            else
+            {
+                // Products view - show/hide bottom bar based on cart state
+                PhoneBottomBar.IsVisible = _viewModel.HasItems;
+            }
         });
     }
 
@@ -91,6 +108,18 @@ public partial class POSPagePhone : ContentPage
 
         // Update ViewModel
         _viewModel.SelectedTable = table;
+    }
+
+    private void OnOrderCompleted()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            // Return to products view after order is submitted
+            PhoneCartView.IsVisible = false;
+            PhoneProductsView.IsVisible = true;
+            PhoneHeader.IsVisible = true;
+            PhoneBottomBar.IsVisible = false;
+        });
     }
 
     private void OnBackToProducts(object? sender, EventArgs e)

@@ -47,6 +47,8 @@ public class POSViewModel : BaseViewModel
     public ObservableCollection<SelectableAdditionGroup> SelectableAdditionGroups { get; } = new();
     public ObservableCollection<TableDto> Tables { get; } = new();
 
+    public event Action? OnOrderCompleted;
+
     public string UserName => _authService.CurrentUser?.FullName ?? "Cashier";
     public string BranchName => _authService.GetEffectiveBranchName() ?? "Branch";
 
@@ -725,6 +727,8 @@ public class POSViewModel : BaseViewModel
                     LocalizationService.Instance["OrderSubmitted"],
                     message,
                     LocalizationService.Instance["OK"]);
+
+                OnOrderCompleted?.Invoke();
             }
             else
             {
@@ -859,7 +863,7 @@ public class POSViewModel : BaseViewModel
                 System.Diagnostics.Debug.WriteLine($"[RefreshCart] Starting. Current: {CartItems.Count}, New: {_orderService.CartItems.Count}");
 
                 // iOS CRITICAL FIX: Don't update CartItems collection to avoid UICollectionView crash
-                // The cart view is only shown when user taps the button, and we can refresh it then
+                // The phone cart view populates CartItems on demand in OnCartTapped/OnCartChanged
                 if (DeviceInfo.Platform != DevicePlatform.iOS)
                 {
                     CartItems.Clear();
