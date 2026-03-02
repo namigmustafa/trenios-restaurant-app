@@ -16,29 +16,22 @@
         <Grid Grid.Row="0"
               Padding="16,12"
               BackgroundColor="{StaticResource Primary}"
-              ColumnDefinitions="Auto,Auto,*,Auto,Auto">
-
-            <Button Grid.Column="0"
-                    Text="{h:Translate Back}"
-                    Style="{StaticResource GhostButton}"
-                    TextColor="White"
-                    Command="{Binding BackCommand}"/>
+              ColumnDefinitions="Auto,*,Auto,Auto">
 
             <!-- Connection Status -->
-            <Border Grid.Column="1"
+            <Border Grid.Column="0"
                     Padding="8,4"
                     StrokeShape="RoundRectangle 6"
                     StrokeThickness="0"
                     BackgroundColor="{Binding ConnectionStatusColor}"
-                    VerticalOptions="Center"
-                    Margin="8,0,0,0">
+                    VerticalOptions="Center">
                 <Label Text="{Binding ConnectionStatusText}"
                        TextColor="White"
                        FontSize="11"
                        FontFamily="OpenSansSemibold"/>
             </Border>
 
-            <Label Grid.Column="2"
+            <Label Grid.Column="1"
                    Text="{h:Translate KitchenDisplay}"
                    FontFamily="OpenSansSemibold"
                    FontSize="20"
@@ -46,11 +39,17 @@
                    HorizontalOptions="Center"
                    VerticalOptions="Center"/>
 
-            <Button Grid.Column="4"
+            <Button Grid.Column="2"
                     Text="{h:Translate Refresh}"
                     Style="{StaticResource GhostButton}"
                     TextColor="White"
                     Command="{Binding RefreshCommand}"/>
+
+            <Button Grid.Column="3"
+                    Text="{h:Translate Logout}"
+                    Style="{StaticResource GhostButton}"
+                    TextColor="White"
+                    Command="{Binding LogoutCommand}"/>
         </Grid>
 
         <!-- Orders Grid -->

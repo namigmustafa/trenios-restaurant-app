@@ -109,6 +109,7 @@
                     Text="&lt;"
                     Style="{StaticResource NavButton}"
                     Command="{Binding BackCommand}"
+                    IsVisible="{Binding CanGoBack}"
                     FontSize="16"
                     Padding="10,8"/>
             <Label Grid.Column="1"
@@ -118,14 +119,11 @@
                    FontSize="16"
                    HorizontalOptions="Center"
                    VerticalOptions="Center"/>
-            <Label Grid.Column="2"
-                   Text="v1.0.1"
-                   TextColor="White"
-                   FontSize="12"
-                   Opacity="0.7"
-                   HorizontalOptions="End"
-                   VerticalOptions="Center"
-                   Margin="0,0,12,0"/>
+            <Button Grid.Column="2"
+                    Text="{h:Translate Logout}"
+                    Style="{StaticResource GhostButton}"
+                    TextColor="White"
+                    Command="{Binding LogoutCommand}"/>
         </Grid>
 
         <!-- Main Content Area -->

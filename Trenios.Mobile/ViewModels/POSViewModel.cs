@@ -52,9 +52,8 @@ public class POSViewModel : BaseViewModel
     public string UserName => _authService.CurrentUser?.FullName ?? "Cashier";
     public string BranchName => _authService.GetEffectiveBranchName() ?? "Branch";
 
-    // Back button visible on phones always, on tablets only for SuperAdmin and RestaurantOwner
-    public bool CanGoBack => DeviceInfo.Idiom == DeviceIdiom.Phone ||
-                             _authService.CurrentUser?.UserRole == UserRole.SuperAdmin ||
+    // Back button visible only for SuperAdmin and RestaurantOwner (to switch branches)
+    public bool CanGoBack => _authService.CurrentUser?.UserRole == UserRole.SuperAdmin ||
                              _authService.CurrentUser?.UserRole == UserRole.RestaurantOwner;
 
     public Guid? SelectedCategoryId
@@ -246,9 +245,9 @@ public class POSViewModel : BaseViewModel
         LogoutCommand = new Command(async () => await LogoutAsync());
         RefreshCommand = new Command(async () => await LoadDataAsync(forceRefresh: true));
         BackCommand = new Command(async () => await GoBackAsync(), () => CanGoBack);
-        ViewOrdersCommand = new Command(async () => await Shell.Current.GoToAsync("orders"));
-        ViewKitchenCommand = new Command(async () => await Shell.Current.GoToAsync("kitchen"));
-        ViewTablesCommand = new Command(async () => await Shell.Current.GoToAsync("tables"));
+        ViewOrdersCommand = new Command(async () => await Shell.Current.GoToAsync("//OrdersPage"));
+        ViewKitchenCommand = new Command(async () => await Shell.Current.GoToAsync("//KitchenPage"));
+        ViewTablesCommand = new Command(async () => await Shell.Current.GoToAsync("//TablesPage"));
 
         // Order Type & Table Selection Commands
         SelectOrderTypeCommand = new Command<object>(async (param) => await SelectOrderTypeAsync(param));
@@ -771,18 +770,10 @@ public class POSViewModel : BaseViewModel
     {
         if (CanGoBack)
         {
-            // On phones, go to MobileMenu. On tablets, go to BranchSelection
-            if (DeviceInfo.Idiom == DeviceIdiom.Phone)
-            {
-                await Shell.Current.GoToAsync("//MobileMenu");
-            }
-            else
-            {
-                _productService.ClearCache();
-                _tableService.ClearCache();
-                _groupsCache.Clear(); // Clear cached groups when changing branch
-                await Shell.Current.GoToAsync("//BranchSelection");
-            }
+            _productService.ClearCache();
+            _tableService.ClearCache();
+            _groupsCache.Clear();
+            await Shell.Current.GoToAsync("//BranchSelection");
         }
     }
 

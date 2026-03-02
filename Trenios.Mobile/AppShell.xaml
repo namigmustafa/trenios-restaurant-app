@@ -7,6 +7,7 @@
     Shell.FlyoutBehavior="Disabled"
     Shell.NavBarIsVisible="False">
 
+    <!-- Pre-login pages (no tabs) -->
     <ShellContent
         Title="Login"
         Route="LoginPage"
@@ -22,29 +23,43 @@
         Route="BranchSelection"
         ContentTemplate="{DataTemplate pages:BranchSelectionPage}" />
 
-    <ShellContent
-        Title="Mobile Menu"
-        Route="MobileMenu"
-        ContentTemplate="{DataTemplate pages:MobileMenuPage}" />
+    <!-- Main app tabs -->
+    <TabBar Route="MainTabs">
 
-    <ShellContent
-        Title="POS"
-        Route="MainPage"
-        ContentTemplate="{DataTemplate pages:POSPage}" />
+        <Tab Title="Create Order">
+            <Tab.Icon>
+                <FontImageSource Glyph="🛒" Size="22" />
+            </Tab.Icon>
+            <ShellContent x:Name="CreateOrderShellContent" Route="CreateOrderPage" />
+        </Tab>
 
-    <ShellContent
-        Title="POS Phone"
-        Route="POSPhone"
-        ContentTemplate="{DataTemplate pages:POSPagePhone}" />
+        <Tab Title="Orders">
+            <Tab.Icon>
+                <FontImageSource Glyph="📋" Size="22" />
+            </Tab.Icon>
+            <ShellContent
+                Route="OrdersPage"
+                ContentTemplate="{DataTemplate pages:OrdersPage}" />
+        </Tab>
 
-    <ShellContent
-        Title="Orders"
-        Route="OrdersPage"
-        ContentTemplate="{DataTemplate pages:OrdersPage}" />
+        <Tab Title="Tables">
+            <Tab.Icon>
+                <FontImageSource Glyph="🪑" Size="22" />
+            </Tab.Icon>
+            <ShellContent
+                Route="TablesPage"
+                ContentTemplate="{DataTemplate pages:TablesPage}" />
+        </Tab>
 
-    <ShellContent
-        Title="Kitchen"
-        Route="KitchenPage"
-        ContentTemplate="{DataTemplate pages:KitchenDisplayPage}" />
+        <Tab Title="Kitchen">
+            <Tab.Icon>
+                <FontImageSource Glyph="👨‍🍳" Size="22" />
+            </Tab.Icon>
+            <ShellContent
+                Route="KitchenPage"
+                ContentTemplate="{DataTemplate pages:KitchenDisplayPage}" />
+        </Tab>
+
+    </TabBar>
 
 </Shell>

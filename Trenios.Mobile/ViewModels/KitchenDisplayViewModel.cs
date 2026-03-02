@@ -52,7 +52,7 @@ public class KitchenDisplayViewModel : INotifyPropertyChanged
     public ICommand SelectOrderCommand { get; }
     public ICommand StartPreparingCommand { get; }
     public ICommand MarkCompletedCommand { get; }
-    public ICommand BackCommand { get; }
+    public ICommand LogoutCommand { get; }
     public ICommand ClosePopupCommand { get; }
 
     public KitchenDisplayViewModel(OrderService orderService, OrderHubService orderHubService, AuthService authService)
@@ -65,7 +65,7 @@ public class KitchenDisplayViewModel : INotifyPropertyChanged
         SelectOrderCommand = new Command<OrderResponse>(SelectOrder);
         StartPreparingCommand = new Command(async () => await UpdateStatusAsync(OrderStatus.Preparing));
         MarkCompletedCommand = new Command(async () => await UpdateStatusAsync(OrderStatus.Completed));
-        BackCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
+        LogoutCommand = new Command(async () => await LogoutAsync());
         ClosePopupCommand = new Command(() => SelectedOrder = null);
 
         // Subscribe to SignalR events
@@ -199,6 +199,12 @@ public class KitchenDisplayViewModel : INotifyPropertyChanged
     {
         // Could show error to user
         System.Diagnostics.Debug.WriteLine($"SignalR Error: {ex.Message}");
+    }
+
+    private async Task LogoutAsync()
+    {
+        await _authService.LogoutAsync();
+        await Shell.Current.GoToAsync("//LoginPage");
     }
 
     public async Task DisconnectAsync()
