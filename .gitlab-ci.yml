@@ -4,24 +4,32 @@ stages:
 
 variables:
   PROJECT_PATH: "Trenios.Mobile/Trenios.Mobile.csproj"
+  ANDROID_SDK_ROOT: "/android-sdk"
+  ANDROID_HOME: "/android-sdk"
 
 build-android:
   stage: build
-  image: mingc/android-build-box:latest
+  image: mcr.microsoft.com/dotnet/sdk:9.0
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
     - when: manual
   before_script:
-    - apt-get update && apt-get install -y dotnet-sdk-9.0 || true
-    - wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
-    - chmod +x dotnet-install.sh
-    - ./dotnet-install.sh --version 9.0.312 --install-dir /usr/local/dotnet
-    - export PATH="$PATH:/usr/local/dotnet"
-    - export DOTNET_ROOT=/usr/local/dotnet
+    # Install Java
+    - apt-get update -qq && apt-get install -y -qq openjdk-17-jdk-headless unzip wget curl
+    # Install Android SDK command-line tools
+    - mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+    - wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdtools.zip
+    - unzip -q /tmp/cmdtools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
+    - mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
+    - rm /tmp/cmdtools.zip
+    - export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"
+    # Accept licenses and install required SDK packages
+    - yes | sdkmanager --licenses > /dev/null 2>&1
+    - sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" > /dev/null 2>&1
+    # Install MAUI Android workload
     - dotnet workload install maui-android
   script:
-    - export PATH="$PATH:/usr/local/dotnet"
-    - export DOTNET_ROOT=/usr/local/dotnet
+    - export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"
     - echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > trenios.keystore
     - >
       dotnet publish $PROJECT_PATH
