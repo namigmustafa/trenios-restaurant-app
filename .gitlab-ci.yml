@@ -14,22 +14,24 @@ build-android:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
     - when: manual
   before_script:
-    # Install Java
-    - apt-get update -qq && apt-get install -y -qq openjdk-17-jdk-headless unzip wget curl
+    - apt-get update -qq && apt-get install -y -qq openjdk-17-jdk-headless unzip wget
+    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
     # Install Android SDK command-line tools
     - mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
     - wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/cmdtools.zip
     - unzip -q /tmp/cmdtools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
     - mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
     - rm /tmp/cmdtools.zip
-    - export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"
-    # Accept licenses and install required SDK packages
-    - yes | sdkmanager --licenses > /dev/null 2>&1
-    - sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" > /dev/null 2>&1
+    # Accept licenses by writing license files directly
+    - mkdir -p $ANDROID_SDK_ROOT/licenses
+    - printf "24333f8a63b6825ea9c5514f83c2829b004d1fee\n8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
+    - printf "84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de7af1a06de9f4b1727b84351f2910" > $ANDROID_SDK_ROOT/licenses/android-sdk-preview-license
+    # Install required SDK packages
+    - $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-35" "build-tools;35.0.0"
     # Install MAUI Android workload
     - dotnet workload install maui-android
   script:
-    - export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"
+    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
     - echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > trenios.keystore
     - >
       dotnet publish $PROJECT_PATH
