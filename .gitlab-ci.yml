@@ -3,7 +3,7 @@ stages:
   - publish
 
 variables:
-  PROJECT_PATH: "Trenios/Trenios.Mobile/Trenios.Mobile.csproj"
+  PROJECT_PATH: "Trenios.Mobile/Trenios.Mobile.csproj"
 
 build-android:
   stage: build
