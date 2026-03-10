@@ -76,7 +76,7 @@ public class TablesViewModel : INotifyPropertyChanged
     public ICommand SelectTargetTableCommand { get; }
     public ICommand ConfirmMoveCommand { get; }
     public ICommand ReleaseCommand { get; }
-    public ICommand BackCommand { get; }
+    public ICommand LogoutCommand { get; }
 
     public TablesViewModel(TableService tableService, AuthService authService, OrderService orderService)
     {
@@ -94,7 +94,7 @@ public class TablesViewModel : INotifyPropertyChanged
         SelectTargetTableCommand = new Command<TableWithReservationDto>(SelectTargetTable);
         ConfirmMoveCommand = new Command(async () => await ConfirmMoveAsync());
         ReleaseCommand = new Command(async () => await ReleaseAsync());
-        BackCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
+        LogoutCommand = new Command(async () => await LogoutAsync());
     }
 
     public async Task LoadTablesAsync()
@@ -366,6 +366,12 @@ public class TablesViewModel : INotifyPropertyChanged
         {
             IsLoading = false;
         }
+    }
+
+    private async Task LogoutAsync()
+    {
+        await _authService.LogoutAsync();
+        await Shell.Current.GoToAsync("//LoginPage");
     }
 
     protected void OnPropertyChanged(string propertyName)

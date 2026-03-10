@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Trenios.Mobile.Pages;
 
 namespace Trenios.Mobile
@@ -8,10 +9,14 @@ namespace Trenios.Mobile
         {
             InitializeComponent();
 
-            // Register routes
-            Routing.RegisterRoute("orders", typeof(OrdersPage));
-            Routing.RegisterRoute("kitchen", typeof(KitchenDisplayPage));
-            Routing.RegisterRoute("tables", typeof(TablesPage));
+            // Set device-appropriate page for Create Order tab
+            var services = IPlatformApplication.Current?.Services;
+            if (services != null)
+            {
+                CreateOrderShellContent.ContentTemplate = DeviceInfo.Idiom == DeviceIdiom.Phone
+                    ? new DataTemplate(() => services.GetRequiredService<POSPagePhone>())
+                    : new DataTemplate(() => services.GetRequiredService<POSPage>());
+            }
         }
     }
 }

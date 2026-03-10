@@ -123,7 +123,7 @@ public class OrdersViewModel : INotifyPropertyChanged
     public ICommand UpdateStatusCommand { get; }
     public ICommand CompleteOrderSwipeCommand { get; }
     public ICommand CancelOrderSwipeCommand { get; }
-    public ICommand BackCommand { get; }
+    public ICommand LogoutCommand { get; }
 
     public OrdersViewModel(ApiService apiService, AuthService authService)
     {
@@ -138,7 +138,7 @@ public class OrdersViewModel : INotifyPropertyChanged
         UpdateStatusCommand = new Command<string>(async (status) => await UpdateOrderStatusAsync(status));
         CompleteOrderSwipeCommand = new Command<OrderResponse>(async (order) => await CompleteOrderAsync(order));
         CancelOrderSwipeCommand = new Command<OrderResponse>(async (order) => await CancelOrderAsync(order));
-        BackCommand = new Command(async () => await Shell.Current.GoToAsync(".."));
+        LogoutCommand = new Command(async () => await LogoutAsync());
     }
 
     public async Task LoadOrdersAsync()
@@ -311,6 +311,12 @@ public class OrdersViewModel : INotifyPropertyChanged
         {
             await Application.Current?.MainPage?.DisplayAlert(loc["Error"], result.ErrorMessage, loc["OK"]);
         }
+    }
+
+    private async Task LogoutAsync()
+    {
+        await _authService.LogoutAsync();
+        await Shell.Current.GoToAsync("//LoginPage");
     }
 
     protected void OnPropertyChanged(string propertyName)
