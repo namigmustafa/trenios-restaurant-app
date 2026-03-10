@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="Trenios.Mobile.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:Trenios.Mobile.Pages"
+    Shell.FlyoutBehavior="Disabled"
+    Shell.NavBarIsVisible="False">
+
+    <ShellContent
+        Title="Login"
+        Route="LoginPage"
+        ContentTemplate="{DataTemplate pages:LoginPage}" />
+
+    <ShellContent
+        Title="Restaurant Selection"
+        Route="RestaurantSelection"
+        ContentTemplate="{DataTemplate pages:RestaurantSelectionPage}" />
+
+    <ShellContent
+        Title="Branch Selection"
+        Route="BranchSelection"
+        ContentTemplate="{DataTemplate pages:BranchSelectionPage}" />
+
+    <ShellContent
+        Title="Mobile Menu"
+        Route="MobileMenu"
+        ContentTemplate="{DataTemplate pages:MobileMenuPage}" />
+
+    <ShellContent
+        Title="POS"
+        Route="MainPage"
+        ContentTemplate="{DataTemplate pages:POSPage}" />
+
+    <ShellContent
+        Title="POS Phone"
+        Route="POSPhone"
+        ContentTemplate="{DataTemplate pages:POSPagePhone}" />
+
+    <ShellContent
+        Title="Orders"
+        Route="OrdersPage"
+        ContentTemplate="{DataTemplate pages:OrdersPage}" />
+
+    <ShellContent
+        Title="Kitchen"
+        Route="KitchenPage"
+        ContentTemplate="{DataTemplate pages:KitchenDisplayPage}" />
+
+</Shell>

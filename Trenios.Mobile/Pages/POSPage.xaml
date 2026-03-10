@@ -1,0 +1,1188 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Trenios.Mobile.ViewModels"
+             xmlns:api="clr-namespace:Trenios.Mobile.Models.Api"
+             xmlns:services="clr-namespace:Trenios.Mobile.Services"
+             xmlns:h="clr-namespace:Trenios.Mobile.Helpers"
+             x:Class="Trenios.Mobile.Pages.POSPage"
+             x:DataType="vm:POSViewModel"
+             Shell.NavBarIsVisible="False"
+             x:Name="ThisPage">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <!-- Menu Item Template - Image on top, Name and Price below -->
+            <DataTemplate x:Key="MenuItemTemplate" x:DataType="api:BranchMenuItemDto">
+                <Border StrokeShape="RoundRectangle 12"
+                        StrokeThickness="1"
+                        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                        Padding="0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectMenuItemCommand}"
+                                              CommandParameter="{Binding .}"/>
+                    </Border.GestureRecognizers>
+                    <Grid RowDefinitions="100,Auto">
+                        <!-- Image or Placeholder on Top -->
+                        <Grid Grid.Row="0" BackgroundColor="{StaticResource Gray100}">
+                            <Image Source="{Binding PrimaryImageUrl}"
+                                   Aspect="AspectFit"
+                                   IsVisible="{Binding HasImage}"/>
+                            <Label Text="{Binding MenuItemName, Converter={StaticResource FirstLetterConverter}}"
+                                   FontSize="36"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource Gray400}"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"
+                                   IsVisible="{Binding HasImage, Converter={StaticResource InvertedBoolConverter}}"/>
+                        </Grid>
+                        <!-- Name & Price at Bottom -->
+                        <VerticalStackLayout Grid.Row="1"
+                                             Padding="12,10"
+                                             Spacing="4">
+                            <Label Text="{Binding MenuItemName}"
+                                   FontSize="14"
+                                   FontFamily="OpenSansSemibold"
+                                   LineBreakMode="TailTruncation"
+                                   MaxLines="2"
+                                   HeightRequest="38"/>
+                            <Label Text="{Binding Price, StringFormat='€{0:F2}'}"
+                                   FontSize="16"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource Primary}"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+
+            <!-- Cart Item Template -->
+            <DataTemplate x:Key="CartItemTemplate" x:DataType="services:CartItem">
+                <Border Style="{StaticResource OrderItemCard}"
+                        Margin="0,0,0,8">
+                    <Grid ColumnDefinitions="*,Auto"
+                          RowDefinitions="Auto,Auto,Auto">
+                        <!-- Product Name -->
+                        <Label Grid.Row="0" Grid.Column="0"
+                               Text="{Binding MenuItemName}"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="14"
+                               LineBreakMode="TailTruncation"/>
+
+                        <!-- Price -->
+                        <Label Grid.Row="0" Grid.Column="1"
+                               Text="{Binding TotalPrice, StringFormat='€{0:F2}'}"
+                               Style="{StaticResource Price}"
+                               FontSize="14"/>
+
+                        <!-- Additions -->
+                        <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                               Text="{Binding AdditionsSummary}"
+                               Style="{StaticResource Caption}"
+                               IsVisible="{Binding AdditionsSummary, Converter={StaticResource IsNotNullConverter}}"
+                               Margin="0,4,0,0"/>
+
+                        <!-- Quantity Controls -->
+                        <HorizontalStackLayout Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                               Spacing="12"
+                                               Margin="0,8,0,0">
+                            <Button Text="-"
+                                    Style="{StaticResource QuantityButton}"
+                                    Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.DecreaseQuantityCommand}"
+                                    CommandParameter="{Binding .}"/>
+                            <Label Text="{Binding Quantity}"
+                                   VerticalOptions="Center"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="16"
+                                   WidthRequest="30"
+                                   HorizontalTextAlignment="Center"/>
+                            <Button Text="+"
+                                    Style="{StaticResource QuantityButton}"
+                                    Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.IncreaseQuantityCommand}"
+                                    CommandParameter="{Binding .}"/>
+                            <Button Text="{h:Translate Remove}"
+                                    Style="{StaticResource GhostButton}"
+                                    TextColor="{StaticResource Danger}"
+                                    Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.RemoveItemCommand}"
+                                    CommandParameter="{Binding .}"
+                                    HorizontalOptions="EndAndExpand"/>
+                        </HorizontalStackLayout>
+                    </Grid>
+                </Border>
+            </DataTemplate>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid x:Name="MainGrid">
+        <!-- Tablet Layout (Side by Side) -->
+        <Grid x:Name="TabletLayout"
+              ColumnDefinitions="*,360"
+              IsVisible="False">
+            <!-- Left: Products -->
+            <Grid Grid.Column="0"
+                  RowDefinitions="Auto,Auto,*">
+                <!-- Header -->
+                <Grid Grid.Row="0"
+                      Style="{StaticResource HeaderGrid}"
+                      ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto">
+                    <!-- Back Button -->
+                    <Button Grid.Column="0"
+                            Text="&lt;"
+                            Style="{StaticResource NavButton}"
+                            Command="{Binding BackCommand}"
+                            FontSize="18"
+                            Padding="12,10"/>
+
+                    <!-- Orders -->
+                    <Button Grid.Column="1"
+                            Text="{h:Translate Orders}"
+                            Style="{StaticResource NavButton}"
+                            Command="{Binding ViewOrdersCommand}"
+                            FontSize="14"
+                            Padding="16,10"
+                            Margin="16,0,0,0"/>
+
+                    <!-- Kitchen -->
+                    <Button Grid.Column="2"
+                            Text="{h:Translate Kitchen}"
+                            Style="{StaticResource NavButton}"
+                            Command="{Binding ViewKitchenCommand}"
+                            FontSize="14"
+                            Padding="16,10"
+                            Margin="8,0,0,0"/>
+
+                    <!-- Tables -->
+                    <Button Grid.Column="3"
+                            Text="{h:Translate Tables}"
+                            Style="{StaticResource NavButton}"
+                            Command="{Binding ViewTablesCommand}"
+                            FontSize="14"
+                            Padding="16,10"
+                            Margin="8,0,0,0"/>
+
+                    <!-- Language Flag Button -->
+                    <Border Grid.Column="5"
+                            StrokeShape="RoundRectangle 8"
+                            StrokeThickness="1"
+                            Stroke="{StaticResource Gray300}"
+                            BackgroundColor="Transparent"
+                            Padding="12,8"
+                            Margin="0,0,10,0">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnLanguageTapped"/>
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="8">
+                            <Label Text="🌐"
+                                   FontSize="18"
+                                   VerticalOptions="Center"/>
+                            <Label x:Name="CurrentLanguageLabelTablet"
+                                   Text="EN"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="14"
+                                   VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <!-- User Button -->
+                    <Border Grid.Column="6"
+                            StrokeShape="RoundRectangle 8"
+                            StrokeThickness="1"
+                            Stroke="{StaticResource Gray300}"
+                            BackgroundColor="Transparent"
+                            Padding="12,8"
+                            Margin="0,0,10,0"
+                            x:Name="UserDropdownTablet">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnUserTapped"/>
+                        </Border.GestureRecognizers>
+                        <Label Text="{Binding UserName}"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="14"
+                               VerticalOptions="Center"/>
+                    </Border>
+                </Grid>
+
+                <!-- Categories -->
+                <ScrollView Grid.Row="1"
+                            Orientation="Horizontal"
+                            HorizontalScrollBarVisibility="Never"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                            Padding="12,8">
+                    <HorizontalStackLayout Spacing="8"
+                                           BindableLayout.ItemsSource="{Binding Categories}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="api:CategoryDto">
+                                <Button Text="{Binding Name}"
+                                        Style="{StaticResource CategoryButton}"
+                                        BackgroundColor="{Binding Color}"
+                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectCategoryCommand}"
+                                        CommandParameter="{Binding .}"/>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <!-- Products Grid - More items with smaller cards -->
+                <Grid Grid.Row="2">
+                    <CollectionView ItemsSource="{Binding MenuItems}"
+                                    ItemTemplate="{StaticResource MenuItemTemplate}"
+                                    BackgroundColor="Transparent"
+                                    Margin="8">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Vertical"
+                                             Span="3"
+                                             HorizontalItemSpacing="8"
+                                             VerticalItemSpacing="8"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.EmptyView>
+                            <VerticalStackLayout VerticalOptions="Center"
+                                                 HorizontalOptions="Center">
+                                <Label Text="{h:Translate NoItemsInCategory}"
+                                       Style="{StaticResource Subtitle}"/>
+                            </VerticalStackLayout>
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+
+                    <!-- Loading -->
+                    <ActivityIndicator IsRunning="{Binding IsLoadingProducts}"
+                                       IsVisible="{Binding IsLoadingProducts}"
+                                       VerticalOptions="Center"
+                                       HorizontalOptions="Center"/>
+
+                    <!-- Error -->
+                    <VerticalStackLayout IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNullConverter}}"
+                                         VerticalOptions="Center"
+                                         HorizontalOptions="Center"
+                                         Spacing="12">
+                        <Label Text="{Binding ErrorMessage}"
+                               TextColor="{StaticResource Danger}"
+                               HorizontalOptions="Center"/>
+                        <Button Text="{h:Translate Retry}"
+                                Style="{StaticResource SecondaryButton}"
+                                Command="{Binding RefreshCommand}"/>
+                    </VerticalStackLayout>
+                </Grid>
+            </Grid>
+
+            <!-- Right: Order Summary -->
+            <Grid Grid.Column="1"
+                  RowDefinitions="Auto,*,Auto,Auto"
+                  BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}">
+                <!-- Order Header -->
+                <Grid Grid.Row="0"
+                      Padding="16,12"
+                      ColumnDefinitions="*,Auto">
+                    <Label Text="{h:Translate CurrentOrder}"
+                           Style="{StaticResource Title}"/>
+                    <Label Grid.Column="1"
+                           Text="{Binding TotalItems, StringFormat='{0} items'}"
+                           Style="{StaticResource Caption}"/>
+                </Grid>
+
+                <BoxView Grid.Row="0"
+                         Style="{StaticResource Divider}"
+                         VerticalOptions="End"/>
+
+                <!-- Order Items -->
+                <CollectionView Grid.Row="1"
+                                ItemsSource="{Binding CartItems}"
+                                ItemTemplate="{StaticResource CartItemTemplate}"
+                                Margin="12,8">
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout VerticalOptions="Center"
+                                             HorizontalOptions="Center"
+                                             Spacing="8">
+                            <Label Text="{h:Translate NoItemsYet}"
+                                   Style="{StaticResource Subtitle}"
+                                   HorizontalOptions="Center"/>
+                            <Label Text="{h:Translate TapProductToAdd}"
+                                   Style="{StaticResource Caption}"
+                                   HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+
+                <!-- Totals -->
+                <Grid Grid.Row="2"
+                      Padding="16,12"
+                      ColumnDefinitions="*,Auto"
+                      BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}">
+                    <Label Text="{h:Translate Total}"
+                           Style="{StaticResource Title}"
+                           VerticalOptions="Center"/>
+                    <Label Grid.Column="1"
+                           Text="{Binding Subtotal, StringFormat='€{0:F2}'}"
+                           Style="{StaticResource TotalPrice}"/>
+                </Grid>
+
+                <!-- Quick Actions -->
+                <Grid Grid.Row="3"
+                      Padding="12">
+                    <Button Text="{h:Translate CreateOrder}"
+                            Style="{StaticResource SuccessButton}"
+                            Command="{Binding PayCommand}"
+                            IsVisible="{Binding HasItems}"/>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <!-- Phone Layout (Stacked with Bottom Tabs) -->
+        <Grid x:Name="PhoneLayout"
+              RowDefinitions="Auto,*,Auto"
+              IsVisible="True">
+            <!-- Header -->
+            <Grid Grid.Row="0"
+                  x:Name="PhoneHeader"
+                  Style="{StaticResource HeaderGrid}"
+                  ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
+                <!-- Back Button -->
+                <Button Grid.Column="0"
+                        Text="&lt;"
+                        Style="{StaticResource NavButton}"
+                        Command="{Binding BackCommand}"
+                        FontSize="16"
+                        Padding="10,8"/>
+
+                <!-- Orders -->
+                <Button Grid.Column="1"
+                        Text="{h:Translate Orders}"
+                        Style="{StaticResource NavButton}"
+                        Command="{Binding ViewOrdersCommand}"
+                        FontSize="12"
+                        Padding="10,8"
+                        Margin="12,0,0,0"/>
+
+                <!-- Kitchen -->
+                <Button Grid.Column="2"
+                        Text="{h:Translate Kitchen}"
+                        Style="{StaticResource NavButton}"
+                        Command="{Binding ViewKitchenCommand}"
+                        FontSize="12"
+                        Padding="10,8"
+                        Margin="4,0,0,0"/>
+
+                <!-- Language Flag Button -->
+                <Border Grid.Column="4"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1"
+                        Stroke="{StaticResource Gray300}"
+                        BackgroundColor="Transparent"
+                        Padding="10,6"
+                        Margin="0,0,8,0">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageTapped"/>
+                    </Border.GestureRecognizers>
+                    <HorizontalStackLayout Spacing="4">
+                        <Label Text="🌐"
+                               FontSize="16"
+                               VerticalOptions="Center"/>
+                        <Label x:Name="CurrentLanguageLabelPhone"
+                               Text="EN"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="12"
+                               VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Border>
+
+                <!-- User Button -->
+                <Border Grid.Column="5"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1"
+                        Stroke="{StaticResource Gray300}"
+                        BackgroundColor="Transparent"
+                        Padding="10,6"
+                        Margin="0,0,8,0"
+                        x:Name="UserDropdownPhone">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnUserTapped"/>
+                    </Border.GestureRecognizers>
+                    <Label Text="{Binding UserName}"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="14"
+                           VerticalOptions="Center"/>
+                </Border>
+            </Grid>
+
+            <!-- Main Content Area -->
+            <Grid Grid.Row="1"
+                  x:Name="PhoneContentGrid">
+                <!-- Products View -->
+                <Grid x:Name="PhoneProductsView"
+                      RowDefinitions="Auto,*">
+                    <!-- Categories -->
+                    <ScrollView Grid.Row="0"
+                                Orientation="Horizontal"
+                                HorizontalScrollBarVisibility="Never"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                                Padding="8,8">
+                        <HorizontalStackLayout Spacing="8"
+                                               BindableLayout.ItemsSource="{Binding Categories}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="api:CategoryDto">
+                                    <Button Text="{Binding Name}"
+                                            Style="{StaticResource CategoryButton}"
+                                            BackgroundColor="{Binding Color}"
+                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectCategoryCommand}"
+                                            CommandParameter="{Binding .}"/>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </HorizontalStackLayout>
+                    </ScrollView>
+
+                    <!-- Products Grid - 3 columns on phone -->
+                    <Grid Grid.Row="1">
+                        <CollectionView ItemsSource="{Binding MenuItems}"
+                                        ItemTemplate="{StaticResource MenuItemTemplate}"
+                                        BackgroundColor="Transparent"
+                                        Margin="8">
+                            <CollectionView.ItemsLayout>
+                                <GridItemsLayout Orientation="Vertical"
+                                                 Span="3"
+                                                 HorizontalItemSpacing="8"
+                                                 VerticalItemSpacing="8"/>
+                            </CollectionView.ItemsLayout>
+                        </CollectionView>
+
+                        <ActivityIndicator IsRunning="{Binding IsLoadingProducts}"
+                                           IsVisible="{Binding IsLoadingProducts}"
+                                           VerticalOptions="Center"/>
+                    </Grid>
+                </Grid>
+
+                <!-- Cart View (Hidden by default on phone) -->
+                <Grid x:Name="PhoneCartView"
+                      IsVisible="False"
+                      RowDefinitions="Auto,*,Auto,Auto"
+                      BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}">
+                    <!-- Cart Header -->
+                    <Grid Grid.Row="0"
+                          Padding="16,12"
+                          ColumnDefinitions="Auto,*,Auto">
+                        <Button Grid.Column="0"
+                                Text="{h:Translate Back}"
+                                Style="{StaticResource GhostButton}"
+                                Clicked="OnBackToProducts"/>
+                        <Label Grid.Column="1"
+                               Text="{h:Translate CurrentOrder}"
+                               Style="{StaticResource Title}"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+                        <Label Grid.Column="2"
+                               Text="{Binding TotalItems, StringFormat='{0} items'}"
+                               Style="{StaticResource Caption}"
+                               VerticalOptions="Center"/>
+                    </Grid>
+
+                    <BoxView Grid.Row="0"
+                             Style="{StaticResource Divider}"
+                             VerticalOptions="End"/>
+
+                    <!-- Cart Items -->
+                    <CollectionView Grid.Row="1"
+                                    ItemsSource="{Binding CartItems}"
+                                    ItemTemplate="{StaticResource CartItemTemplate}"
+                                    Margin="12,8">
+                        <CollectionView.EmptyView>
+                            <VerticalStackLayout VerticalOptions="Center"
+                                                 HorizontalOptions="Center"
+                                                 Spacing="8">
+                                <Label Text="{h:Translate CartIsEmpty}"
+                                       Style="{StaticResource Subtitle}"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="{h:Translate AddProductsToStart}"
+                                       Style="{StaticResource Caption}"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+
+                    <!-- Totals -->
+                    <Grid Grid.Row="2"
+                          Padding="16,12"
+                          ColumnDefinitions="*,Auto"
+                          BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}">
+                        <Label Text="{h:Translate Total}"
+                               Style="{StaticResource Title}"
+                               VerticalOptions="Center"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding Subtotal, StringFormat='€{0:F2}'}"
+                               Style="{StaticResource TotalPrice}"/>
+                    </Grid>
+
+                    <!-- Quick Actions -->
+                    <Grid Grid.Row="3"
+                          Padding="12">
+                        <Button Text="{h:Translate CreateOrder}"
+                                Style="{StaticResource SuccessButton}"
+                                Command="{Binding PayCommand}"
+                                IsVisible="{Binding HasItems}"/>
+                    </Grid>
+                </Grid>
+            </Grid>
+
+            <!-- Bottom Action Bar (Phone only) -->
+            <Grid Grid.Row="2"
+                  x:Name="PhoneBottomBar"
+                  Padding="12"
+                  IsVisible="{Binding HasItems}"
+                  BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}">
+                <Border StrokeShape="RoundRectangle 12"
+                        BackgroundColor="{StaticResource Success}"
+                        Padding="16,14"
+                        HorizontalOptions="Fill">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCartTapped"/>
+                    </Border.GestureRecognizers>
+                    <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                        <!-- Circle with item count -->
+                        <Border WidthRequest="32"
+                                HeightRequest="32"
+                                StrokeShape="RoundRectangle 16"
+                                BackgroundColor="White"
+                                StrokeThickness="0">
+                            <Label Text="{Binding TotalItems}"
+                                   TextColor="{StaticResource Success}"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="14"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                        <!-- View order text -->
+                        <Label TextColor="White"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="16"
+                               VerticalOptions="Center">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{h:Translate ShowOrders}"/>
+                                    <Span Text=" - "/>
+                                    <Span Text="{Binding Subtotal, StringFormat='€{0:F2}'}"/>
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </HorizontalStackLayout>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- Customization Overlay -->
+        <Grid x:Name="CustomizationOverlay"
+              IsVisible="{Binding ShowCustomization}"
+              BackgroundColor="#80000000">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CancelCustomizationCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <Border VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    StrokeShape="RoundRectangle 16"
+                    StrokeThickness="0"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                    WidthRequest="700"
+                    MaximumHeightRequest="700"
+                    Margin="16"
+                    Padding="0">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer/>
+                </Border.GestureRecognizers>
+
+                <Grid RowDefinitions="Auto,Auto,*,Auto">
+                    <!-- Header with Item Name and Base Price -->
+                    <Grid Grid.Row="0"
+                          Padding="24,20"
+                          ColumnDefinitions="*,Auto"
+                          BackgroundColor="{StaticResource Primary}">
+                        <Label Text="{Binding SelectedMenuItem.MenuItemName}"
+                               TextColor="White"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="24"
+                               LineBreakMode="TailTruncation"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding SelectedMenuItem.Price, StringFormat='€{0:F2}'}"
+                               TextColor="White"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="22"/>
+                    </Grid>
+
+                    <!-- Quantity Selector -->
+                    <Grid Grid.Row="1"
+                          Padding="24,18"
+                          ColumnDefinitions="Auto,*,Auto"
+                          BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}">
+                        <Label Text="{h:Translate Quantity}"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="20"
+                               VerticalOptions="Center"/>
+                        <HorizontalStackLayout Grid.Column="2"
+                                               Spacing="20">
+                            <Button Text="-"
+                                    Style="{StaticResource QuantityButton}"
+                                    Command="{Binding DecreaseCustomizationQuantityCommand}"
+                                    WidthRequest="44"
+                                    HeightRequest="44"
+                                    FontSize="22"/>
+                            <Label Text="{Binding CustomizationQuantity}"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="24"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center"
+                                   WidthRequest="50"
+                                   HorizontalTextAlignment="Center"/>
+                            <Button Text="+"
+                                    Style="{StaticResource QuantityButton}"
+                                    Command="{Binding IncreaseCustomizationQuantityCommand}"
+                                    WidthRequest="44"
+                                    HeightRequest="44"
+                                    FontSize="22"/>
+                        </HorizontalStackLayout>
+                    </Grid>
+
+                    <!-- Addition Groups in ScrollView -->
+                    <ScrollView Grid.Row="2"
+                                VerticalScrollBarVisibility="Default">
+                        <!-- Loading Indicator -->
+                        <ActivityIndicator IsRunning="{Binding IsLoadingAdditions}"
+                                           IsVisible="{Binding IsLoadingAdditions}"
+                                           Color="{StaticResource Primary}"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="Center"
+                                           HeightRequest="100"/>
+
+                        <CollectionView ItemsSource="{Binding SelectableAdditionGroups}"
+                                        IsVisible="{Binding IsLoadingAdditions, Converter={StaticResource InvertedBoolConverter}}"
+                                        VerticalScrollBarVisibility="Never">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="16"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="vm:SelectableAdditionGroup">
+                                <VerticalStackLayout Spacing="12" Padding="24,8">
+                                    <!-- Group Header -->
+                                    <HorizontalStackLayout Spacing="10">
+                                        <Label Text="{Binding Name}"
+                                               FontFamily="OpenSansSemibold"
+                                               FontSize="20"/>
+                                        <Label Text="{Binding SelectionHint}"
+                                               Style="{StaticResource Caption}"
+                                               FontSize="16"
+                                               VerticalOptions="Center"/>
+                                        <Label Text="*"
+                                               TextColor="{StaticResource Danger}"
+                                               FontSize="18"
+                                               IsVisible="{Binding IsRequired}"
+                                               VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+
+                                    <!-- Single Select Additions (Radio style) - Fast BindableLayout -->
+                                    <VerticalStackLayout Spacing="4"
+                                                         IsVisible="{Binding IsSingleSelect}"
+                                                         BindableLayout.ItemsSource="{Binding Additions}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:SelectableAddition">
+                                                <Border Padding="12,10"
+                                                        Margin="0,0,0,4"
+                                                        StrokeShape="RoundRectangle 8"
+                                                        StrokeThickness="1"
+                                                        Stroke="{Binding StrokeColor}"
+                                                        BackgroundColor="{Binding BackgroundColor}">
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
+                                                                              CommandParameter="{Binding .}"/>
+                                                    </Border.GestureRecognizers>
+                                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                                        <!-- Radio Circle - Simplified -->
+                                                        <Ellipse Grid.Column="0"
+                                                                 WidthRequest="22"
+                                                                 HeightRequest="22"
+                                                                 Fill="{Binding CheckboxBackgroundColor}"
+                                                                 Stroke="{Binding StrokeColor}"
+                                                                 StrokeThickness="2"
+                                                                 VerticalOptions="Center">
+                                                            <Ellipse.GestureRecognizers>
+                                                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
+                                                                                      CommandParameter="{Binding .}"/>
+                                                            </Ellipse.GestureRecognizers>
+                                                        </Ellipse>
+                                                        <Label Grid.Column="0"
+                                                               Text="✓"
+                                                               FontSize="12"
+                                                               TextColor="White"
+                                                               HorizontalOptions="Center"
+                                                               VerticalOptions="Center"
+                                                               IsVisible="{Binding IsSelected}"
+                                                               InputTransparent="True"/>
+                                                        <!-- Name -->
+                                                        <Label Grid.Column="1"
+                                                               Text="{Binding Name}"
+                                                               FontSize="16"
+                                                               VerticalOptions="Center"/>
+                                                        <!-- Price -->
+                                                        <Label Grid.Column="2"
+                                                               Text="{Binding UnitPrice, StringFormat='+€{0:F2}'}"
+                                                               FontSize="14"
+                                                               TextColor="{StaticResource Primary}"
+                                                               VerticalOptions="Center"
+                                                               IsVisible="{Binding HasPrice}"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+
+                                    <!-- Multi Select Additions (Checkbox style with +/-) - Fast BindableLayout -->
+                                    <VerticalStackLayout Spacing="4"
+                                                         IsVisible="{Binding IsMultiSelect}"
+                                                         BindableLayout.ItemsSource="{Binding Additions}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:SelectableAddition">
+                                                <Border Padding="12,10"
+                                                        Margin="0,0,0,4"
+                                                        StrokeShape="RoundRectangle 8"
+                                                        StrokeThickness="1"
+                                                        Stroke="{Binding StrokeColor}"
+                                                        BackgroundColor="{Binding BackgroundColor}"
+                                                        Opacity="{Binding ItemOpacity}">
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
+                                                                              CommandParameter="{Binding .}"/>
+                                                    </Border.GestureRecognizers>
+                                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                                        <!-- Checkbox Square - Simplified -->
+                                                        <RoundRectangle Grid.Column="0"
+                                                                        WidthRequest="22"
+                                                                        HeightRequest="22"
+                                                                        CornerRadius="4"
+                                                                        Fill="{Binding CheckboxBackgroundColor}"
+                                                                        Stroke="{Binding StrokeColor}"
+                                                                        StrokeThickness="2"
+                                                                        VerticalOptions="Center">
+                                                            <RoundRectangle.GestureRecognizers>
+                                                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
+                                                                                      CommandParameter="{Binding .}"/>
+                                                            </RoundRectangle.GestureRecognizers>
+                                                        </RoundRectangle>
+                                                        <Label Grid.Column="0"
+                                                               Text="✓"
+                                                               FontSize="12"
+                                                               TextColor="White"
+                                                               HorizontalOptions="Center"
+                                                               VerticalOptions="Center"
+                                                               IsVisible="{Binding IsSelected}"
+                                                               InputTransparent="True"/>
+
+                                                        <!-- Name and Price (tappable to toggle) -->
+                                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                                            <VerticalStackLayout.GestureRecognizers>
+                                                                <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.ToggleAdditionCommand}"
+                                                                                      CommandParameter="{Binding .}"/>
+                                                            </VerticalStackLayout.GestureRecognizers>
+                                                            <HorizontalStackLayout Spacing="4">
+                                                                <Label Text="{Binding Quantity, StringFormat='{0}x '}"
+                                                                       FontSize="16"
+                                                                       FontFamily="OpenSansSemibold"
+                                                                       TextColor="{StaticResource Primary}"
+                                                                       IsVisible="{Binding IsSelected}"/>
+                                                                <Label Text="{Binding Name}"
+                                                                       FontSize="16"/>
+                                                            </HorizontalStackLayout>
+                                                            <Label Text="{Binding UnitPrice, StringFormat='€{0:F2} each'}"
+                                                                   FontSize="13"
+                                                                   TextColor="{StaticResource Gray500}"
+                                                                   IsVisible="{Binding HasPrice}"/>
+                                                        </VerticalStackLayout>
+
+                                                        <!-- +/- Buttons (only visible when selected) -->
+                                                        <HorizontalStackLayout Grid.Column="2"
+                                                                               Spacing="8"
+                                                                               IsVisible="{Binding IsSelected}"
+                                                                               VerticalOptions="Center">
+                                                            <!-- Decrease Button -->
+                                                            <Border WidthRequest="34"
+                                                                    HeightRequest="34"
+                                                                    StrokeShape="RoundRectangle 17"
+                                                                    StrokeThickness="0"
+                                                                    BackgroundColor="{StaticResource Gray200}">
+                                                                <Border.GestureRecognizers>
+                                                                    <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.DecreaseAdditionQuantityCommand}"
+                                                                                          CommandParameter="{Binding .}"/>
+                                                                </Border.GestureRecognizers>
+                                                                <Label Text="-"
+                                                                       FontSize="18"
+                                                                       FontFamily="OpenSansSemibold"
+                                                                       TextColor="{StaticResource Gray700}"
+                                                                       HorizontalOptions="Center"
+                                                                       VerticalOptions="Center"
+                                                                       InputTransparent="True"/>
+                                                            </Border>
+
+                                                            <!-- Quantity Display -->
+                                                            <Label Text="{Binding Quantity}"
+                                                                   FontSize="16"
+                                                                   FontFamily="OpenSansSemibold"
+                                                                   WidthRequest="28"
+                                                                   HorizontalTextAlignment="Center"
+                                                                   VerticalOptions="Center"/>
+
+                                                            <!-- Increase Button -->
+                                                            <Border WidthRequest="34"
+                                                                    HeightRequest="34"
+                                                                    StrokeShape="RoundRectangle 17"
+                                                                    StrokeThickness="0"
+                                                                    BackgroundColor="{StaticResource Primary}">
+                                                                <Border.GestureRecognizers>
+                                                                    <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.IncreaseAdditionQuantityCommand}"
+                                                                                          CommandParameter="{Binding .}"/>
+                                                                </Border.GestureRecognizers>
+                                                                <Label Text="+"
+                                                                       FontSize="18"
+                                                                       FontFamily="OpenSansSemibold"
+                                                                       TextColor="White"
+                                                                       HorizontalOptions="Center"
+                                                                       VerticalOptions="Center"
+                                                                       InputTransparent="True"/>
+                                                            </Border>
+
+                                                            <!-- Total Price -->
+                                                            <Label Text="{Binding TotalPrice, StringFormat='€{0:F2}'}"
+                                                                   FontSize="15"
+                                                                   FontFamily="OpenSansSemibold"
+                                                                   TextColor="{StaticResource Primary}"
+                                                                   WidthRequest="55"
+                                                                   HorizontalTextAlignment="End"
+                                                                   VerticalOptions="Center"
+                                                                   IsVisible="{Binding HasPrice}"/>
+                                                        </HorizontalStackLayout>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    </ScrollView>
+
+                    <!-- Footer with Total and Actions -->
+                    <Grid Grid.Row="3"
+                          RowDefinitions="Auto,Auto,Auto"
+                          Padding="16,12"
+                          RowSpacing="10"
+                          BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}">
+                        <!-- Price Breakdown -->
+                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout>
+                                <Label Text="{h:Translate ItemTotal}"
+                                       Style="{StaticResource Caption}"/>
+                                <Label Style="{StaticResource Caption}">
+                                    <Label.Text>
+                                        <MultiBinding StringFormat="€{0:F2} x {1}">
+                                            <Binding Path="CustomizationItemPrice"/>
+                                            <Binding Path="CustomizationQuantity"/>
+                                        </MultiBinding>
+                                    </Label.Text>
+                                </Label>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="1"
+                                   Text="{Binding CustomizationTotalPrice, StringFormat='€{0:F2}'}"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="22"
+                                   TextColor="{StaticResource Primary}"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+
+                        <!-- Validation Error Message -->
+                        <Label Grid.Row="1"
+                               Text="{Binding ValidationMessage}"
+                               TextColor="{StaticResource Danger}"
+                               FontSize="14"
+                               FontFamily="OpenSansSemibold"
+                               HorizontalOptions="Center"
+                               IsVisible="{Binding HasValidationError}"/>
+
+                        <!-- Action Buttons -->
+                        <Grid Grid.Row="2"
+                              ColumnDefinitions="*,2*"
+                              ColumnSpacing="12">
+                            <Button Grid.Column="0"
+                                    Text="{h:Translate Cancel}"
+                                    Style="{StaticResource GhostButton}"
+                                    Command="{Binding CancelCustomizationCommand}"/>
+                            <Button Grid.Column="1"
+                                    Text="{h:Translate AddToOrder}"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding ConfirmCustomizationCommand}"/>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Loading Overlay for Order Creation -->
+        <Grid IsVisible="{Binding IsBusy}"
+              BackgroundColor="#80000000"
+              ZIndex="200">
+            <Frame BackgroundColor="{StaticResource White}"
+                   CornerRadius="16"
+                   Padding="40,30"
+                   HasShadow="True"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center">
+                <VerticalStackLayout Spacing="20" HorizontalOptions="Center">
+                    <ActivityIndicator IsRunning="True"
+                                       Color="{StaticResource Primary}"
+                                       HeightRequest="50"
+                                       WidthRequest="50"/>
+                    <Label Text="{h:Translate CreatingOrder}"
+                           FontSize="18"
+                           FontFamily="OpenSansSemibold"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
+
+        <!-- Loading Overlay for Menu Item Selection (Click to Popup) -->
+        <Grid IsVisible="{Binding IsLoadingAdditions}"
+              BackgroundColor="#CC000000"
+              ZIndex="250">
+            <Frame BackgroundColor="{StaticResource White}"
+                   CornerRadius="16"
+                   Padding="40,30"
+                   HasShadow="True"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center">
+                <VerticalStackLayout Spacing="20" HorizontalOptions="Center">
+                    <ActivityIndicator IsRunning="True"
+                                       Color="{StaticResource Primary}"
+                                       HeightRequest="50"
+                                       WidthRequest="50"/>
+                    <Label Text="{h:Translate Loading}"
+                           FontSize="18"
+                           FontFamily="OpenSansSemibold"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Frame>
+        </Grid>
+
+        <!-- Order Type Selection Overlay -->
+        <Grid IsVisible="{Binding ShowOrderTypeSelection}"
+              BackgroundColor="#80000000"
+              ZIndex="300">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CancelOrderTypeCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <Border VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    StrokeShape="RoundRectangle 16"
+                    StrokeThickness="0"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                    WidthRequest="400"
+                    Padding="0">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer/>
+                </Border.GestureRecognizers>
+
+                <VerticalStackLayout Spacing="0">
+                    <!-- Header -->
+                    <Grid Padding="24,20"
+                          BackgroundColor="{StaticResource Primary}">
+                        <Label Text="{h:Translate SelectOrderType}"
+                               TextColor="White"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="22"
+                               HorizontalOptions="Center"/>
+                    </Grid>
+
+                    <!-- Options -->
+                    <VerticalStackLayout Spacing="12" Padding="24,20">
+                        <!-- DineIn Button -->
+                        <Button Text="{h:Translate DineIn}"
+                                Style="{StaticResource PrimaryButton}"
+                                IsVisible="{Binding IsDineInEnabled}"
+                                Command="{Binding SelectOrderTypeCommand}"
+                                CommandParameter="1"
+                                HeightRequest="50"
+                                FontSize="18"/>
+
+                        <!-- TakeAway Button -->
+                        <Button Text="{h:Translate TakeAway}"
+                                Style="{StaticResource SecondaryButton}"
+                                IsVisible="{Binding IsTakeAwayEnabled}"
+                                Command="{Binding SelectOrderTypeCommand}"
+                                CommandParameter="2"
+                                HeightRequest="50"
+                                FontSize="18"/>
+
+                        <!-- Delivery Button -->
+                        <Button Text="{h:Translate Delivery}"
+                                Style="{StaticResource SecondaryButton}"
+                                IsVisible="{Binding IsDeliveryEnabled}"
+                                Command="{Binding SelectOrderTypeCommand}"
+                                CommandParameter="3"
+                                HeightRequest="50"
+                                FontSize="18"/>
+
+                        <!-- Cancel Button -->
+                        <Button Text="{h:Translate Cancel}"
+                                Style="{StaticResource GhostButton}"
+                                Command="{Binding CancelOrderTypeCommand}"
+                                HeightRequest="44"
+                                Margin="0,8,0,0"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- Table Selection Overlay -->
+        <Grid IsVisible="{Binding ShowTableSelection}"
+              BackgroundColor="#80000000"
+              ZIndex="300">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CancelTableSelectionCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <Border VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    StrokeShape="RoundRectangle 16"
+                    StrokeThickness="0"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                    WidthRequest="500"
+                    MaximumHeightRequest="600"
+                    Padding="0">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer/>
+                </Border.GestureRecognizers>
+
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <!-- Header -->
+                    <Grid Grid.Row="0" Padding="24,20" BackgroundColor="{StaticResource Primary}">
+                        <VerticalStackLayout HorizontalOptions="Center">
+                            <Label Text="{h:Translate SelectTable}"
+                                   TextColor="White"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="22"
+                                   HorizontalOptions="Center"/>
+                            <Label Text="*"
+                                   TextColor="#FFCCCC"
+                                   FontSize="14"
+                                   HorizontalOptions="Center"
+                                   IsVisible="{Binding IsTableRequired}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="(" FontSize="14"/>
+                                        <Span Text="{h:Translate TableRequired}" FontSize="14"/>
+                                        <Span Text=")" FontSize="14"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <!-- Loading indicator -->
+                    <ActivityIndicator Grid.Row="1"
+                                       IsVisible="{Binding IsLoadingTables}"
+                                       IsRunning="{Binding IsLoadingTables}"
+                                       Color="{StaticResource Primary}"
+                                       VerticalOptions="Center"/>
+
+                    <!-- Tables Grid -->
+                    <CollectionView Grid.Row="1"
+                                    ItemsSource="{Binding Tables}"
+                                    SelectedItem="{Binding SelectedTable, Mode=TwoWay}"
+                                    SelectionMode="Single"
+                                    IsVisible="{Binding IsLoadingTables, Converter={StaticResource InvertedBoolConverter}}"
+                                    Margin="16,12">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Vertical"
+                                             Span="3"
+                                             HorizontalItemSpacing="10"
+                                             VerticalItemSpacing="10"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="api:TableDto">
+                                <Border Padding="12"
+                                        StrokeShape="RoundRectangle 10"
+                                        StrokeThickness="2"
+                                        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray700}}">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup Name="CommonStates">
+                                            <VisualState Name="Normal"/>
+                                            <VisualState Name="Selected">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                                                    <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <VerticalStackLayout HorizontalOptions="Center" Spacing="4">
+                                        <Label Text="{Binding Number}"
+                                               FontSize="20"
+                                               FontFamily="OpenSansSemibold"
+                                               HorizontalOptions="Center"/>
+                                        <Label Text="{Binding CapacityDisplay}"
+                                               FontSize="12"
+                                               TextColor="{StaticResource Gray500}"
+                                               HorizontalOptions="Center"
+                                               IsVisible="{Binding Capacity, Converter={StaticResource IsNotNullConverter}}"/>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                        <CollectionView.EmptyView>
+                            <Label Text="No tables available"
+                                   Style="{StaticResource Caption}"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+
+                    <!-- Footer Buttons -->
+                    <Grid Grid.Row="2"
+                          Padding="24,16"
+                          RowDefinitions="Auto,Auto"
+                          ColumnDefinitions="*,Auto,Auto"
+                          ColumnSpacing="12"
+                          RowSpacing="12"
+                          BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}">
+
+                        <!-- Selected Table Display -->
+                        <HorizontalStackLayout Grid.Row="0" Grid.ColumnSpan="3"
+                                               HorizontalOptions="Center"
+                                               Spacing="8"
+                                               IsVisible="{Binding SelectedTable, Converter={StaticResource IsNotNullConverter}}">
+                            <Label Text="{h:Translate Table}"
+                                   FontSize="16"
+                                   TextColor="{StaticResource Gray600}"/>
+                            <Label Text="{Binding SelectedTable.Number}"
+                                   FontSize="18"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource Primary}"/>
+                        </HorizontalStackLayout>
+
+                        <!-- Skip button (only if not required) -->
+                        <Button Grid.Row="1" Grid.Column="0"
+                                Text="{h:Translate Skip}"
+                                Style="{StaticResource GhostButton}"
+                                IsVisible="{Binding IsTableRequired, Converter={StaticResource InvertedBoolConverter}}"
+                                Command="{Binding SkipTableSelectionCommand}"
+                                HorizontalOptions="Start"/>
+
+                        <Button Grid.Row="1" Grid.Column="1"
+                                Text="{h:Translate Cancel}"
+                                Style="{StaticResource GhostButton}"
+                                Command="{Binding CancelTableSelectionCommand}"/>
+
+                        <Button Grid.Row="1" Grid.Column="2"
+                                Text="{h:Translate Confirm}"
+                                Style="{StaticResource PrimaryButton}"
+                                Command="{Binding ConfirmTableSelectionCommand}"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+
+</ContentPage>

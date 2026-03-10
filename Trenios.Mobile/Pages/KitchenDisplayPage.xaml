@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:Trenios.Mobile.ViewModels"
+             xmlns:models="clr-namespace:Trenios.Mobile.Models.Api"
+             xmlns:h="clr-namespace:Trenios.Mobile.Helpers"
+             x:Class="Trenios.Mobile.Pages.KitchenDisplayPage"
+             x:DataType="viewmodels:KitchenDisplayViewModel"
+             Title="{h:Translate KitchenDisplay}"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#ecf0f1">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Header -->
+        <Grid Grid.Row="0"
+              Padding="16,12"
+              BackgroundColor="{StaticResource Primary}"
+              ColumnDefinitions="Auto,Auto,*,Auto,Auto">
+
+            <Button Grid.Column="0"
+                    Text="{h:Translate Back}"
+                    Style="{StaticResource GhostButton}"
+                    TextColor="White"
+                    Command="{Binding BackCommand}"/>
+
+            <!-- Connection Status -->
+            <Border Grid.Column="1"
+                    Padding="8,4"
+                    StrokeShape="RoundRectangle 6"
+                    StrokeThickness="0"
+                    BackgroundColor="{Binding ConnectionStatusColor}"
+                    VerticalOptions="Center"
+                    Margin="8,0,0,0">
+                <Label Text="{Binding ConnectionStatusText}"
+                       TextColor="White"
+                       FontSize="11"
+                       FontFamily="OpenSansSemibold"/>
+            </Border>
+
+            <Label Grid.Column="2"
+                   Text="{h:Translate KitchenDisplay}"
+                   FontFamily="OpenSansSemibold"
+                   FontSize="20"
+                   TextColor="White"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+
+            <Button Grid.Column="4"
+                    Text="{h:Translate Refresh}"
+                    Style="{StaticResource GhostButton}"
+                    TextColor="White"
+                    Command="{Binding RefreshCommand}"/>
+        </Grid>
+
+        <!-- Orders Grid -->
+        <Grid Grid.Row="1" BackgroundColor="#ecf0f1" Padding="14">
+            <CollectionView ItemsSource="{Binding ActiveOrders}"
+                            SelectionMode="None">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                                     Span="{OnIdiom Phone=1, Default=3}"
+                                     HorizontalItemSpacing="14"
+                                     VerticalItemSpacing="14"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:OrderResponse">
+                        <Frame BackgroundColor="White"
+                               CornerRadius="8"
+                               Padding="18"
+                               HasShadow="True"
+                               BorderColor="{Binding UrgencyColor}">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:KitchenDisplayViewModel}}, Path=SelectOrderCommand}"
+                                                      CommandParameter="{Binding .}"/>
+                            </Frame.GestureRecognizers>
+                            <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
+
+                                <!-- Order Number, Table & Timer -->
+                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" Margin="0,0,0,10">
+                                    <Label Grid.Column="0"
+                                           Text="{Binding OrderNumber}"
+                                           TextColor="#2c3e50"
+                                           FontSize="16"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center"
+                                           LineBreakMode="NoWrap"
+                                           Margin="0,0,6,0"/>
+                                    <Frame Grid.Column="1"
+                                           BackgroundColor="{Binding UrgencyColor}"
+                                           CornerRadius="4"
+                                           Padding="6,3"
+                                           HasShadow="False"
+                                           VerticalOptions="Center"
+                                           BorderColor="{Binding UrgencyColor}">
+                                        <Label Text="{Binding AgeDisplay}"
+                                               TextColor="White"
+                                               FontSize="11"
+                                               FontAttributes="Bold"
+                                               HorizontalTextAlignment="Center"
+                                               LineBreakMode="NoWrap"/>
+                                    </Frame>
+                                    <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                           Text="{Binding TableDisplay}"
+                                           TextColor="#e67e22"
+                                           FontSize="13"
+                                           FontAttributes="Bold"
+                                           IsVisible="{Binding HasTable}"
+                                           Margin="0,4,0,0"/>
+                                </Grid>
+
+                                <!-- Separator Line -->
+                                <BoxView Grid.Row="1"
+                                         Color="#dee2e6"
+                                         HeightRequest="1"
+                                         Margin="0,0,0,12"/>
+
+                                <!-- Items List -->
+                                <VerticalStackLayout Grid.Row="2" Spacing="10">
+                                    <BindableLayout.ItemsSource>
+                                        <Binding Path="Items"/>
+                                    </BindableLayout.ItemsSource>
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="models:OrderItemResponse">
+                                            <VerticalStackLayout Spacing="4">
+                                                <Grid ColumnDefinitions="Auto,*">
+                                                    <Frame Grid.Column="0"
+                                                           BackgroundColor="#e67e22"
+                                                           CornerRadius="4"
+                                                           Padding="8,4"
+                                                           HasShadow="False"
+                                                           VerticalOptions="Center"
+                                                           Margin="0,0,10,0"
+                                                           BorderColor="#d35400">
+                                                        <Label Text="{Binding QuantityDisplay}"
+                                                               TextColor="White"
+                                                               FontSize="18"
+                                                               FontAttributes="Bold"
+                                                               HorizontalTextAlignment="Center"/>
+                                                    </Frame>
+                                                    <Label Grid.Column="1"
+                                                           Text="{Binding MenuItemName}"
+                                                           TextColor="#2c3e50"
+                                                           FontSize="18"
+                                                           FontAttributes="Bold"
+                                                           VerticalOptions="Center"
+                                                           LineBreakMode="WordWrap"/>
+                                                </Grid>
+                                                <Label Text="{Binding AdditionsSummary}"
+                                                       TextColor="#7f8c8d"
+                                                       FontSize="14"
+                                                       IsVisible="{Binding HasAdditions}"
+                                                       Margin="0,0,0,0"
+                                                       LineBreakMode="WordWrap"/>
+                                            </VerticalStackLayout>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+
+                                <!-- Separator Line Before Status -->
+                                <BoxView Grid.Row="3"
+                                         Color="#dee2e6"
+                                         HeightRequest="1"
+                                         Margin="0,12,0,0"/>
+
+                                <!-- Status & Time (Bottom) -->
+                                <HorizontalStackLayout Grid.Row="4" Spacing="10" Margin="0,10,0,0">
+                                    <Frame BackgroundColor="{Binding StatusColor}"
+                                           CornerRadius="4"
+                                           Padding="8,4"
+                                           HasShadow="False"
+                                           BorderColor="{Binding StatusColor}">
+                                        <Label Text="{Binding StatusDisplay}"
+                                               TextColor="White"
+                                               FontSize="12"
+                                               FontAttributes="Bold"/>
+                                    </Frame>
+                                    <Label Text="{Binding PlacedAtDisplay}"
+                                           TextColor="#7f8c8d"
+                                           FontSize="13"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="40">
+                        <Label Text="✓"
+                               TextColor="#27ae60"
+                               FontSize="64"
+                               HorizontalOptions="Center"
+                               FontAttributes="Bold"/>
+                        <Label Text="{h:Translate NoActiveOrders}"
+                               TextColor="#2c3e50"
+                               FontSize="22"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               Margin="0,16,0,0"/>
+                        <Label Text="{h:Translate NewOrdersAppear}"
+                               TextColor="#7f8c8d"
+                               FontSize="15"
+                               HorizontalOptions="Center"
+                               Margin="0,8,0,0"/>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+            </CollectionView>
+
+            <!-- Loading Overlay -->
+            <Frame BackgroundColor="#CC000000"
+                   IsVisible="{Binding IsLoading}"
+                   CornerRadius="0"
+                   HasShadow="False">
+                <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                   Color="White"
+                                   HeightRequest="40"
+                                   WidthRequest="40"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+            </Frame>
+        </Grid>
+
+        <!-- Order Details Popup -->
+        <Grid Grid.RowSpan="2"
+              IsVisible="{Binding HasSelectedOrder}"
+              BackgroundColor="#DD000000"
+              Padding="{OnIdiom Phone=10, Default=40}">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding ClosePopupCommand}"/>
+            </Grid.GestureRecognizers>
+
+            <Frame VerticalOptions="{OnIdiom Phone=Fill, Default=Center}"
+                   HorizontalOptions="{OnIdiom Phone=Fill, Default=Center}"
+                   BackgroundColor="White"
+                   CornerRadius="{OnIdiom Phone=8, Default=10}"
+                   Padding="0"
+                   HasShadow="True"
+                   MaximumWidthRequest="{OnIdiom Phone=9999, Default=850}"
+                   MaximumHeightRequest="{OnIdiom Phone=9999, Default=650}"
+                   Margin="0">
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer/>
+                </Frame.GestureRecognizers>
+
+                <Grid RowDefinitions="Auto,*,Auto">
+
+                    <!-- Header -->
+                    <Grid Grid.Row="0"
+                          BackgroundColor="White"
+                          Padding="{OnIdiom Phone='12,12', Default='24,20'}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <VerticalStackLayout>
+                            <Label Text="{Binding SelectedOrder.OrderNumber}"
+                                   TextColor="#2c3e50"
+                                   FontSize="{OnIdiom Phone=20, Default=28}"
+                                   FontAttributes="Bold"/>
+                            <HorizontalStackLayout Spacing="{OnIdiom Phone=6, Default=10}" Margin="0,8,0,0">
+                                <Frame BackgroundColor="{Binding SelectedOrder.StatusColor}"
+                                       CornerRadius="4"
+                                       Padding="{OnIdiom Phone='6,3', Default='8,4'}"
+                                       HasShadow="False"
+                                       BorderColor="{Binding SelectedOrder.StatusColor}">
+                                    <Label Text="{Binding SelectedOrder.StatusDisplay}"
+                                           TextColor="White"
+                                           FontSize="{OnIdiom Phone=10, Default=12}"
+                                           FontAttributes="Bold"/>
+                                </Frame>
+                                <Label Text="{Binding SelectedOrder.OrderTypeDisplay}"
+                                       TextColor="#7f8c8d"
+                                       FontSize="{OnIdiom Phone=12, Default=14}"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"/>
+                                <Label Text="•"
+                                       TextColor="#bdc3c7"
+                                       FontSize="{OnIdiom Phone=12, Default=14}"
+                                       VerticalOptions="Center"
+                                       IsVisible="{Binding SelectedOrder.HasTable}"/>
+                                <Frame BackgroundColor="#e67e22"
+                                       CornerRadius="4"
+                                       Padding="{OnIdiom Phone='6,3', Default='8,4'}"
+                                       HasShadow="False"
+                                       BorderColor="#d35400"
+                                       IsVisible="{Binding SelectedOrder.HasTable}">
+                                    <Label Text="{Binding SelectedOrder.TableDisplay}"
+                                           TextColor="White"
+                                           FontSize="{OnIdiom Phone=10, Default=12}"
+                                           FontAttributes="Bold"/>
+                                </Frame>
+                                <Label Text="•"
+                                       TextColor="#bdc3c7"
+                                       FontSize="{OnIdiom Phone=12, Default=14}"
+                                       VerticalOptions="Center"
+                                       IsVisible="{OnIdiom Phone=False, Default=True}"/>
+                                <Label Text="{Binding SelectedOrder.PlacedAtFullDisplay}"
+                                       TextColor="#7f8c8d"
+                                       FontSize="{OnIdiom Phone=12, Default=14}"
+                                       VerticalOptions="Center"
+                                       IsVisible="{OnIdiom Phone=False, Default=True}"/>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                        <Frame Grid.Column="1"
+                               BackgroundColor="{Binding SelectedOrder.UrgencyColor}"
+                               CornerRadius="8"
+                               Padding="{OnIdiom Phone='10,6', Default='14,8'}"
+                               HasShadow="False"
+                               VerticalOptions="Center"
+                               Margin="0,0,10,0"
+                               BorderColor="{Binding SelectedOrder.UrgencyColor}">
+                            <Label Text="{Binding SelectedOrder.AgeDisplay}"
+                                   TextColor="White"
+                                   FontSize="{OnIdiom Phone=14, Default=18}"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center"/>
+                        </Frame>
+                        <Button Grid.Column="2"
+                                Text="✕"
+                                Command="{Binding ClosePopupCommand}"
+                                BackgroundColor="#e74c3c"
+                                TextColor="White"
+                                FontSize="{OnIdiom Phone=16, Default=20}"
+                                WidthRequest="{OnIdiom Phone=36, Default=44}"
+                                HeightRequest="{OnIdiom Phone=36, Default=44}"
+                                CornerRadius="{OnIdiom Phone=18, Default=22}"
+                                VerticalOptions="Center"/>
+                    </Grid>
+
+                    <!-- Items List -->
+                    <ScrollView Grid.Row="1" Padding="{OnIdiom Phone='12,10', Default='24,16'}">
+                        <VerticalStackLayout Spacing="{OnIdiom Phone=10, Default=14}"
+                                             BindableLayout.ItemsSource="{Binding SelectedOrder.Items}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="models:OrderItemResponse">
+                                    <Frame BackgroundColor="#f8f9fa"
+                                           CornerRadius="8"
+                                           Padding="{OnIdiom Phone=12, Default=18}"
+                                           HasShadow="False"
+                                           BorderColor="#dee2e6">
+                                        <VerticalStackLayout Spacing="{OnIdiom Phone=8, Default=12}">
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <Frame Grid.Column="0"
+                                                       BackgroundColor="#e67e22"
+                                                       CornerRadius="6"
+                                                       Padding="{OnIdiom Phone='8,6', Default='12,8'}"
+                                                       HasShadow="False"
+                                                       VerticalOptions="Center"
+                                                       Margin="0,0,10,0"
+                                                       BorderColor="#d35400">
+                                                    <Label Text="{Binding QuantityDisplay}"
+                                                           TextColor="White"
+                                                           FontSize="{OnIdiom Phone=16, Default=22}"
+                                                           FontAttributes="Bold"
+                                                           HorizontalTextAlignment="Center"/>
+                                                </Frame>
+                                                <Label Grid.Column="1"
+                                                       Text="{Binding MenuItemName}"
+                                                       TextColor="#2c3e50"
+                                                       FontSize="{OnIdiom Phone=16, Default=22}"
+                                                       FontAttributes="Bold"
+                                                       VerticalOptions="Center"
+                                                       LineBreakMode="WordWrap"/>
+                                            </Grid>
+
+                                            <!-- Additions -->
+                                            <VerticalStackLayout Spacing="{OnIdiom Phone=6, Default=8}"
+                                                                IsVisible="{Binding HasAdditions}"
+                                                                Margin="0,4,0,0">
+                                                <BindableLayout.ItemsSource>
+                                                    <Binding Path="Additions"/>
+                                                </BindableLayout.ItemsSource>
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate x:DataType="models:OrderItemAdditionResponse">
+                                                        <HorizontalStackLayout Spacing="6">
+                                                            <Label Text="+"
+                                                                   TextColor="#e67e22"
+                                                                   FontSize="{OnIdiom Phone=14, Default=16}"
+                                                                   FontAttributes="Bold"/>
+                                                            <Label TextColor="#2c3e50" FontSize="{OnIdiom Phone=14, Default=16}">
+                                                                <Label.FormattedText>
+                                                                    <FormattedString>
+                                                                        <Span Text="{Binding AdditionName}" FontAttributes="Bold"/>
+                                                                        <Span Text=" ×" FontAttributes="Bold"/>
+                                                                        <Span Text="{Binding Quantity}" FontAttributes="Bold"/>
+                                                                    </FormattedString>
+                                                                </Label.FormattedText>
+                                                            </Label>
+                                                        </HorizontalStackLayout>
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </VerticalStackLayout>
+                                        </VerticalStackLayout>
+                                    </Frame>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </ScrollView>
+
+                    <!-- Action Button -->
+                    <Grid Grid.Row="2"
+                          Padding="{OnIdiom Phone='12,12', Default='24,20'}"
+                          BackgroundColor="White"
+                          IsVisible="{Binding SelectedOrder.CanStartPreparing}">
+                        <Button Text="{h:Translate StartPreparing}"
+                                Command="{Binding StartPreparingCommand}"
+                                BackgroundColor="#f39c12"
+                                TextColor="White"
+                                FontSize="{OnIdiom Phone=14, Default=16}"
+                                FontAttributes="Bold"
+                                HeightRequest="{OnIdiom Phone=44, Default=54}"
+                                CornerRadius="8"/>
+                    </Grid>
+                </Grid>
+            </Frame>
+        </Grid>
+
+    </Grid>
+</ContentPage>
