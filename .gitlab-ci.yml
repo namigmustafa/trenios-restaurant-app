@@ -7,14 +7,21 @@ variables:
 
 build-android:
   stage: build
-  image: mcr.microsoft.com/dotnet/sdk:9.0
+  image: mingc/android-build-box:latest
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
     - when: manual
   before_script:
-    - apt-get update && apt-get install -y openjdk-17-jdk
+    - apt-get update && apt-get install -y dotnet-sdk-9.0 || true
+    - wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
+    - chmod +x dotnet-install.sh
+    - ./dotnet-install.sh --version 9.0.312 --install-dir /usr/local/dotnet
+    - export PATH="$PATH:/usr/local/dotnet"
+    - export DOTNET_ROOT=/usr/local/dotnet
     - dotnet workload install maui-android
   script:
+    - export PATH="$PATH:/usr/local/dotnet"
+    - export DOTNET_ROOT=/usr/local/dotnet
     - echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > trenios.keystore
     - >
       dotnet publish $PROJECT_PATH
