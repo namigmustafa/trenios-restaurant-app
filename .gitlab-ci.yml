@@ -26,6 +26,7 @@ build-android:
       -p:AndroidSigningKeyAlias=$ANDROID_KEY_ALIAS
       -p:AndroidSigningKeyPass=$ANDROID_KEY_PASSWORD
       -p:AndroidSigningStorePass=$ANDROID_KEYSTORE_PASSWORD
+      -p:TargetFrameworks=net9.0-android
       -o ./artifacts/android
   artifacts:
     paths:
