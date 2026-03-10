@@ -1,0 +1,138 @@
+stages:
+  - build
+  - publish
+
+variables:
+  PROJECT_PATH: "Trenios/Trenios.Mobile/Trenios.Mobile.csproj"
+  DOTNET_VERSION: "9.0"
+
+# ─── ANDROID ────────────────────────────────────────────────────────────────
+
+build-android:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - when: manual
+  before_script:
+    - apt-get update && apt-get install -y openjdk-17-jdk
+    - dotnet workload install maui-android
+  script:
+    # Decode and save keystore
+    - echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > trenios.keystore
+
+    # Build signed AAB
+    - dotnet publish $PROJECT_PATH
+        -f net9.0-android
+        -c Release
+        -p:AndroidPackageFormat=aab
+        -p:AndroidKeyStore=true
+        -p:AndroidSigningKeyStore=$CI_PROJECT_DIR/trenios.keystore
+        -p:AndroidSigningKeyAlias=$ANDROID_KEY_ALIAS
+        -p:AndroidSigningKeyPass=$ANDROID_KEY_PASSWORD
+        -p:AndroidSigningStorePass=$ANDROID_KEYSTORE_PASSWORD
+        -o ./artifacts/android
+  artifacts:
+    paths:
+      - ./artifacts/android/*.aab
+    expire_in: 1 hour
+
+publish-android:
+  stage: publish
+  image: ruby:3.2
+  needs: [build-android]
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - when: manual
+  before_script:
+    - gem install fastlane -NV
+  script:
+    - echo "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > google-play-key.json
+    - fastlane supply
+        --aab $(ls ./artifacts/android/*.aab)
+        --package_name com.companyname.trenios.mobile
+        --track ${ANDROID_TRACK:-internal}
+        --json_key google-play-key.json
+        --skip_upload_apk true
+        --skip_upload_metadata true
+        --skip_upload_changelogs true
+        --skip_upload_images true
+        --skip_upload_screenshots true
+
+# ─── iOS ────────────────────────────────────────────────────────────────────
+
+build-ios:
+  stage: build
+  tags:
+    - macos  # requires a macOS GitLab runner
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - when: manual
+  before_script:
+    - dotnet workload install maui-ios
+    # Import signing certificate
+    - echo "$IOS_P12_CERTIFICATE_BASE64" | base64 -d > cert.p12
+    - security create-keychain -p "" build.keychain
+    - security import cert.p12 -k build.keychain -P "$IOS_P12_PASSWORD" -T /usr/bin/codesign
+    - security list-keychains -s build.keychain
+    - security default-keychain -s build.keychain
+    - security unlock-keychain -p "" build.keychain
+    - security set-keychain-settings build.keychain
+    # Install provisioning profile
+    - echo "$IOS_PROVISIONING_PROFILE_BASE64" | base64 -d > profile.mobileprovision
+    - mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+    - cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+  script:
+    - dotnet restore $PROJECT_PATH
+    - dotnet publish $PROJECT_PATH
+        -f net9.0-ios
+        -c Release
+        -p:ArchiveOnBuild=true
+        -p:RuntimeIdentifier=ios-arm64
+        -p:CodesignKey="$IOS_CODESIGN_IDENTITY"
+        -p:CodesignProvision="$IOS_PROVISIONING_PROFILE_NAME"
+        -o ./artifacts/ios
+  artifacts:
+    paths:
+      - ./artifacts/ios/*.ipa
+    expire_in: 1 hour
+
+publish-ios:
+  stage: publish
+  tags:
+    - macos
+  needs: [build-ios]
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - when: manual
+  before_script:
+    - gem install fastlane -NV
+    - echo "$APP_STORE_CONNECT_PRIVATE_KEY" > AuthKey.p8
+  script:
+    - fastlane pilot upload
+        --ipa $(ls ./artifacts/ios/*.ipa)
+        --api_key_path AuthKey.p8
+        --api_key $APP_STORE_CONNECT_KEY_ID
+        --api_issuer $APP_STORE_CONNECT_ISSUER_ID
+        --skip_waiting_for_build_processing true
+
+# ─── VERSION BUMP ────────────────────────────────────────────────────────────
+
+bump-version:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  rules:
+    - when: manual
+  variables:
+    APP_VERSION: "1.0.2"
+    BUILD_NUMBER: "3"
+  script:
+    - apt-get update && apt-get install -y git
+    - sed -i "s|<ApplicationDisplayVersion>.*</ApplicationDisplayVersion>|<ApplicationDisplayVersion>$APP_VERSION</ApplicationDisplayVersion>|" $PROJECT_PATH
+    - sed -i "s|<ApplicationVersion>.*</ApplicationVersion>|<ApplicationVersion>$BUILD_NUMBER</ApplicationVersion>|" $PROJECT_PATH
+    - git config user.email "ci@gitlab.com"
+    - git config user.name "GitLab CI"
+    - git add $PROJECT_PATH
+    - git commit -m "chore: bump version to $APP_VERSION (build $BUILD_NUMBER)"
+    - git tag v$APP_VERSION
+    - git push "https://oauth2:$CI_ACCESS_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH.git" HEAD:$CI_DEFAULT_BRANCH --tags
