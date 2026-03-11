@@ -25,7 +25,7 @@
 		<ApplicationTitle>Trenios Restaurant App</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.trenios.mobile</ApplicationId>
+		<ApplicationId>com.trenios.merchant.app</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
