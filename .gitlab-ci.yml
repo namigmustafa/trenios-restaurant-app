@@ -44,6 +44,7 @@ build-android:
       -p:AndroidSigningKeyPass=$ANDROID_KEY_PASSWORD
       -p:AndroidSigningStorePass=$ANDROID_KEYSTORE_PASSWORD
       -p:TargetFrameworks=net9.0-android
+      -p:ApplicationVersion=$CI_PIPELINE_IID
       -o ./artifacts/android
   artifacts:
     paths:
