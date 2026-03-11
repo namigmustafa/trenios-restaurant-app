@@ -60,13 +60,12 @@ publish-android:
   before_script:
     - gem install fastlane -NV
   script:
-    - echo "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > google-play-key.json
     - >
       fastlane supply
       --aab $(ls ./artifacts/android/*.aab)
       --package_name com.companyname.trenios.mobile
       --track internal
-      --json_key google-play-key.json
+      --json_key $GOOGLE_PLAY_SERVICE_ACCOUNT_JSON
       --skip_upload_apk true
       --skip_upload_metadata true
       --skip_upload_changelogs true
