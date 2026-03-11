@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(if exist \"Trenios.Mobile\\\\bin\" rmdir /s /q \"Trenios.Mobile\\\\bin\")",
+      "Bash(if exist \"Trenios.Mobile\\\\obj\" rmdir /s /q \"Trenios.Mobile\\\\obj\")",
+      "Bash(taskkill:*)",
+      "Bash(dotnet list:*)",
+      "Bash(dir /s \"C:\\\\Projects\\\\Personal\\\\trenios-app-restaurant-app\\\\Trenios\\\\Trenios.Mobile\\\\Resources\")",
+      "Bash(copy:*)",
+      "Bash(python3 -c:*)",
+      "WebFetch(domain:developercommunity.visualstudio.com)",
+      "WebSearch",
+      "Bash(dotnet workload:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(pip install:*)",
+      "Bash(python -c \" from fontTools.ttLib import TTFont font = TTFont\\(''C:/Projects/Personal/trenios-app-restaurant-app/Trenios/Trenios.Mobile/Resources/Fonts/FluentSystemIcons-Regular.ttf''\\) cmap = font.getBestCmap\\(\\) for code, name in sorted\\(cmap.items\\(\\)\\): name_lower = name.lower\\(\\) if any\\(k in name_lower for k in [''cart'', ''receipt'', ''arrow'', ''person'', ''globe'', ''table'', ''fire'', ''check'', ''add'', ''subtract'', ''delete'', ''dismiss'', ''chevron'', ''clock'', ''search'', ''sign_out'', ''food'', ''bag'', ''vehicle'', ''home'', ''lock'', ''warn'', ''refresh'', ''star'']\\): print\\(f''0x{code:04X} = {name}''\\) \")",
+      "Bash(where:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(xxd:*)"
+    ]
+  }
+}

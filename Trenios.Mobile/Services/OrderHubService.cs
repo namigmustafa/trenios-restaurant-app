@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Configuration;
 using Trenios.Mobile.Models.Api;
 
 namespace Trenios.Mobile.Services;
@@ -6,10 +7,9 @@ namespace Trenios.Mobile.Services;
 public class OrderHubService : IAsyncDisposable
 {
     private readonly ApiService _apiService;
+    private readonly string _hubUrl;
     private HubConnection? _hubConnection;
     private Guid? _currentBranchId;
-
-    private const string HubUrl = "https://app-trenios-test.azurewebsites.net/hubs/orders";
 
     public event Action<OrderResponse>? OnOrderCreated;
     public event Action<OrderResponse>? OnOrderStatusUpdated;
@@ -18,9 +18,10 @@ public class OrderHubService : IAsyncDisposable
 
     public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
 
-    public OrderHubService(ApiService apiService)
+    public OrderHubService(ApiService apiService, IConfiguration configuration)
     {
         _apiService = apiService;
+        _hubUrl = $"{configuration["ApiBaseUrl"]}/hubs/orders";
     }
 
     public async Task ConnectAsync(Guid branchId)
@@ -42,7 +43,7 @@ public class OrderHubService : IAsyncDisposable
         }
 
         _hubConnection = new HubConnectionBuilder()
-            .WithUrl($"{HubUrl}?access_token={token}")
+            .WithUrl($"{_hubUrl}?access_token={token}")
             .WithAutomaticReconnect(new[] { TimeSpan.Zero, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10) })
             .Build();
 

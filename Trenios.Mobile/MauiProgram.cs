@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Trenios.Mobile.Pages;
 using Trenios.Mobile.Services;
@@ -7,9 +8,6 @@ namespace Trenios.Mobile;
 
 public static class MauiProgram
 {
-    // Configure your API base URL here
-    private const string ApiBaseUrl = "https://app-trenios-test.azurewebsites.net";
-
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
@@ -22,12 +20,26 @@ public static class MauiProgram
                 fonts.AddFont("FluentSystemIcons-Regular.ttf", "FluentIcons");
             });
 
+        // Load appsettings
+        using var defaultSettings = FileSystem.OpenAppPackageFileAsync("appsettings.json").Result;
+        var configBuilder = new ConfigurationBuilder().AddJsonStream(defaultSettings);
+
+#if PROD
+        using var prodSettings = FileSystem.OpenAppPackageFileAsync("appsettings.Production.json").Result;
+        configBuilder.AddJsonStream(prodSettings);
+#endif
+
+        var config = configBuilder.Build();
+        builder.Configuration.AddConfiguration(config);
+
+        var apiBaseUrl = config["ApiBaseUrl"]!;
+
         // Register HttpClient
         builder.Services.AddSingleton(sp =>
         {
             var client = new HttpClient
             {
-                BaseAddress = new Uri(ApiBaseUrl),
+                BaseAddress = new Uri(apiBaseUrl),
                 Timeout = TimeSpan.FromSeconds(30)
             };
             client.DefaultRequestHeaders.Add("Accept", "application/json");
