@@ -88,8 +88,9 @@ jobs:
           APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
         run: |
           mkdir -p ~/.appstoreconnect/private_keys
-          echo "$APPLE_API_KEY_BASE64" | base64 --decode \
+          printf '%s' "$APPLE_API_KEY_BASE64" | tr -d '[:space:]' | base64 --decode \
             > ~/.appstoreconnect/private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
+          sed -i '' 's/\r//' ~/.appstoreconnect/private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
 
           IPA_PATH=$(find ./artifacts/ios -name "*.ipa" | head -1)
           xcrun altool --upload-app \
