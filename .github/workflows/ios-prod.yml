@@ -22,19 +22,13 @@ jobs:
         with:
           dotnet-version: "9.0.x"
 
-      - name: Install MAUI iOS workload (pinned to Xcode 16 compatible)
+      - name: Pin .NET 9 SDK (prevent .NET 10 selection)
         run: |
-          cat > /tmp/workload-rollback.json << 'EOF'
-          {
-            "microsoft.net.sdk.ios": "18.4.9265",
-            "microsoft.net.sdk.maccatalyst": "18.4.9265",
-            "microsoft.net.sdk.tvos": "18.4.9265",
-            "microsoft.net.sdk.macos": "15.4.9265"
-          }
-          EOF
-          dotnet workload install maui-ios \
-            --from-rollback-file /tmp/workload-rollback.json \
-            --source https://api.nuget.org/v3/index.json
+          echo '{"sdk":{"version":"9.0.100","rollForward":"latestMinor"}}' \
+            > ${{ github.workspace }}/global.json
+
+      - name: Install MAUI iOS workload
+        run: dotnet workload install maui-ios --source https://api.nuget.org/v3/index.json
 
       - name: Import signing certificate
         env:
