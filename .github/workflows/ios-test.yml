@@ -9,6 +9,7 @@ on:
 env:
   PROJECT_PATH: "Trenios.Mobile/Trenios.Mobile.csproj"
   DOTNET_VERSION: "9.0.x"
+  DOTNET_ROLL_FORWARD: "disable"
 
 jobs:
   build-and-publish-ios-test:
@@ -21,10 +22,13 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version: "9.0.203"
 
       - name: Install MAUI iOS workload
-        run: dotnet workload install maui-ios --source https://api.nuget.org/v3/index.json
+        run: |
+          dotnet workload install maui-ios \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-sign-check
 
       - name: Import signing certificate
         env:
