@@ -11,7 +11,7 @@ env:
 
 jobs:
   build-and-publish-ios-test:
-    runs-on: macos-14
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
@@ -27,8 +27,17 @@ jobs:
           echo '{"sdk":{"version":"9.0.100","rollForward":"latestMinor"}}' \
             > ${{ github.workspace }}/global.json
 
-      - name: Install MAUI iOS workload
-        run: dotnet workload install maui-ios --source https://api.nuget.org/v3/index.json
+      - name: Install MAUI iOS workload (pinned to iOS 18.4 / Xcode 16.4)
+        run: |
+          cat > /tmp/workload-rollback.json << 'EOF'
+          {
+            "microsoft.net.sdk.ios": "18.4.9291",
+            "microsoft.net.sdk.maccatalyst": "18.4.9291"
+          }
+          EOF
+          dotnet workload install maui-ios \
+            --from-rollback-file /tmp/workload-rollback.json \
+            --source https://api.nuget.org/v3/index.json
 
       - name: Import signing certificate
         env:
