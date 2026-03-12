@@ -20,11 +20,11 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: "9.0.100"
 
-      - name: Pin .NET 9 SDK (prevent .NET 10 selection)
+      - name: Pin .NET 9 SDK to 9.0.1xx band
         run: |
-          echo '{"sdk":{"version":"9.0.100","rollForward":"latestMinor"}}' \
+          echo '{"sdk":{"version":"9.0.100","rollForward":"latestPatch"}}' \
             > ${{ github.workspace }}/global.json
 
       - name: Install MAUI iOS workload (pinned to iOS 18.4 / Xcode 16.4)
