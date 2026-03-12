@@ -7,12 +7,13 @@ variables:
   ANDROID_SDK_ROOT: "/android-sdk"
   ANDROID_HOME: "/android-sdk"
 
+# ─── DEVELOP BRANCH ───────────────────────────────────────────────────────────
+
 build-android:
   stage: build
   image: mcr.microsoft.com/dotnet/sdk:9.0
   rules:
     - if: '$CI_COMMIT_BRANCH == "develop"'
-    - if: '$CI_COMMIT_BRANCH == "main"'
     - when: manual
   before_script:
     - apt-get update -qq && apt-get install -y -qq openjdk-17-jdk-headless unzip wget
@@ -48,7 +49,22 @@ build-android:
       - ./artifacts/android/*.aab
     expire_in: 1 hour
 
-# Publishes to internal track on every push to develop
+build-ios:
+  stage: build
+  image: alpine:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - when: manual
+  script:
+    - apk add --no-cache curl
+    - |
+      curl -s -o /dev/null -w "%{http_code}" -X POST \
+        -H "Authorization: Bearer $GITHUB_TOKEN" \
+        -H "Accept: application/vnd.github.v3+json" \
+        https://api.github.com/repos/$GITHUB_IOS_REPO/actions/workflows/ios-test.yml/dispatches \
+        -d '{"ref":"develop"}'
+    - echo "iOS build triggered on GitHub Actions"
+
 publish-android-test:
   stage: publish
   image: ruby:3.2
@@ -70,7 +86,8 @@ publish-android-test:
       --skip_upload_images true
       --skip_upload_screenshots true
 
-# Builds and publishes to production on every push to main
+# ─── MAIN BRANCH ──────────────────────────────────────────────────────────────
+
 build-android-prod:
   stage: build
   image: mcr.microsoft.com/dotnet/sdk:9.0
@@ -110,6 +127,21 @@ build-android-prod:
     paths:
       - ./artifacts/android-prod/*.aab
     expire_in: 1 hour
+
+build-ios-prod:
+  stage: build
+  image: alpine:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  script:
+    - apk add --no-cache curl
+    - |
+      curl -s -o /dev/null -w "%{http_code}" -X POST \
+        -H "Authorization: Bearer $GITHUB_TOKEN" \
+        -H "Accept: application/vnd.github.v3+json" \
+        https://api.github.com/repos/$GITHUB_IOS_REPO/actions/workflows/ios-prod.yml/dispatches \
+        -d '{"ref":"main"}'
+    - echo "iOS production build triggered on GitHub Actions"
 
 publish-android-prod:
   stage: publish

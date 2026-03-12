@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+  workflow_dispatch:
 
 env:
   PROJECT_PATH: "Trenios.Mobile/Trenios.Mobile.csproj"
