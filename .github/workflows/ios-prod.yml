@@ -103,4 +103,4 @@ jobs:
         if: always()
         run: |
           rm -f $RUNNER_TEMP/cert.p12
-security delete-keychain $RUNNER_TEMP/app-signing.keychain-db 2>/dev/null || true
+          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db 2>/dev/null || true
