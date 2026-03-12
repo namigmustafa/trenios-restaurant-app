@@ -8,12 +8,10 @@ on:
 
 env:
   PROJECT_PATH: "Trenios.Mobile/Trenios.Mobile.csproj"
-  DOTNET_VERSION: "9.0.x"
-  DOTNET_ROLL_FORWARD: "disable"
 
 jobs:
   build-and-publish-ios-test:
-    runs-on: macos-latest
+    runs-on: macos-14
 
     steps:
       - name: Checkout
@@ -22,13 +20,21 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "9.0.203"
+          dotnet-version: "9.0.x"
 
-      - name: Install MAUI iOS workload
+      - name: Install MAUI iOS workload (pinned to Xcode 16 compatible)
         run: |
+          cat > /tmp/workload-rollback.json << 'EOF'
+          {
+            "microsoft.net.sdk.ios": "18.4.9265",
+            "microsoft.net.sdk.maccatalyst": "18.4.9265",
+            "microsoft.net.sdk.tvos": "18.4.9265",
+            "microsoft.net.sdk.macos": "15.4.9265"
+          }
+          EOF
           dotnet workload install maui-ios \
-            --source https://api.nuget.org/v3/index.json \
-            --skip-sign-check
+            --from-rollback-file /tmp/workload-rollback.json \
+            --source https://api.nuget.org/v3/index.json
 
       - name: Import signing certificate
         env:
@@ -82,8 +88,7 @@ jobs:
           echo "$APPLE_API_KEY_BASE64" | base64 --decode \
             > ~/.appstoreconnect/private_keys/AuthKey_$APPLE_API_KEY_ID.p8
 
-          # Create fastlane API key JSON
-          cat > /tmp/api_key.json <<EOF
+          cat > /tmp/api_key.json << EOF
           {
             "key_id": "$APPLE_API_KEY_ID",
             "issuer_id": "$APPLE_API_ISSUER_ID",
