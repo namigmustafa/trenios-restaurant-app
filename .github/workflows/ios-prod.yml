@@ -24,7 +24,7 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Install MAUI iOS workload
-        run: dotnet workload install maui-ios
+        run: dotnet workload install maui-ios --source https://api.nuget.org/v3/index.json
 
       - name: Import signing certificate
         env:
@@ -60,6 +60,7 @@ jobs:
           dotnet publish $PROJECT_PATH \
             -f net9.0-ios \
             -c Release \
+            -p:TargetFrameworks=net9.0-ios \
             -p:ArchiveOnBuild=true \
             -p:RuntimeIdentifier=ios-arm64 \
             -p:CodesignKey="$IOS_CODESIGN_KEY" \
