@@ -119,7 +119,7 @@ public class AuthService
 
         if (!result.IsSuccess)
         {
-            return (false, result.ErrorMessage ?? "Login failed");
+            return (false, "Invalid username or password.");
         }
 
         if (result.Data == null)

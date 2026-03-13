@@ -3,7 +3,7 @@
   <PropertyGroup>
     <IsFirstTimeProjectOpen>False</IsFirstTimeProjectOpen>
     <ActiveDebugFramework>net9.0-ios</ActiveDebugFramework>
-    <ActiveDebugProfile>Local Device</ActiveDebugProfile>
+    <ActiveDebugProfile>Namiq’s iPhone</ActiveDebugProfile>
     <SelectedPlatformGroup>LocalDevice</SelectedPlatformGroup>
     <DefaultDevice>tablet_h-dpi_13_5in_-_api_35</DefaultDevice>
     <DeveloperId>NJJXK59W6Y</DeveloperId>

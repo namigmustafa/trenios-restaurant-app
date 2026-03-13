@@ -18,6 +18,18 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 fonts.AddFont("FluentSystemIcons-Regular.ttf", "FluentIcons");
+            })
+            .ConfigureMauiHandlers(handlers =>
+            {
+                Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("BorderlessEntry", (handler, view) =>
+                {
+#if ANDROID
+                    handler.PlatformView.BackgroundTintList =
+                        Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent);
+#elif IOS
+                    handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
+#endif
+                });
             });
 
         // Load appsettings

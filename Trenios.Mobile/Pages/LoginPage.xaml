@@ -6,134 +6,139 @@
              x:Class="Trenios.Mobile.Pages.LoginPage"
              x:DataType="vm:LoginViewModel"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="{StaticResource Primary}">
+             BackgroundColor="{StaticResource White}">
 
-    <Grid RowDefinitions="Auto,*,Auto,*">
-        <!-- Logo/Brand Area -->
-        <VerticalStackLayout Grid.Row="1"
-                             VerticalOptions="End"
-                             HorizontalOptions="Center"
-                             Spacing="2"
-                             Padding="2">
-            <Image Source="trenioslogo.png"
-                   HeightRequest="50"
-                   HorizontalOptions="Center"/>
-            <!--<Label Text="Restaurant POS"
-                   TextColor="White"
-                   Opacity="0.8"
-                   FontSize="18"
-                   HorizontalOptions="Center"/>-->
-        </VerticalStackLayout>
+    <Grid>
+        <!-- Main content — VerticalOptions="Center" centers within the Grid -->
+        <VerticalStackLayout VerticalOptions="Center"
+                             HorizontalOptions="Fill"
+                             MaximumWidthRequest="480"
+                             Padding="32,0"
+                             Spacing="0">
 
-        <!-- Login Form Card -->
-        <Border Grid.Row="2"
-                StrokeShape="RoundRectangle 24"
-                StrokeThickness="0"
-                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
-                Margin="24,24,24,0"
-                Padding="24"
-                MaximumWidthRequest="400">
-            <VerticalStackLayout Spacing="20">
-                <Label Text="{h:Translate Login}"
-                       Style="{StaticResource Headline}"
-                       HorizontalOptions="Center"/>
+                    <!-- Logo -->
+                    <Image Source="trenios_logo_red.png"
+                           HeightRequest="56"
+                           HorizontalOptions="Center"
+                           Margin="0,0,0,52"/>
 
-                <!-- Username -->
-                <VerticalStackLayout Spacing="8">
+                    <!-- Username -->
                     <Label Text="{h:Translate Username}"
-                           Style="{StaticResource Subtitle}"/>
-                    <Border StrokeShape="RoundRectangle 12"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="14"
+                           TextColor="{StaticResource Gray800}"
+                           Margin="0,0,0,8"/>
+                    <Border StrokeShape="RoundRectangle 14"
                             StrokeThickness="1"
-                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
-                            BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}"
-                            Padding="16,0">
+                            Stroke="{StaticResource Gray200}"
+                            BackgroundColor="{StaticResource White}"
+                            Padding="16,0"
+                            Margin="0,0,0,20">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding HasError}" Value="True">
+                                <Setter Property="Stroke" Value="#FECACA"/>
+                            </DataTrigger>
+                        </Border.Triggers>
                         <Entry Text="{Binding Username}"
                                Placeholder="{h:Translate EnterUsername}"
-                               PlaceholderColor="{StaticResource Gray400}"
                                BackgroundColor="Transparent"
-                               FontSize="18"
                                HeightRequest="52"/>
                     </Border>
-                </VerticalStackLayout>
 
-                <!-- Password -->
-                <VerticalStackLayout Spacing="8">
+                    <!-- Password -->
                     <Label Text="{h:Translate Password}"
-                           Style="{StaticResource Subtitle}"/>
-                    <Border StrokeShape="RoundRectangle 12"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="14"
+                           TextColor="{StaticResource Gray800}"
+                           Margin="0,0,0,8"/>
+                    <Border StrokeShape="RoundRectangle 14"
                             StrokeThickness="1"
-                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
-                            BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}"
-                            Padding="16,0">
+                            Stroke="{StaticResource Gray200}"
+                            BackgroundColor="{StaticResource White}"
+                            Padding="16,0"
+                            Margin="0,0,0,4">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding HasError}" Value="True">
+                                <Setter Property="Stroke" Value="#FECACA"/>
+                            </DataTrigger>
+                        </Border.Triggers>
                         <Entry Text="{Binding Password}"
                                Placeholder="{h:Translate EnterPassword}"
-                               PlaceholderColor="{StaticResource Gray400}"
                                BackgroundColor="Transparent"
-                               FontSize="18"
                                IsPassword="True"
                                HeightRequest="52"/>
                     </Border>
-                </VerticalStackLayout>
 
-                <!-- Error Message -->
-                <Label Text="{Binding ErrorMessage}"
-                       TextColor="{StaticResource Danger}"
-                       IsVisible="{Binding HasError}"
-                       HorizontalOptions="Center"
-                       FontSize="14"/>
+                    <!-- Error banner -->
+                    <Border IsVisible="{Binding HasError}"
+                            StrokeShape="RoundRectangle 12"
+                            StrokeThickness="1"
+                            Stroke="#FECACA"
+                            BackgroundColor="#FEF2F2"
+                            Padding="14,12"
+                            Margin="0,16,0,0">
+                        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                            <Label Text="&#x26A0;"
+                                   TextColor="{StaticResource Primary}"
+                                   FontSize="16"
+                                   VerticalOptions="Center"/>
+                            <Label Text="{Binding ErrorMessage}"
+                                   TextColor="#B91C1C"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="13"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Fill"/>
+                        </HorizontalStackLayout>
+                    </Border>
 
-                <!-- Login Button -->
-                <Button Text="{h:Translate Login}"
-                        Command="{Binding LoginCommand}"
-                        Style="{StaticResource PrimaryButton}"
-                        HeightRequest="56"
-                        Margin="0,10,0,0"/>
+                    <!-- Login button -->
+                    <Button Text="{h:Translate Login}"
+                            Command="{Binding LoginCommand}"
+                            BackgroundColor="{StaticResource Primary}"
+                            TextColor="{StaticResource White}"
+                            FontFamily="OpenSansSemibold"
+                            FontSize="17"
+                            CornerRadius="14"
+                            HeightRequest="56"
+                            Margin="0,16,0,0"/>
 
-                <!-- Language Selector Button -->
-                <Border x:Name="LanguageDropdown"
-                        StrokeShape="RoundRectangle 12"
-                        StrokeThickness="1"
-                        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
-                        BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}"
-                        HeightRequest="56"
-                        Margin="0,10,0,0">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnLanguageTapped"/>
-                    </Border.GestureRecognizers>
-                    <HorizontalStackLayout Spacing="8"
-                                          HorizontalOptions="Center"
-                                          VerticalOptions="Center">
-                        <Label x:Name="CurrentLanguageLabel"
-                               Text="English"
-                               FontSize="16"
-                               FontFamily="OpenSansSemibold"
-                               VerticalOptions="Center"/>
-                        <Label Text="▼"
-                               FontSize="12"
-                               VerticalOptions="Center"/>
-                    </HorizontalStackLayout>
-                </Border>
+                    <!-- Activity indicator -->
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       HorizontalOptions="Center"
+                                       Margin="0,12,0,0"/>
 
-                <!-- Loading Indicator -->
-                <ActivityIndicator IsRunning="{Binding IsBusy}"
-                                   IsVisible="{Binding IsBusy}"
-                                   HorizontalOptions="Center"/>
-            </VerticalStackLayout>
-        </Border>
+                    <!-- Language selector -->
+                    <Border x:Name="LanguageDropdown"
+                            StrokeShape="RoundRectangle 12"
+                            StrokeThickness="1"
+                            Stroke="{StaticResource Gray200}"
+                            BackgroundColor="{StaticResource White}"
+                            HeightRequest="44"
+                            Margin="0,16,0,0">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnLanguageTapped"/>
+                        </Border.GestureRecognizers>
+                        <HorizontalStackLayout Spacing="6"
+                                              HorizontalOptions="Center"
+                                              VerticalOptions="Center">
+                            <Label x:Name="CurrentLanguageLabel"
+                                   Text="English"
+                                   FontSize="14"
+                                   FontFamily="OpenSansSemibold"
+                                   TextColor="{StaticResource Gray500}"
+                                   VerticalOptions="Center"/>
+                            <Label Text="▼"
+                                   FontSize="9"
+                                   TextColor="{StaticResource Gray400}"
+                                   VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                    </Border>
 
-        <!-- Footer -->
-        <!--<Label Grid.Row="3"
-               Text="Touch-optimized for tablets and phones"
-               TextColor="White"
-               Opacity="0.6"
-               FontSize="12"
-               HorizontalOptions="Center"
-               VerticalOptions="Start"
-               Margin="0,24,0,0"/>-->
+        </VerticalStackLayout>
 
-        <!-- Language Selection Popup -->
+        <!-- Language selection popup -->
         <Grid x:Name="LanguagePopup"
-              Grid.RowSpan="4"
               IsVisible="False"
               BackgroundColor="#80000000">
             <Grid.GestureRecognizers>
@@ -144,7 +149,7 @@
                     HorizontalOptions="Center"
                     StrokeShape="RoundRectangle 16"
                     StrokeThickness="0"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                    BackgroundColor="{StaticResource White}"
                     Padding="0"
                     WidthRequest="300">
                 <Border.GestureRecognizers>
@@ -152,7 +157,6 @@
                 </Border.GestureRecognizers>
 
                 <VerticalStackLayout Spacing="0">
-                    <!-- Header -->
                     <Label Text="{h:Translate Language}"
                            FontFamily="OpenSansSemibold"
                            FontSize="20"
@@ -160,7 +164,6 @@
                            BackgroundColor="{StaticResource Primary}"
                            TextColor="White"/>
 
-                    <!-- Language Options -->
                     <VerticalStackLayout Padding="8">
                         <Button Text="English"
                                 Style="{StaticResource GhostButton}"
