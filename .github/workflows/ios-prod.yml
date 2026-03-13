@@ -62,7 +62,7 @@ jobs:
           IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
         run: |
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo "$IOS_PROVISION_PROFILE_BASE64" | base64 --decode \
+          printf '%s' "$IOS_PROVISION_PROFILE_BASE64" | tr -d '[:space:]' | base64 --decode \
             > ~/Library/MobileDevice/Provisioning\ Profiles/distribution.mobileprovision
 
       - name: Build iOS IPA (Production)
