@@ -49,7 +49,7 @@ jobs:
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "" $KEYCHAIN_PATH
 
-          echo "$IOS_P12_BASE64" | base64 --decode > $RUNNER_TEMP/cert.p12
+          printf '%s' "$IOS_P12_BASE64" | tr -d '[:space:]' | base64 --decode > $RUNNER_TEMP/cert.p12
           security import $RUNNER_TEMP/cert.p12 \
             -P "$IOS_P12_PASSWORD" \
             -A -t cert -f pkcs12 \
@@ -91,6 +91,10 @@ jobs:
           printf '%s' "$APPLE_API_KEY_BASE64" | tr -d '[:space:]' | base64 --decode \
             > ~/.appstoreconnect/private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
           sed -i '' 's/\r//' ~/.appstoreconnect/private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
+          echo "--- Key file first line ---"
+          head -1 ~/.appstoreconnect/private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
+          echo "--- Key file size ---"
+          wc -c ~/.appstoreconnect/private_keys/AuthKey_${APPLE_API_KEY_ID}.p8
 
           IPA_PATH=$(find ./artifacts/ios -name "*.ipa" | head -1)
           xcrun altool --upload-app \

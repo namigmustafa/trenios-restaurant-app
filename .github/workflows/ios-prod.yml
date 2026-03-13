@@ -49,7 +49,7 @@ jobs:
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "" $KEYCHAIN_PATH
 
-          echo "$IOS_P12_BASE64" | base64 --decode > $RUNNER_TEMP/cert.p12
+          printf '%s' "$IOS_P12_BASE64" | tr -d '[:space:]' | base64 --decode > $RUNNER_TEMP/cert.p12
           security import $RUNNER_TEMP/cert.p12 \
             -P "$IOS_P12_PASSWORD" \
             -A -t cert -f pkcs12 \
