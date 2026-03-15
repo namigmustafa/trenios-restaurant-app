@@ -163,10 +163,10 @@ public class OrderResponse
     };
 
     [JsonIgnore]
-    public string PlacedAtDisplay => PlacedAt.ToString("HH:mm");
+    public string PlacedAtDisplay => PlacedAt.ToLocalTime().ToString("HH:mm");
 
     [JsonIgnore]
-    public string PlacedAtFullDisplay => PlacedAt.ToString("dd MMM yyyy HH:mm");
+    public string PlacedAtFullDisplay => PlacedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm");
 
     [JsonIgnore]
     public int TotalItems => Items.Sum(i => i.Quantity);

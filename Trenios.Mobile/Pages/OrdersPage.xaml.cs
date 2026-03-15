@@ -52,15 +52,6 @@ public partial class OrdersPage : ContentPage
             command.Execute(null);
     }
 
-    private async void OnCopyUrlTapped(object? sender, EventArgs e)
-    {
-        if (!string.IsNullOrEmpty(_viewModel.LastRequestUrl))
-        {
-            await Clipboard.SetTextAsync(_viewModel.LastRequestUrl);
-            await DisplayAlert("Copied", _viewModel.LastRequestUrl, "OK");
-        }
-    }
-
     private async void OnLanguageTapped(object? sender, EventArgs e)
     {
         var localization = LocalizationService.Instance;

@@ -363,36 +363,6 @@
                     <DatePicker Grid.Column="3" Date="{Binding EndDate}" Format="dd/MM/yyyy" FontSize="13" VerticalOptions="Center"/>
                 </Grid>
 
-                <!-- Debug URL row (tap to copy) -->
-                <Border Margin="16,0,16,12"
-                        Padding="10,8"
-                        StrokeShape="RoundRectangle 8"
-                        StrokeThickness="1"
-                        Stroke="{StaticResource Gray200}"
-                        BackgroundColor="{StaticResource Gray50}"
-                        IsVisible="{Binding LastRequestUrl, Converter={StaticResource IsNotNullOrEmptyConverter}}">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never" VerticalOptions="Center">
-                            <Label x:Name="UrlLabel"
-                                   Text="{Binding LastRequestUrl}"
-                                   FontSize="11"
-                                   TextColor="{StaticResource Gray600}"
-                                   FontFamily="OpenSansRegular"
-                                   VerticalOptions="Center"/>
-                        </ScrollView>
-                        <Border Grid.Column="1"
-                                Padding="8,6"
-                                StrokeShape="RoundRectangle 6"
-                                StrokeThickness="0"
-                                BackgroundColor="{StaticResource Gray200}"
-                                VerticalOptions="Center">
-                            <Label Text="📋" FontSize="13" VerticalOptions="Center"/>
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnCopyUrlTapped"/>
-                            </Border.GestureRecognizers>
-                        </Border>
-                    </Grid>
-                </Border>
 
             </VerticalStackLayout>
 

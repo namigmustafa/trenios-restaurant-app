@@ -31,7 +31,7 @@ public class OrdersViewModel : INotifyPropertyChanged
     private DateTime _endDate = DateTime.Today;
     private bool _showTodayOnly = true;
     private IReadOnlyList<OrderGroup> _groupedOrders = Array.Empty<OrderGroup>();
-    private string _lastRequestUrl = string.Empty;
+
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -43,11 +43,6 @@ public class OrdersViewModel : INotifyPropertyChanged
         private set { _groupedOrders = value; OnPropertyChanged(nameof(GroupedOrders)); }
     }
 
-    public string LastRequestUrl
-    {
-        get => _lastRequestUrl;
-        private set { _lastRequestUrl = value; OnPropertyChanged(nameof(LastRequestUrl)); }
-    }
 
     public bool IsLoading
     {
@@ -208,16 +203,14 @@ public class OrdersViewModel : INotifyPropertyChanged
             url += $"&startDate={StartDate:yyyy-MM-dd}T00:00:00";
             url += $"&endDate={EndDate:yyyy-MM-dd}T23:59:59";
 
-            LastRequestUrl = url;
-
             var result = await _apiService.GetAsync<List<OrderResponse>>(url);
 
             if (result.IsSuccess && result.Data != null)
             {
                 // Client-side date filter as safety net (API may not honour date params).
                 var sorted = result.Data
-                    .Where(o => o.PlacedAt.Date >= StartDate.Date
-                             && o.PlacedAt.Date <= EndDate.Date)
+                    .Where(o => o.PlacedAt.ToLocalTime().Date >= StartDate.Date
+                             && o.PlacedAt.ToLocalTime().Date <= EndDate.Date)
                     .OrderByDescending(o => o.PlacedAt)
                     .ToList();
 
@@ -226,7 +219,7 @@ public class OrdersViewModel : INotifyPropertyChanged
                     Orders.Add(order);
 
                 GroupedOrders = sorted
-                    .GroupBy(o => o.PlacedAt.Date)
+                    .GroupBy(o => o.PlacedAt.ToLocalTime().Date)
                     .OrderByDescending(g => g.Key)
                     .Select(g => new OrderGroup(g.Key, GetDateLabel(g.Key), g))
                     .ToList();
