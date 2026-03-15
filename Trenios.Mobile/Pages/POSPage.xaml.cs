@@ -25,6 +25,13 @@ public partial class POSPage : ContentPage
         CurrentLanguageLabelPhone.Text = languageCode;
     }
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        if (BindingContext is POSViewModel viewModel)
+            await viewModel.LoadDataAsync(forceRefresh: false);
+    }
+
     protected override void OnSizeAllocated(double width, double height)
     {
         base.OnSizeAllocated(width, height);

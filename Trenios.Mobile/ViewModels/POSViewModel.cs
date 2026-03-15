@@ -260,12 +260,16 @@ public class POSViewModel : BaseViewModel
         // Subscribe to cart changes
         _orderService.OnCartChanged += RefreshCart;
 
+        // Reload data when branch/restaurant changes (SuperAdmin switching restaurants)
+        _authService.OnAuthStateChanged += () => _ = LoadDataAsync(forceRefresh: true);
+
         // Load initial data
         _ = LoadDataAsync();
     }
 
     public async Task LoadDataAsync(bool forceRefresh = false)
     {
+        SelectedCategoryId = null;
         await LoadCategoriesAsync(forceRefresh);
 
         if (Categories.Count > 0 && SelectedCategoryId == null)

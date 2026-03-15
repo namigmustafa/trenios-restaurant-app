@@ -15,6 +15,7 @@ public class AuthService
     public UserDto? CurrentUser { get; private set; }
     public Guid? SelectedRestaurantId { get; private set; }
     public string? SelectedRestaurantName { get; private set; }
+    public RestaurantDto? SelectedRestaurant { get; private set; }
     public Guid? SelectedBranchId { get; private set; }
     public string? SelectedBranchName { get; private set; }
     public BranchDto? CurrentBranch { get; private set; }
@@ -72,10 +73,11 @@ public class AuthService
         return SelectedRestaurantName;
     }
 
-    public void SetSelectedRestaurant(Guid restaurantId, string? restaurantName = null)
+    public void SetSelectedRestaurant(Guid restaurantId, string? restaurantName = null, RestaurantDto? restaurant = null)
     {
         SelectedRestaurantId = restaurantId;
         SelectedRestaurantName = restaurantName;
+        SelectedRestaurant = restaurant;
         Preferences.Set(SelectedRestaurantKey, restaurantId.ToString());
         if (restaurantName != null)
             Preferences.Set(SelectedRestaurantNameKey, restaurantName);
@@ -138,6 +140,13 @@ public class AuthService
         // Clear previous selections when logging in as different user
         ClearSelections();
 
+        // For BranchManager/Cashier, pre-populate branch from JWT so POSViewModel works immediately
+        if (CurrentUser.CanGoDirectlyToPOS)
+        {
+            CurrentBranch = CurrentUser.Branch;
+            SelectedBranchId = CurrentUser.EffectiveBranchId;
+        }
+
         OnAuthStateChanged?.Invoke();
 
         return (true, null);
@@ -162,6 +171,7 @@ public class AuthService
     {
         SelectedRestaurantId = null;
         SelectedRestaurantName = null;
+        SelectedRestaurant = null;
         SelectedBranchId = null;
         SelectedBranchName = null;
         CurrentBranch = null;
@@ -225,6 +235,6 @@ public class AuthService
         if (CurrentUser.NeedsBranchSelection)
             return "//BranchSelection";
 
-        return "//MainPage";
+        return "//MainTabs";
     }
 }

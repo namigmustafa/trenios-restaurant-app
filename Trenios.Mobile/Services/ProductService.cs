@@ -8,6 +8,7 @@ public class ProductService
     private readonly AuthService _authService;
 
     private List<CategoryDto>? _cachedCategories;
+    private Guid? _cachedRestaurantId;
     private List<BranchMenuItemDto>? _cachedMenuItems;
     private Guid? _cachedBranchId;
     private DateTime _categoriesCachedAt;
@@ -22,7 +23,8 @@ public class ProductService
         _authService = authService;
     }
 
-    private bool IsCategoriesCacheValid => _cachedCategories != null &&
+    private bool IsCategoriesCacheValid(Guid restaurantId) => _cachedCategories != null &&
+        _cachedRestaurantId == restaurantId &&
         DateTime.UtcNow - _categoriesCachedAt < CacheExpiration;
 
     private bool IsMenuItemsCacheValid(Guid branchId) => _cachedMenuItems != null &&
@@ -31,15 +33,15 @@ public class ProductService
 
     public async Task<(List<CategoryDto>? Categories, string? Error)> GetCategoriesAsync(bool forceRefresh = false)
     {
-        if (!forceRefresh && IsCategoriesCacheValid)
-        {
-            return (_cachedCategories!, null);
-        }
-
         var restaurantId = _authService.GetEffectiveRestaurantId();
         if (restaurantId == null)
         {
             return (null, "No restaurant selected");
+        }
+
+        if (!forceRefresh && IsCategoriesCacheValid(restaurantId.Value))
+        {
+            return (_cachedCategories!, null);
         }
 
         var result = await _apiService.GetAsync<List<CategoryDto>>($"/api/categories?restaurantId={restaurantId}");
@@ -50,6 +52,7 @@ public class ProductService
                 .Where(c => c.IsActive)
                 .OrderBy(c => c.DisplayOrder)
                 .ToList();
+            _cachedRestaurantId = restaurantId;
             _categoriesCachedAt = DateTime.UtcNow;
             return (_cachedCategories, null);
         }
@@ -109,6 +112,7 @@ public class ProductService
     public void ClearCache()
     {
         _cachedCategories = null;
+        _cachedRestaurantId = null;
         _cachedMenuItems = null;
         _cachedBranchId = null;
     }

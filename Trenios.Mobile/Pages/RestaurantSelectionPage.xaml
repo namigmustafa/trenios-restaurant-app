@@ -7,153 +7,236 @@
              x:Class="Trenios.Mobile.Pages.RestaurantSelectionPage"
              x:DataType="vm:RestaurantSelectionViewModel"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+             BackgroundColor="{StaticResource Gray100}">
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
+
         <!-- Header -->
         <Border Grid.Row="0"
                 StrokeThickness="0"
-                BackgroundColor="{StaticResource Primary}"
-                Padding="{OnIdiom Phone='12,10', Default='16'}">
-            <Grid ColumnDefinitions="{OnIdiom Phone='*,Auto', Default='Auto,*,Auto'}"
-                  RowDefinitions="{OnIdiom Phone='Auto,Auto', Default='Auto'}"
-                  RowSpacing="{OnIdiom Phone=8, Default=0}">
-                <VerticalStackLayout Grid.Column="0" VerticalOptions="Center">
-                    <!--<Label Text="TRENIOS"
-                           TextColor="White"
-                           FontSize="{OnIdiom Phone=18, Default=24}"
-                           FontFamily="OpenSansSemibold"/>-->
-                    <Label Text="{Binding WelcomeMessage}"
-                           TextColor="White"
-                           Opacity="0.8"
-                           FontSize="{OnIdiom Phone=12, Default=14}"
-                           LineBreakMode="TailTruncation"/>
-                </VerticalStackLayout>
+                BackgroundColor="White"
+                HeightRequest="{OnIdiom Phone=72, Tablet=96}"
+                Padding="16,0">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
 
-                <Button Grid.Column="{OnIdiom Phone=1, Default=2}"
-                        Grid.Row="0"
-                        Text="{h:Translate Logout}"
-                        Command="{Binding LogoutCommand}"
+                <!-- Logo -->
+                <Image Source="trenios_logo_red.png"
+                       HeightRequest="{OnIdiom Phone=100, Tablet=140}"
+                       WidthRequest="{OnIdiom Phone=100, Tablet=140}"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Start"
+                       VerticalOptions="Center"/>
+
+                <!-- Language button -->
+                <Border Grid.Column="1"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1.5"
+                        Stroke="{StaticResource Gray200}"
                         BackgroundColor="Transparent"
-                        TextColor="White"
-                        BorderColor="White"
-                        BorderWidth="1"
-                        CornerRadius="8"
-                        HeightRequest="{OnIdiom Phone=36, Default=40}"
-                        FontSize="{OnIdiom Phone=12, Default=14}"
-                        Padding="{OnIdiom Phone='12,0', Default='16,0'}"
-                        HorizontalOptions="End"/>
+                        Padding="14,8"
+                        VerticalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageTapped"/>
+                    </Border.GestureRecognizers>
+                    <Label x:Name="CurrentLanguageLabelHeader"
+                           Text="EN"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="13"
+                           TextColor="{StaticResource Gray700}"
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center"/>
+                </Border>
 
-                <Label Grid.Column="{OnIdiom Phone=0, Default=1}"
-                       Grid.ColumnSpan="{OnIdiom Phone=2, Default=1}"
-                       Grid.Row="{OnIdiom Phone=1, Default=0}"
-                       Text="{h:Translate SelectRestaurant}"
-                       TextColor="White"
-                       FontSize="{OnIdiom Phone=16, Default=20}"
-                       FontFamily="OpenSansSemibold"
-                       HorizontalOptions="{OnIdiom Phone=Start, Default=Center}"
-                       VerticalOptions="Center"
-                       IsVisible="{OnIdiom Phone=False, Default=True}"/>
+                <!-- Logout button -->
+                <Border Grid.Column="2"
+                        StrokeShape="RoundRectangle 10"
+                        StrokeThickness="0"
+                        BackgroundColor="{StaticResource Primary}"
+                        HeightRequest="40"
+                        WidthRequest="40"
+                        VerticalOptions="Center">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLogoutTapped"/>
+                    </Border.GestureRecognizers>
+                    <Label Text="&#x2794;"
+                           FontSize="18"
+                           TextColor="White"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                </Border>
+
             </Grid>
         </Border>
 
+        <!-- Separator -->
+        <BoxView Grid.Row="1" HeightRequest="1" BackgroundColor="{StaticResource Gray200}"/>
+
         <!-- Content -->
-        <Grid Grid.Row="1" Padding="{OnIdiom Phone=12, Default=16}">
-            <!-- Error Message -->
-            <Border IsVisible="{Binding HasError}"
-                    BackgroundColor="{StaticResource Danger}"
-                    StrokeShape="RoundRectangle 12"
-                    StrokeThickness="0"
-                    Padding="16"
-                    VerticalOptions="Start"
-                    Margin="0,0,0,16">
-                <HorizontalStackLayout Spacing="12">
-                    <Label Text="{Binding ErrorMessage}"
-                           TextColor="White"
-                           VerticalOptions="Center"/>
-                    <Button Text="{h:Translate Retry}"
-                            Command="{Binding RefreshCommand}"
-                            BackgroundColor="White"
-                            TextColor="{StaticResource Danger}"
-                            HeightRequest="36"
-                            CornerRadius="8"
-                            Padding="12,0"/>
-                </HorizontalStackLayout>
-            </Border>
+        <ScrollView Grid.Row="2">
+            <VerticalStackLayout HorizontalOptions="Center"
+                                 MaximumWidthRequest="600"
+                                 Padding="20,0,20,24"
+                                 Spacing="0">
 
-            <!-- Loading Indicator -->
-            <ActivityIndicator IsRunning="{Binding IsBusy}"
-                               IsVisible="{Binding IsBusy}"
-                               HorizontalOptions="Center"
+                <Label Text="{h:Translate SelectRestaurant}"
+                       FontFamily="OpenSansSemibold"
+                       FontSize="26"
+                       TextColor="{StaticResource Gray900}"
+                       Margin="0,20,0,20"/>
+
+                <!-- Loading -->
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   HorizontalOptions="Center"
+                                   Margin="0,40,0,0"/>
+
+                <!-- Error banner -->
+                <Border IsVisible="{Binding HasError}"
+                        StrokeShape="RoundRectangle 12"
+                        StrokeThickness="1"
+                        Stroke="#FECACA"
+                        BackgroundColor="#FEF2F2"
+                        Padding="14,12"
+                        Margin="0,0,0,16">
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="&#x26A0;"
+                               TextColor="{StaticResource Primary}"
+                               FontSize="16"
+                               VerticalOptions="Center"/>
+                        <Label Text="{Binding ErrorMessage}"
+                               TextColor="#B91C1C"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="13"
                                VerticalOptions="Center"
-                               HeightRequest="50"
-                               WidthRequest="50"
-                               Color="{StaticResource Primary}"/>
-
-            <!-- Restaurant List -->
-            <CollectionView ItemsSource="{Binding Restaurants}"
-                            IsVisible="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
-                            SelectionMode="None">
-                <CollectionView.ItemsLayout>
-                    <GridItemsLayout Orientation="Vertical"
-                                     Span="{OnIdiom Phone=1, Tablet=2, Desktop=3}"
-                                     HorizontalItemSpacing="16"
-                                     VerticalItemSpacing="16"/>
-                </CollectionView.ItemsLayout>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="api:RestaurantDto">
-                        <Border StrokeShape="RoundRectangle 12"
-                                StrokeThickness="0"
-                                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
-                                Padding="{OnIdiom Phone=14, Default=20}"
-                                Shadow="{Shadow Brush=Black, Opacity=0.1, Radius=8, Offset='0,4'}">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:RestaurantSelectionViewModel}}, Path=SelectRestaurantCommand}"
-                                    CommandParameter="{Binding .}"/>
-                            </Border.GestureRecognizers>
-                            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="{OnIdiom Phone=6, Default=8}">
-                                <Label Grid.Row="0"
-                                       Text="{Binding Name}"
-                                       FontSize="{OnIdiom Phone=16, Default=20}"
-                                       FontFamily="OpenSansSemibold"
-                                       TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
-                                <Label Grid.Row="1"
-                                       Text="{Binding Description}"
-                                       FontSize="{OnIdiom Phone=13, Default=14}"
-                                       TextColor="{StaticResource Gray500}"
-                                       LineBreakMode="TailTruncation"
-                                       MaxLines="2"/>
-                                <HorizontalStackLayout Grid.Row="2" Spacing="8">
-                                    <Border BackgroundColor="{StaticResource Success}"
-                                            StrokeThickness="0"
-                                            StrokeShape="RoundRectangle 4"
-                                            Padding="{OnIdiom Phone='6,3', Default='8,4'}">
-                                        <Label Text="{h:Translate Active}"
-                                               TextColor="White"
-                                               FontSize="{OnIdiom Phone=11, Default=12}"/>
-                                    </Border>
-                                </HorizontalStackLayout>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-                <CollectionView.EmptyView>
-                    <VerticalStackLayout VerticalOptions="Center"
-                                         HorizontalOptions="Center"
-                                         Spacing="12">
-                        <Label Text="{h:Translate NoRestaurantsFound}"
-                               FontSize="18"
-                               TextColor="{StaticResource Gray500}"
-                               HorizontalOptions="Center"/>
-                        <Button Text="{h:Translate Refresh}"
+                               HorizontalOptions="Fill"/>
+                        <Button Text="{h:Translate Retry}"
                                 Command="{Binding RefreshCommand}"
-                                Style="{StaticResource PrimaryButton}"
-                                WidthRequest="120"/>
+                                BackgroundColor="{StaticResource Primary}"
+                                TextColor="White"
+                                HeightRequest="32"
+                                CornerRadius="8"
+                                FontSize="12"
+                                Padding="10,0"/>
+                    </HorizontalStackLayout>
+                </Border>
+
+                <!-- Restaurant list -->
+                <CollectionView ItemsSource="{Binding Restaurants}"
+                                IsVisible="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                                SelectionMode="None">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="12"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="api:RestaurantDto">
+                            <Border StrokeShape="RoundRectangle 16"
+                                    StrokeThickness="1"
+                                    Stroke="{StaticResource Gray200}"
+                                    BackgroundColor="White"
+                                    Padding="16">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:RestaurantSelectionViewModel}}, Path=SelectRestaurantCommand}"
+                                        CommandParameter="{Binding .}"/>
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                                    <!-- Image with no-image fallback -->
+                                    <Border Grid.Column="0"
+                                            StrokeShape="RoundRectangle 10"
+                                            StrokeThickness="0"
+                                            HeightRequest="56"
+                                            WidthRequest="56"
+                                            BackgroundColor="{StaticResource Gray200}"
+                                            VerticalOptions="Center">
+                                        <Image Source="{Binding DisplayImageUrl, Converter={StaticResource ImageFallbackConverter}}"
+                                               Aspect="AspectFill"
+                                               HeightRequest="56"
+                                               WidthRequest="56"/>
+                                    </Border>
+                                    <!-- Name + branch count -->
+                                    <VerticalStackLayout Grid.Column="1"
+                                                         Spacing="4"
+                                                         VerticalOptions="Center">
+                                        <Label Text="{Binding Name}"
+                                               FontFamily="OpenSansSemibold"
+                                               FontSize="16"
+                                               TextColor="{StaticResource Gray900}"/>
+                                        <HorizontalStackLayout Spacing="4">
+                                            <Label Text="{Binding BranchCount}"
+                                                   FontSize="13"
+                                                   TextColor="{StaticResource Gray500}"/>
+                                            <Label Text="{h:Translate Branches}"
+                                                   FontSize="13"
+                                                   TextColor="{StaticResource Gray500}"/>
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+                                    <!-- Arrow -->
+                                    <Label Grid.Column="2"
+                                           Text="›"
+                                           FontSize="26"
+                                           TextColor="{StaticResource Gray400}"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout VerticalOptions="Center"
+                                             HorizontalOptions="Center"
+                                             Spacing="12"
+                                             Margin="0,60,0,0">
+                            <Label Text="{h:Translate NoRestaurantsFound}"
+                                   FontSize="16"
+                                   TextColor="{StaticResource Gray400}"
+                                   HorizontalOptions="Center"/>
+                            <Button Text="{h:Translate Retry}"
+                                    Command="{Binding RefreshCommand}"
+                                    Style="{StaticResource PrimaryButton}"
+                                    WidthRequest="120"/>
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Language popup -->
+        <Grid x:Name="LanguagePopup"
+              Grid.RowSpan="3"
+              IsVisible="False"
+              BackgroundColor="#80000000">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnCloseLanguagePopup"/>
+            </Grid.GestureRecognizers>
+            <Border VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    StrokeShape="RoundRectangle 16"
+                    StrokeThickness="0"
+                    BackgroundColor="White"
+                    Padding="0"
+                    WidthRequest="300">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer/>
+                </Border.GestureRecognizers>
+                <VerticalStackLayout Spacing="0">
+                    <Label Text="{h:Translate Language}"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="20"
+                           Padding="20,16"
+                           BackgroundColor="{StaticResource Primary}"
+                           TextColor="White"/>
+                    <VerticalStackLayout Padding="8">
+                        <Button Text="English" Style="{StaticResource GhostButton}" HorizontalOptions="Fill" Clicked="OnLanguageSelected" AutomationId="en"/>
+                        <Button Text="Azərbaycan" Style="{StaticResource GhostButton}" HorizontalOptions="Fill" Clicked="OnLanguageSelected" AutomationId="az"/>
+                        <Button Text="Русский" Style="{StaticResource GhostButton}" HorizontalOptions="Fill" Clicked="OnLanguageSelected" AutomationId="ru"/>
+                        <Button Text="Türkçe" Style="{StaticResource GhostButton}" HorizontalOptions="Fill" Clicked="OnLanguageSelected" AutomationId="tr"/>
+                        <Button Text="Latviešu" Style="{StaticResource GhostButton}" HorizontalOptions="Fill" Clicked="OnLanguageSelected" AutomationId="lv"/>
                     </VerticalStackLayout>
-                </CollectionView.EmptyView>
-            </CollectionView>
+                </VerticalStackLayout>
+            </Border>
         </Grid>
+
     </Grid>
 
 </ContentPage>

@@ -157,6 +157,9 @@ public class LocalizationService : INotifyPropertyChanged
             // Selection
             ["SelectBranch"] = "Select Branch",
             ["SelectRestaurant"] = "Select Restaurant",
+            ["ChooseRestaurant"] = "Choose a restaurant to manage",
+            ["ChooseBranch"] = "Select Branch",
+            ["Branches"] = "branches",
             ["NoBranchesFound"] = "No branches found",
             ["NoRestaurantsFound"] = "No restaurants found",
             ["Active"] = "Active",
@@ -323,6 +326,9 @@ public class LocalizationService : INotifyPropertyChanged
             // Selection
             ["SelectBranch"] = "Filial Seçin",
             ["SelectRestaurant"] = "Restoran Seçin",
+            ["ChooseRestaurant"] = "İdarə etmək üçün restoran seçin",
+            ["ChooseBranch"] = "Filial Seçin",
+            ["Branches"] = "filial",
             ["NoBranchesFound"] = "Filial tapılmadı",
             ["NoRestaurantsFound"] = "Restoran tapılmadı",
             ["Active"] = "Aktiv",
@@ -456,6 +462,9 @@ public class LocalizationService : INotifyPropertyChanged
             // Selection
             ["SelectBranch"] = "Выберите Филиал",
             ["SelectRestaurant"] = "Выберите Ресторан",
+            ["ChooseRestaurant"] = "Выберите ресторан для управления",
+            ["ChooseBranch"] = "Выберите Филиал",
+            ["Branches"] = "филиалов",
             ["NoBranchesFound"] = "Филиалы не найдены",
             ["NoRestaurantsFound"] = "Рестораны не найдены",
             ["Active"] = "Активен",
@@ -589,6 +598,9 @@ public class LocalizationService : INotifyPropertyChanged
             // Selection
             ["SelectBranch"] = "Şube Seçin",
             ["SelectRestaurant"] = "Restoran Seçin",
+            ["ChooseRestaurant"] = "Yönetmek için bir restoran seçin",
+            ["ChooseBranch"] = "Şube Seçin",
+            ["Branches"] = "şube",
             ["NoBranchesFound"] = "Şube bulunamadı",
             ["NoRestaurantsFound"] = "Restoran bulunamadı",
             ["Active"] = "Aktif",
@@ -722,6 +734,9 @@ public class LocalizationService : INotifyPropertyChanged
             // Selection
             ["SelectBranch"] = "Izvēlieties Filiāli",
             ["SelectRestaurant"] = "Izvēlieties Restorānu",
+            ["ChooseRestaurant"] = "Izvēlieties restorānu pārvaldībai",
+            ["ChooseBranch"] = "Izvēlieties Filiāli",
+            ["Branches"] = "filiāles",
             ["NoBranchesFound"] = "Nav atrasta neviena filiāle",
             ["NoRestaurantsFound"] = "Nav atrasts neviens restorāns",
             ["Active"] = "Aktīvs",

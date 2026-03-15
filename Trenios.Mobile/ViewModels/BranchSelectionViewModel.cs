@@ -35,6 +35,11 @@ public class BranchSelectionViewModel : BaseViewModel
         set => SetProperty(ref _restaurantName, value);
     }
 
+    public string? RestaurantImageUrl =>
+        _authService.SelectedRestaurant?.DisplayImageUrl
+        ?? _authService.CurrentUser?.Restaurant?.LogoUrl
+        ?? _authService.CurrentUser?.Restaurant?.ImageUrl;
+
     public bool IsNavigating
     {
         get => _isNavigating;
@@ -44,6 +49,15 @@ public class BranchSelectionViewModel : BaseViewModel
     public string UserDisplayName => _authService.CurrentUser?.FullName ?? "User";
 
     public string WelcomeMessage => $"{LocalizationService.Instance["Welcome"]}, {UserDisplayName}";
+
+    public string UserRoleName => _authService.CurrentUser?.UserRole switch
+    {
+        UserRole.SuperAdmin => "Super Admin",
+        UserRole.RestaurantOwner => "Restaurant Owner",
+        UserRole.BranchManager => "Branch Manager",
+        UserRole.Cashier => "Cashier",
+        _ => ""
+    };
 
     public bool CanGoBack => _authService.CurrentUser?.NeedsRestaurantSelection == true;
 
@@ -79,7 +93,8 @@ public class BranchSelectionViewModel : BaseViewModel
         }
 
         // Set restaurant name
-        RestaurantName = _authService.GetEffectiveRestaurantName() ?? string.Empty;
+        var name = _authService.GetEffectiveRestaurantName() ?? string.Empty;
+        RestaurantName = name.Length > 31 ? name[..31] + "..." : name;
 
         try
         {

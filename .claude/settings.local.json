@@ -20,7 +20,19 @@
       "Bash(python -c \" from fontTools.ttLib import TTFont font = TTFont\\(''C:/Projects/Personal/trenios-app-restaurant-app/Trenios/Trenios.Mobile/Resources/Fonts/FluentSystemIcons-Regular.ttf''\\) cmap = font.getBestCmap\\(\\) for code, name in sorted\\(cmap.items\\(\\)\\): name_lower = name.lower\\(\\) if any\\(k in name_lower for k in [''cart'', ''receipt'', ''arrow'', ''person'', ''globe'', ''table'', ''fire'', ''check'', ''add'', ''subtract'', ''delete'', ''dismiss'', ''chevron'', ''clock'', ''search'', ''sign_out'', ''food'', ''bag'', ''vehicle'', ''home'', ''lock'', ''warn'', ''refresh'', ''star'']\\): print\\(f''0x{code:04X} = {name}''\\) \")",
       "Bash(where:*)",
       "Bash(powershell -Command:*)",
-      "Bash(xxd:*)"
+      "Bash(xxd:*)",
+      "Bash(openssl pkcs12:*)",
+      "Bash(openssl x509:*)",
+      "Bash(security cms:*)",
+      "Bash(grep -a \"com\\\\.\" \"/c/Users/namig.mustafayev/Desktop/ios publish/Nooria_App_Store.mobileprovision\" | tr '>' '\\\\n' | grep \"com\\\\.\" | head -10)",
+      "WebFetch(domain:www.nuget.org)",
+      "WebFetch(domain:api.nuget.org)",
+      "Bash(gh api:*)",
+      "Bash(gh search:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:nuget.pkg.github.com)",
+      "Bash(curl -s \"https://api.nuget.org/v3-flatcontainer/microsoft.ios.sdk.manifest-9.0.100/index.json\" && echo \"---\" || true\ncurl -s \"https://azuresearch-usnc.nuget.org/query?q=packageid:Microsoft.iOS.Sdk.Manifest-9.0.100&prerelease=false&semVerLevel=2.0.0\" 2>/dev/null | head -200)",
+      "WebFetch(domain:pkgs.dev.azure.com)"
     ]
   }
 }

@@ -248,7 +248,7 @@
                     <!-- Header -->
                     <Grid Grid.Row="0"
                           BackgroundColor="White"
-                          Padding="{OnIdiom Phone='12,12', Default='24,20'}">
+                          Padding="{OnIdiom Phone=12, Default=24}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
@@ -262,7 +262,7 @@
                             <HorizontalStackLayout Spacing="{OnIdiom Phone=6, Default=10}" Margin="0,8,0,0">
                                 <Frame BackgroundColor="{Binding SelectedOrder.StatusColor}"
                                        CornerRadius="4"
-                                       Padding="{OnIdiom Phone='6,3', Default='8,4'}"
+                                       Padding="6,3"
                                        HasShadow="False"
                                        BorderColor="{Binding SelectedOrder.StatusColor}">
                                     <Label Text="{Binding SelectedOrder.StatusDisplay}"
@@ -282,7 +282,7 @@
                                        IsVisible="{Binding SelectedOrder.HasTable}"/>
                                 <Frame BackgroundColor="#e67e22"
                                        CornerRadius="4"
-                                       Padding="{OnIdiom Phone='6,3', Default='8,4'}"
+                                       Padding="6,3"
                                        HasShadow="False"
                                        BorderColor="#d35400"
                                        IsVisible="{Binding SelectedOrder.HasTable}">
@@ -306,7 +306,7 @@
                         <Frame Grid.Column="1"
                                BackgroundColor="{Binding SelectedOrder.UrgencyColor}"
                                CornerRadius="8"
-                               Padding="{OnIdiom Phone='10,6', Default='14,8'}"
+                               Padding="10,6"
                                HasShadow="False"
                                VerticalOptions="Center"
                                Margin="0,0,10,0"
@@ -330,7 +330,7 @@
                     </Grid>
 
                     <!-- Items List -->
-                    <ScrollView Grid.Row="1" Padding="{OnIdiom Phone='12,10', Default='24,16'}">
+                    <ScrollView Grid.Row="1" Padding="16,12">
                         <VerticalStackLayout Spacing="{OnIdiom Phone=10, Default=14}"
                                              BindableLayout.ItemsSource="{Binding SelectedOrder.Items}">
                             <BindableLayout.ItemTemplate>
@@ -345,7 +345,7 @@
                                                 <Frame Grid.Column="0"
                                                        BackgroundColor="#e67e22"
                                                        CornerRadius="6"
-                                                       Padding="{OnIdiom Phone='8,6', Default='12,8'}"
+                                                       Padding="8,6"
                                                        HasShadow="False"
                                                        VerticalOptions="Center"
                                                        Margin="0,0,10,0"
@@ -401,7 +401,7 @@
 
                     <!-- Action Button -->
                     <Grid Grid.Row="2"
-                          Padding="{OnIdiom Phone='12,12', Default='24,20'}"
+                          Padding="{OnIdiom Phone=12, Default=24}"
                           BackgroundColor="White"
                           IsVisible="{Binding SelectedOrder.CanStartPreparing}">
                         <Button Text="{h:Translate StartPreparing}"

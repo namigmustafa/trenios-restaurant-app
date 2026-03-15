@@ -42,7 +42,9 @@
                         <Entry Text="{Binding Username}"
                                Placeholder="{h:Translate EnterUsername}"
                                BackgroundColor="Transparent"
-                               HeightRequest="52"/>
+                               HeightRequest="52"
+                               Keyboard="Email"
+                               IsTextPredictionEnabled="False"/>
                     </Border>
 
                     <!-- Password -->
