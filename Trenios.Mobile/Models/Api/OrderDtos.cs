@@ -103,6 +103,15 @@ public class OrderResponse
     public OrderStatus OrderStatus => (OrderStatus)Status;
 
     [JsonIgnore]
+    public string OrderTypeIcon => OrderType switch
+    {
+        OrderType.DineIn => "🍽",
+        OrderType.TakeAway => "🛍",
+        OrderType.Delivery => "🚗",
+        _ => "📦"
+    };
+
+    [JsonIgnore]
     public string OrderTypeDisplay
     {
         get
