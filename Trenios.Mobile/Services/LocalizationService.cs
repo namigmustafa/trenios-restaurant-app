@@ -109,6 +109,7 @@ public class LocalizationService : INotifyPropertyChanged
             ["ItemTotal"] = "Item Total",
             ["Loading"] = "Loading...",
             ["NoItemsInCategory"] = "No items in this category",
+            ["SearchMenuItems"] = "Search menu items...",
             ["Retry"] = "Retry",
 
             // Order Creation
@@ -278,6 +279,7 @@ public class LocalizationService : INotifyPropertyChanged
             ["ItemTotal"] = "Məhsul Cəmi",
             ["Loading"] = "Yüklənir...",
             ["NoItemsInCategory"] = "Bu kateqoriyada məhsul yoxdur",
+            ["SearchMenuItems"] = "Menyu axtarın...",
             ["Retry"] = "Yenidən cəhd et",
 
             // Order Creation
@@ -414,6 +416,7 @@ public class LocalizationService : INotifyPropertyChanged
             ["ItemTotal"] = "Сумма товара",
             ["Loading"] = "Загрузка...",
             ["NoItemsInCategory"] = "В этой категории нет товаров",
+            ["SearchMenuItems"] = "Поиск блюд...",
             ["Retry"] = "Повторить",
 
             // Order Creation
@@ -550,6 +553,7 @@ public class LocalizationService : INotifyPropertyChanged
             ["ItemTotal"] = "Ürün Toplamı",
             ["Loading"] = "Yükleniyor...",
             ["NoItemsInCategory"] = "Bu kategoride ürün yok",
+            ["SearchMenuItems"] = "Menü ara...",
             ["Retry"] = "Tekrar dene",
 
             // Order Creation
@@ -686,6 +690,7 @@ public class LocalizationService : INotifyPropertyChanged
             ["ItemTotal"] = "Preces Summa",
             ["Loading"] = "Ielādē...",
             ["NoItemsInCategory"] = "Šajā kategorijā nav preču",
+            ["SearchMenuItems"] = "Meklēt ēdienkarti...",
             ["Retry"] = "Mēģināt vēlreiz",
 
             // Order Creation

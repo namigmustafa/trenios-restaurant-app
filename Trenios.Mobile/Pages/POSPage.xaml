@@ -120,111 +120,187 @@
               IsVisible="False">
             <!-- Left: Products -->
             <Grid Grid.Column="0"
-                  RowDefinitions="Auto,Auto,*">
-                <!-- Header -->
-                <Grid Grid.Row="0"
-                      Style="{StaticResource HeaderGrid}"
-                      ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto">
-                    <!-- Back Button -->
-                    <Button Grid.Column="0"
-                            Text="&lt;"
-                            Style="{StaticResource NavButton}"
-                            Command="{Binding BackCommand}"
-                            FontSize="18"
-                            Padding="12,10"/>
+                  RowDefinitions="Auto,*"
+                  BackgroundColor="{StaticResource Gray100}">
 
-                    <!-- Orders -->
-                    <Button Grid.Column="1"
-                            Text="{h:Translate Orders}"
-                            Style="{StaticResource NavButton}"
-                            Command="{Binding ViewOrdersCommand}"
-                            FontSize="14"
-                            Padding="16,10"
-                            Margin="16,0,0,0"/>
+                <!-- Top section: Header + Info + Search + Categories -->
+                <VerticalStackLayout Grid.Row="0" Spacing="0" BackgroundColor="White">
 
-                    <!-- Kitchen -->
-                    <Button Grid.Column="2"
-                            Text="{h:Translate Kitchen}"
-                            Style="{StaticResource NavButton}"
-                            Command="{Binding ViewKitchenCommand}"
-                            FontSize="14"
-                            Padding="16,10"
-                            Margin="8,0,0,0"/>
+                    <!-- Header bar: Logo · Language · Logout -->
+                    <Border StrokeThickness="0" BackgroundColor="White"
+                            HeightRequest="96" Padding="20,0">
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                            <!-- Logo -->
+                            <Image Source="trenios_logo_red.png"
+                                   HeightRequest="140" WidthRequest="140"
+                                   Aspect="AspectFit"
+                                   HorizontalOptions="Start"
+                                   VerticalOptions="Center"/>
 
-                    <!-- Tables -->
-                    <Button Grid.Column="3"
-                            Text="{h:Translate Tables}"
-                            Style="{StaticResource NavButton}"
-                            Command="{Binding ViewTablesCommand}"
-                            FontSize="14"
-                            Padding="16,10"
-                            Margin="8,0,0,0"/>
+                            <!-- Language button -->
+                            <Border Grid.Column="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    StrokeThickness="1.5"
+                                    Stroke="{StaticResource Gray200}"
+                                    BackgroundColor="Transparent"
+                                    Padding="16,10"
+                                    VerticalOptions="Center">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnLanguageTapped"/>
+                                </Border.GestureRecognizers>
+                                <Label x:Name="CurrentLanguageLabelTablet"
+                                       Text="EN"
+                                       FontFamily="OpenSansSemibold"
+                                       FontSize="14"
+                                       TextColor="{StaticResource Gray700}"
+                                       VerticalOptions="Center"
+                                       HorizontalOptions="Center"/>
+                            </Border>
 
-                    <!-- Language Flag Button -->
-                    <Border Grid.Column="5"
-                            StrokeShape="RoundRectangle 8"
+                            <!-- Logout button -->
+                            <Border Grid.Column="2"
+                                    StrokeShape="RoundRectangle 10"
+                                    StrokeThickness="0"
+                                    BackgroundColor="{StaticResource Primary}"
+                                    HeightRequest="44" WidthRequest="44"
+                                    VerticalOptions="Center">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnUserTapped"/>
+                                </Border.GestureRecognizers>
+                                <Label Text="&#x2794;"
+                                       FontSize="20"
+                                       TextColor="White"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Divider -->
+                    <BoxView HeightRequest="1" BackgroundColor="{StaticResource Gray200}"/>
+
+                    <!-- Restaurant · Branch info row -->
+                    <Grid Padding="20,12" ColumnDefinitions="Auto,*" ColumnSpacing="12"
+                          BackgroundColor="White">
+                        <Border Grid.Column="0"
+                                StrokeShape="RoundRectangle 10"
+                                StrokeThickness="0"
+                                HeightRequest="44" WidthRequest="44"
+                                BackgroundColor="{StaticResource Gray100}"
+                                VerticalOptions="Center">
+                            <Image Source="{Binding RestaurantLogoUrl}"
+                                   Aspect="AspectFill"
+                                   IsVisible="{Binding HasRestaurantLogo}"/>
+                        </Border>
+                        <Label Grid.Column="1" VerticalOptions="Center" FontSize="16">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding RestaurantName}"
+                                          FontFamily="OpenSansSemibold"
+                                          TextColor="{StaticResource Gray900}"/>
+                                    <Span Text=" · " TextColor="{StaticResource Gray400}"/>
+                                    <Span Text="{Binding BranchName}" TextColor="{StaticResource Gray600}"/>
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </Grid>
+
+                    <!-- Search bar -->
+                    <Border Margin="16,0,16,12"
+                            Padding="14,0"
+                            StrokeShape="RoundRectangle 12"
                             StrokeThickness="1"
-                            Stroke="{StaticResource Gray300}"
-                            BackgroundColor="Transparent"
-                            Padding="12,8"
-                            Margin="0,0,10,0">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnLanguageTapped"/>
-                        </Border.GestureRecognizers>
-                        <HorizontalStackLayout Spacing="8">
-                            <Label Text="🌐"
-                                   FontSize="18"
-                                   VerticalOptions="Center"/>
-                            <Label x:Name="CurrentLanguageLabelTablet"
-                                   Text="EN"
-                                   FontFamily="OpenSansSemibold"
-                                   FontSize="14"
-                                   VerticalOptions="Center"/>
+                            Stroke="{StaticResource Gray200}"
+                            BackgroundColor="White"
+                            HeightRequest="50">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <Label Text="🔍" FontSize="16" TextColor="{StaticResource Gray400}" VerticalOptions="Center"/>
+                            <Entry Grid.Column="1"
+                                   Text="{Binding SearchText, Mode=TwoWay}"
+                                   Placeholder="{h:Translate SearchMenuItems}"
+                                   BackgroundColor="Transparent"
+                                   HeightRequest="50"
+                                   IsTextPredictionEnabled="False"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Category pills -->
+                    <ScrollView Orientation="Horizontal"
+                                HorizontalScrollBarVisibility="Never"
+                                Padding="16,0,16,14"
+                                HeightRequest="56">
+                        <HorizontalStackLayout Spacing="10">
+                            <!-- All pill -->
+                            <Border StrokeShape="RoundRectangle 20" StrokeThickness="1"
+                                    Padding="18,0" HeightRequest="40" VerticalOptions="Center">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsAllSelected}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                                        <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsAllSelected}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="White"/>
+                                        <Setter Property="Stroke" Value="{StaticResource Gray200}"/>
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding SelectAllCategoriesCommand}"/>
+                                </Border.GestureRecognizers>
+                                <Label Text="{h:Translate All}" FontFamily="OpenSansSemibold" FontSize="14" VerticalOptions="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsAllSelected}" Value="True">
+                                            <Setter Property="TextColor" Value="White"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsAllSelected}" Value="False">
+                                            <Setter Property="TextColor" Value="{StaticResource Gray600}"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+
+                            <!-- Category pills -->
+                            <HorizontalStackLayout Spacing="10"
+                                                   BindableLayout.ItemsSource="{Binding Categories}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:SelectableCategory">
+                                        <Border StrokeShape="RoundRectangle 20" StrokeThickness="1"
+                                                Padding="18,0" HeightRequest="40" VerticalOptions="Center">
+                                            <Border.Triggers>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                                                    <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="False">
+                                                    <Setter Property="BackgroundColor" Value="White"/>
+                                                    <Setter Property="Stroke" Value="{StaticResource Gray200}"/>
+                                                </DataTrigger>
+                                            </Border.Triggers>
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer
+                                                    Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectCategoryCommand}"
+                                                    CommandParameter="{Binding .}"/>
+                                            </Border.GestureRecognizers>
+                                            <Label Text="{Binding Name}" FontFamily="OpenSansSemibold" FontSize="14" VerticalOptions="Center">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                        <Setter Property="TextColor" Value="White"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="False">
+                                                        <Setter Property="TextColor" Value="{StaticResource Gray600}"/>
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </Border>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </HorizontalStackLayout>
                         </HorizontalStackLayout>
-                    </Border>
+                    </ScrollView>
+                </VerticalStackLayout>
 
-                    <!-- User Button -->
-                    <Border Grid.Column="6"
-                            StrokeShape="RoundRectangle 8"
-                            StrokeThickness="1"
-                            Stroke="{StaticResource Gray300}"
-                            BackgroundColor="Transparent"
-                            Padding="12,8"
-                            Margin="0,0,10,0"
-                            x:Name="UserDropdownTablet">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnUserTapped"/>
-                        </Border.GestureRecognizers>
-                        <Label Text="{Binding UserName}"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="14"
-                               VerticalOptions="Center"/>
-                    </Border>
-                </Grid>
-
-                <!-- Categories -->
-                <ScrollView Grid.Row="1"
-                            Orientation="Horizontal"
-                            HorizontalScrollBarVisibility="Never"
-                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
-                            Padding="12,8">
-                    <HorizontalStackLayout Spacing="8"
-                                           BindableLayout.ItemsSource="{Binding Categories}">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="api:CategoryDto">
-                                <Button Text="{Binding Name}"
-                                        Style="{StaticResource CategoryButton}"
-                                        BackgroundColor="{Binding Color}"
-                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectCategoryCommand}"
-                                        CommandParameter="{Binding .}"/>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </HorizontalStackLayout>
-                </ScrollView>
-
-                <!-- Products Grid - More items with smaller cards -->
-                <Grid Grid.Row="2">
-                    <CollectionView ItemsSource="{Binding MenuItems}"
+                <!-- Products Grid -->
+                <Grid Grid.Row="1">
+                    <CollectionView ItemsSource="{Binding FilteredMenuItems}"
                                     ItemTemplate="{StaticResource MenuItemTemplate}"
                                     BackgroundColor="Transparent"
                                     Margin="8">
@@ -326,112 +402,155 @@
             </Grid>
         </Grid>
 
-        <!-- Phone Layout (Stacked with Bottom Tabs) -->
+        <!-- Phone Layout (Stacked, used when window < 768px) -->
         <Grid x:Name="PhoneLayout"
               RowDefinitions="Auto,*,Auto"
-              IsVisible="True">
-            <!-- Header -->
-            <Grid Grid.Row="0"
-                  x:Name="PhoneHeader"
-                  Style="{StaticResource HeaderGrid}"
-                  ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto">
-                <!-- Back Button -->
-                <Button Grid.Column="0"
-                        Text="&lt;"
-                        Style="{StaticResource NavButton}"
-                        Command="{Binding BackCommand}"
-                        FontSize="16"
-                        Padding="10,8"/>
+              IsVisible="True"
+              BackgroundColor="{StaticResource Gray100}">
 
-                <!-- Orders -->
-                <Button Grid.Column="1"
-                        Text="{h:Translate Orders}"
-                        Style="{StaticResource NavButton}"
-                        Command="{Binding ViewOrdersCommand}"
-                        FontSize="12"
-                        Padding="10,8"
-                        Margin="12,0,0,0"/>
+            <!-- Header section: Logo + Info + Search + Categories -->
+            <VerticalStackLayout Grid.Row="0" x:Name="PhoneHeader" Spacing="0" BackgroundColor="White">
 
-                <!-- Kitchen -->
-                <Button Grid.Column="2"
-                        Text="{h:Translate Kitchen}"
-                        Style="{StaticResource NavButton}"
-                        Command="{Binding ViewKitchenCommand}"
-                        FontSize="12"
-                        Padding="10,8"
-                        Margin="4,0,0,0"/>
-
-                <!-- Language Flag Button -->
-                <Border Grid.Column="4"
-                        StrokeShape="RoundRectangle 8"
-                        StrokeThickness="1"
-                        Stroke="{StaticResource Gray300}"
-                        BackgroundColor="Transparent"
-                        Padding="10,6"
-                        Margin="0,0,8,0">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnLanguageTapped"/>
-                    </Border.GestureRecognizers>
-                    <HorizontalStackLayout Spacing="4">
-                        <Label Text="🌐"
-                               FontSize="16"
-                               VerticalOptions="Center"/>
-                        <Label x:Name="CurrentLanguageLabelPhone"
-                               Text="EN"
-                               FontFamily="OpenSansSemibold"
-                               FontSize="12"
-                               VerticalOptions="Center"/>
-                    </HorizontalStackLayout>
+                <!-- Top bar: Logo · Language · Logout -->
+                <Border StrokeThickness="0" BackgroundColor="White" HeightRequest="72" Padding="16,0">
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                        <Image Source="trenios_logo_red.png" HeightRequest="100" WidthRequest="100"
+                               Aspect="AspectFit" HorizontalOptions="Start" VerticalOptions="Center"/>
+                        <Border Grid.Column="1"
+                                StrokeShape="RoundRectangle 8" StrokeThickness="1.5"
+                                Stroke="{StaticResource Gray200}" BackgroundColor="Transparent"
+                                Padding="14,8" VerticalOptions="Center">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnLanguageTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label x:Name="CurrentLanguageLabelPhone" Text="EN"
+                                   FontFamily="OpenSansSemibold" FontSize="13"
+                                   TextColor="{StaticResource Gray700}"
+                                   VerticalOptions="Center" HorizontalOptions="Center"/>
+                        </Border>
+                        <Border Grid.Column="2"
+                                StrokeShape="RoundRectangle 10" StrokeThickness="0"
+                                BackgroundColor="{StaticResource Primary}"
+                                HeightRequest="40" WidthRequest="40" VerticalOptions="Center">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnUserTapped"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="&#x2794;" FontSize="18" TextColor="White"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
                 </Border>
 
-                <!-- User Button -->
-                <Border Grid.Column="5"
-                        StrokeShape="RoundRectangle 8"
-                        StrokeThickness="1"
-                        Stroke="{StaticResource Gray300}"
-                        BackgroundColor="Transparent"
-                        Padding="10,6"
-                        Margin="0,0,8,0"
-                        x:Name="UserDropdownPhone">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnUserTapped"/>
-                    </Border.GestureRecognizers>
-                    <Label Text="{Binding UserName}"
-                           FontFamily="OpenSansSemibold"
-                           FontSize="14"
-                           VerticalOptions="Center"/>
-                </Border>
-            </Grid>
+                <BoxView HeightRequest="1" BackgroundColor="{StaticResource Gray200}"/>
 
-            <!-- Main Content Area -->
-            <Grid Grid.Row="1"
-                  x:Name="PhoneContentGrid">
-                <!-- Products View -->
-                <Grid x:Name="PhoneProductsView"
-                      RowDefinitions="Auto,*">
-                    <!-- Categories -->
-                    <ScrollView Grid.Row="0"
-                                Orientation="Horizontal"
-                                HorizontalScrollBarVisibility="Never"
-                                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
-                                Padding="8,8">
-                        <HorizontalStackLayout Spacing="8"
-                                               BindableLayout.ItemsSource="{Binding Categories}">
+                <!-- Restaurant · Branch info -->
+                <Grid Padding="16,10" ColumnDefinitions="Auto,*" ColumnSpacing="10" BackgroundColor="White">
+                    <Border Grid.Column="0" StrokeShape="RoundRectangle 8" StrokeThickness="0"
+                            HeightRequest="36" WidthRequest="36" BackgroundColor="{StaticResource Gray100}"
+                            VerticalOptions="Center">
+                        <Image Source="{Binding RestaurantLogoUrl}" Aspect="AspectFill"
+                               IsVisible="{Binding HasRestaurantLogo}"/>
+                    </Border>
+                    <Label Grid.Column="1" VerticalOptions="Center" FontSize="14">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="{Binding RestaurantName}" FontFamily="OpenSansSemibold"
+                                      TextColor="{StaticResource Gray900}"/>
+                                <Span Text=" · " TextColor="{StaticResource Gray400}"/>
+                                <Span Text="{Binding BranchName}" TextColor="{StaticResource Gray600}"/>
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </Grid>
+
+                <!-- Search bar -->
+                <Border Margin="12,0,12,10" Padding="12,0"
+                        StrokeShape="RoundRectangle 12" StrokeThickness="1"
+                        Stroke="{StaticResource Gray200}" BackgroundColor="White" HeightRequest="46">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                        <Label Text="🔍" FontSize="14" TextColor="{StaticResource Gray400}" VerticalOptions="Center"/>
+                        <Entry Grid.Column="1" Text="{Binding SearchText, Mode=TwoWay}"
+                               Placeholder="{h:Translate SearchMenuItems}"
+                               BackgroundColor="Transparent" HeightRequest="46"
+                               IsTextPredictionEnabled="False"/>
+                    </Grid>
+                </Border>
+
+                <!-- Category pills -->
+                <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never"
+                            Padding="12,0,12,12" HeightRequest="52">
+                    <HorizontalStackLayout Spacing="8">
+                        <Border StrokeShape="RoundRectangle 20" StrokeThickness="1"
+                                Padding="16,0" HeightRequest="36" VerticalOptions="Center">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsAllSelected}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                                    <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                </DataTrigger>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsAllSelected}" Value="False">
+                                    <Setter Property="BackgroundColor" Value="White"/>
+                                    <Setter Property="Stroke" Value="{StaticResource Gray200}"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SelectAllCategoriesCommand}"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="{h:Translate All}" FontFamily="OpenSansSemibold" FontSize="13" VerticalOptions="Center">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsAllSelected}" Value="True">
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsAllSelected}" Value="False">
+                                        <Setter Property="TextColor" Value="{StaticResource Gray600}"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </Border>
+                        <HorizontalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding Categories}">
                             <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="api:CategoryDto">
-                                    <Button Text="{Binding Name}"
-                                            Style="{StaticResource CategoryButton}"
-                                            BackgroundColor="{Binding Color}"
-                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectCategoryCommand}"
-                                            CommandParameter="{Binding .}"/>
+                                <DataTemplate x:DataType="vm:SelectableCategory">
+                                    <Border StrokeShape="RoundRectangle 20" StrokeThickness="1"
+                                            Padding="16,0" HeightRequest="36" VerticalOptions="Center">
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                                                <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="False">
+                                                <Setter Property="BackgroundColor" Value="White"/>
+                                                <Setter Property="Stroke" Value="{StaticResource Gray200}"/>
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectCategoryCommand}"
+                                                CommandParameter="{Binding .}"/>
+                                        </Border.GestureRecognizers>
+                                        <Label Text="{Binding Name}" FontFamily="OpenSansSemibold" FontSize="13" VerticalOptions="Center">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="TextColor" Value="White"/>
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="False">
+                                                    <Setter Property="TextColor" Value="{StaticResource Gray600}"/>
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Border>
                                 </DataTemplate>
                             </BindableLayout.ItemTemplate>
                         </HorizontalStackLayout>
-                    </ScrollView>
+                    </HorizontalStackLayout>
+                </ScrollView>
+            </VerticalStackLayout>
 
+            <!-- Main Content Area -->
+            <Grid Grid.Row="1" x:Name="PhoneContentGrid">
+                <!-- Products View -->
+                <Grid x:Name="PhoneProductsView" BackgroundColor="{StaticResource Gray100}">
                     <!-- Products Grid - 3 columns on phone -->
-                    <Grid Grid.Row="1">
-                        <CollectionView ItemsSource="{Binding MenuItems}"
+                    <Grid>
+                        <CollectionView ItemsSource="{Binding FilteredMenuItems}"
                                         ItemTemplate="{StaticResource MenuItemTemplate}"
                                         BackgroundColor="Transparent"
                                         Margin="8">

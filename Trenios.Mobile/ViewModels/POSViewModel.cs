@@ -41,7 +41,7 @@ public class POSViewModel : BaseViewModel
     private TableDto? _selectedTable;
     private bool _isLoadingTables;
 
-    public ObservableCollection<CategoryDto> Categories { get; } = new();
+    public ObservableCollection<SelectableCategory> Categories { get; } = new();
     public ObservableCollection<BranchMenuItemDto> MenuItems { get; } = new();
     public ObservableCollection<CartItem> CartItems { get; } = new();
     public ObservableCollection<SelectableAdditionGroup> SelectableAdditionGroups { get; } = new();
@@ -51,10 +51,31 @@ public class POSViewModel : BaseViewModel
 
     public string UserName => _authService.CurrentUser?.FullName ?? "Cashier";
     public string BranchName => _authService.GetEffectiveBranchName() ?? "Branch";
+    public string RestaurantName => _authService.GetEffectiveRestaurantName() ?? "";
+    public string? RestaurantLogoUrl => _authService.SelectedRestaurant?.DisplayImageUrl
+        ?? _authService.CurrentUser?.Restaurant?.DisplayImageUrl;
+    public bool HasRestaurantLogo => !string.IsNullOrEmpty(RestaurantLogoUrl);
+    public bool IsAllSelected => SelectedCategoryId == null;
 
     // Back button visible only for SuperAdmin and RestaurantOwner (to switch branches)
     public bool CanGoBack => _authService.CurrentUser?.UserRole == UserRole.SuperAdmin ||
                              _authService.CurrentUser?.UserRole == UserRole.RestaurantOwner;
+
+    private string _searchText = string.Empty;
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (SetProperty(ref _searchText, value))
+                OnPropertyChanged(nameof(FilteredMenuItems));
+        }
+    }
+
+    public IEnumerable<BranchMenuItemDto> FilteredMenuItems =>
+        string.IsNullOrWhiteSpace(SearchText)
+            ? MenuItems
+            : MenuItems.Where(m => m.MenuItemName.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
 
     public Guid? SelectedCategoryId
     {
@@ -63,7 +84,10 @@ public class POSViewModel : BaseViewModel
         {
             if (SetProperty(ref _selectedCategoryId, value))
             {
+                foreach (var cat in Categories)
+                    cat.IsSelected = cat.Id == value;
                 OnPropertyChanged(nameof(SelectedCategoryColor));
+                OnPropertyChanged(nameof(IsAllSelected));
                 _ = LoadMenuItemsAsync();
             }
         }
@@ -74,7 +98,7 @@ public class POSViewModel : BaseViewModel
         get
         {
             var category = Categories.FirstOrDefault(c => c.Id == SelectedCategoryId);
-            return category?.Color ?? "#F97316";
+            return category?.Category.Color ?? "#F97316";
         }
     }
 
@@ -188,6 +212,7 @@ public class POSViewModel : BaseViewModel
 
     // Commands
     public ICommand SelectCategoryCommand { get; }
+    public ICommand SelectAllCategoriesCommand { get; }
     public ICommand SelectMenuItemCommand { get; }
     public ICommand IncreaseQuantityCommand { get; }
     public ICommand DecreaseQuantityCommand { get; }
@@ -226,7 +251,8 @@ public class POSViewModel : BaseViewModel
         _tableService = tableService;
 
         // Initialize commands
-        SelectCategoryCommand = new Command<CategoryDto>(cat => SelectedCategoryId = cat.Id);
+        SelectCategoryCommand = new Command<SelectableCategory>(cat => SelectedCategoryId = cat.Id);
+        SelectAllCategoriesCommand = new Command(() => { SelectedCategoryId = null; _ = LoadMenuItemsAsync(); });
         SelectMenuItemCommand = new Command<BranchMenuItemDto>(SelectMenuItem);
         IncreaseQuantityCommand = new Command<CartItem>(item => _orderService.UpdateQuantity(item.Id, item.Quantity + 1));
         DecreaseQuantityCommand = new Command<CartItem>(item => _orderService.UpdateQuantity(item.Id, item.Quantity - 1));
@@ -260,8 +286,18 @@ public class POSViewModel : BaseViewModel
         // Subscribe to cart changes
         _orderService.OnCartChanged += RefreshCart;
 
+        // Notify FilteredMenuItems when MenuItems collection changes
+        MenuItems.CollectionChanged += (_, _) => OnPropertyChanged(nameof(FilteredMenuItems));
+
         // Reload data when branch/restaurant changes (SuperAdmin switching restaurants)
-        _authService.OnAuthStateChanged += () => _ = LoadDataAsync(forceRefresh: true);
+        _authService.OnAuthStateChanged += () =>
+        {
+            _ = LoadDataAsync(forceRefresh: true);
+            OnPropertyChanged(nameof(RestaurantName));
+            OnPropertyChanged(nameof(RestaurantLogoUrl));
+            OnPropertyChanged(nameof(HasRestaurantLogo));
+            OnPropertyChanged(nameof(BranchName));
+        };
 
         // Load initial data
         _ = LoadDataAsync();
@@ -269,13 +305,9 @@ public class POSViewModel : BaseViewModel
 
     public async Task LoadDataAsync(bool forceRefresh = false)
     {
-        SelectedCategoryId = null;
+        SelectedCategoryId = null;  // null = "All"
         await LoadCategoriesAsync(forceRefresh);
-
-        if (Categories.Count > 0 && SelectedCategoryId == null)
-        {
-            SelectedCategoryId = Categories.First().Id;
-        }
+        await LoadMenuItemsAsync();  // load all items initially
     }
 
     private async Task LoadCategoriesAsync(bool forceRefresh = false)
@@ -302,7 +334,7 @@ public class POSViewModel : BaseViewModel
                         foreach (var cat in categories)
                         {
                             System.Diagnostics.Debug.WriteLine($"[LoadCategoriesAsync] Adding category: {cat.Name}");
-                            Categories.Add(cat);
+                            Categories.Add(new SelectableCategory { Category = cat });
                         }
 
                         System.Diagnostics.Debug.WriteLine($"[LoadCategoriesAsync] Categories updated. Final count: {Categories.Count}");
@@ -334,15 +366,24 @@ public class POSViewModel : BaseViewModel
 
     private async Task LoadMenuItemsAsync()
     {
-        if (SelectedCategoryId == null) return;
-
         IsLoadingProducts = true;
         ErrorMessage = null;
 
         try
         {
-            System.Diagnostics.Debug.WriteLine($"[LoadMenuItemsAsync] Loading menu items for category: {SelectedCategoryId}");
-            var (items, error) = await _productService.GetMenuItemsByCategoryAsync(SelectedCategoryId.Value);
+            List<BranchMenuItemDto>? items;
+            string? error;
+
+            if (SelectedCategoryId == null)
+            {
+                System.Diagnostics.Debug.WriteLine("[LoadMenuItemsAsync] Loading all menu items (All category)");
+                (items, error) = await _productService.GetMenuItemsAsync(false);
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"[LoadMenuItemsAsync] Loading menu items for category: {SelectedCategoryId}");
+                (items, error) = await _productService.GetMenuItemsByCategoryAsync(SelectedCategoryId.Value);
+            }
             System.Diagnostics.Debug.WriteLine($"[LoadMenuItemsAsync] Received {items?.Count ?? 0} items, Error: {error}");
 
             if (items != null)
@@ -895,6 +936,34 @@ public class POSViewModel : BaseViewModel
             }
         });
     }
+}
+
+/// <summary>
+/// Wraps a CategoryDto with selection state for the category pill UI.
+/// </summary>
+public class SelectableCategory : INotifyPropertyChanged
+{
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public CategoryDto Category { get; init; } = null!;
+
+    private bool _isSelected;
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set
+        {
+            if (_isSelected != value)
+            {
+                _isSelected = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+            }
+        }
+    }
+
+    public Guid Id => Category.Id;
+    public string Name => Category.Name;
+    public string? Color => Category.Color;
 }
 
 /// <summary>
