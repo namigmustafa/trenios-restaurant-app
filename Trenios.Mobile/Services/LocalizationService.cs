@@ -179,6 +179,7 @@ public class LocalizationService : INotifyPropertyChanged
             ["Tables"] = "Tables",
             ["Reserved"] = "Reserved",
             ["Available"] = "Available",
+            ["Occupied"] = "Occupied",
             ["Checkout"] = "Checkout",
             ["MoveTable"] = "Move Table",
             ["Move"] = "Move",
@@ -224,7 +225,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancelOrderTitle"] = "Cancel Order",
             ["EnterCancellationReason"] = "Please enter cancellation reason:",
             ["CancellationPlaceholder"] = "e.g., Customer request, Out of stock",
-            ["OrdersInQueue"] = "orders in queue"
+            ["OrdersInQueue"] = "orders in queue",
+            ["ConfirmCancelOrder"] = "Are you sure you want to cancel this order?",
+            ["CancelOrderSuccess"] = "Order cancelled successfully"
         },
 
         ["az"] = new()
@@ -247,6 +250,7 @@ public class LocalizationService : INotifyPropertyChanged
             ["Tables"] = "Masalar",
             ["Reserved"] = "Tutulub",
             ["Available"] = "Boşdur",
+            ["Occupied"] = "Məşğul",
             ["Checkout"] = "Hesab",
             ["MoveTable"] = "Masa Dəyiş",
             ["Move"] = "Köçür",
@@ -367,7 +371,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancelOrderTitle"] = "Sifarişi Ləğv Et",
             ["EnterCancellationReason"] = "Zəhmət olmasa ləğv səbəbini daxil edin:",
             ["CancellationPlaceholder"] = "məs: Müştəri sorğusu, Stokda yoxdur",
-            ["OrdersInQueue"] = "sifariş növbədə"
+            ["OrdersInQueue"] = "sifariş növbədə",
+            ["ConfirmCancelOrder"] = "Bu sifarişi ləğv etmək istədiyinizə əminsiniz?",
+            ["CancelOrderSuccess"] = "Sifariş uğurla ləğv edildi"
         },
 
         ["ru"] = new()
@@ -390,6 +396,7 @@ public class LocalizationService : INotifyPropertyChanged
             ["Tables"] = "Столики",
             ["Reserved"] = "Занят",
             ["Available"] = "Свободен",
+            ["Occupied"] = "Занят",
             ["Checkout"] = "Расчёт",
             ["MoveTable"] = "Переместить",
             ["Move"] = "Перенос",
@@ -510,7 +517,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancelOrderTitle"] = "Отменить Заказ",
             ["EnterCancellationReason"] = "Пожалуйста, укажите причину отмены:",
             ["CancellationPlaceholder"] = "напр: Запрос клиента, Нет в наличии",
-            ["OrdersInQueue"] = "заказов в очереди"
+            ["OrdersInQueue"] = "заказов в очереди",
+            ["ConfirmCancelOrder"] = "Вы уверены, что хотите отменить этот заказ?",
+            ["CancelOrderSuccess"] = "Заказ успешно отменён"
         },
 
         ["tr"] = new()
@@ -533,6 +542,7 @@ public class LocalizationService : INotifyPropertyChanged
             ["Tables"] = "Masalar",
             ["Reserved"] = "Dolu",
             ["Available"] = "Boş",
+            ["Occupied"] = "Dolu",
             ["Checkout"] = "Hesap",
             ["MoveTable"] = "Masa Taşı",
             ["Move"] = "Taşı",
@@ -653,7 +663,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancelOrderTitle"] = "Siparişi İptal Et",
             ["EnterCancellationReason"] = "Lütfen iptal nedenini girin:",
             ["CancellationPlaceholder"] = "örn: Müşteri talebi, Stokta yok",
-            ["OrdersInQueue"] = "sipariş sırada"
+            ["OrdersInQueue"] = "sipariş sırada",
+            ["ConfirmCancelOrder"] = "Bu siparişi iptal etmek istediğinize emin misiniz?",
+            ["CancelOrderSuccess"] = "Sipariş başarıyla iptal edildi"
         },
 
         ["lv"] = new()
@@ -676,6 +688,7 @@ public class LocalizationService : INotifyPropertyChanged
             ["Tables"] = "Galdiņi",
             ["Reserved"] = "Aizņemts",
             ["Available"] = "Brīvs",
+            ["Occupied"] = "Aizņemts",
             ["Checkout"] = "Norēķins",
             ["MoveTable"] = "Pārvietot",
             ["Move"] = "Pārvietot",
@@ -796,7 +809,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancelOrderTitle"] = "Atcelt Pasūtījumu",
             ["EnterCancellationReason"] = "Lūdzu, ievadiet atcelšanas iemeslu:",
             ["CancellationPlaceholder"] = "piem: Klienta pieprasījums, Nav noliktavā",
-            ["OrdersInQueue"] = "pasūtījumi rindā"
+            ["OrdersInQueue"] = "pasūtījumi rindā",
+            ["ConfirmCancelOrder"] = "Vai tiešām vēlaties atcelt šo pasūtījumu?",
+            ["CancelOrderSuccess"] = "Pasūtījums veiksmīgi atcelts"
         }
     };
 }

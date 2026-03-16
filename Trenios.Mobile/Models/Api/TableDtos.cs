@@ -85,10 +85,28 @@ public class TableWithReservationDto
         : LocalizationService.Instance["Available"];
 
     [JsonIgnore]
-    public decimal TotalAmount => CurrentReservation?.TotalOrdersAmount ?? 0;
+    public decimal TotalAmount => CurrentReservation?.ActiveOrdersAmount ?? 0;
 
     [JsonIgnore]
     public int OrdersCount => CurrentReservation?.TotalOrdersCount ?? 0;
+
+    [JsonIgnore]
+    public Color StatusBadgeBackground => IsReserved
+        ? Color.FromArgb("#FDE8E8")
+        : Color.FromArgb("#E8F5E9");
+
+    [JsonIgnore]
+    public Color StatusBadgeTextColor => IsReserved
+        ? Color.FromRgb(185, 28, 28)
+        : Color.FromRgb(21, 128, 61);
+
+    [JsonIgnore]
+    public int TotalItemsCount => CurrentReservation?.Orders?
+        .Where(o => (OrderStatus)o.Status != OrderStatus.Cancelled)
+        .Sum(o => o.ItemCount) ?? 0;
+
+    [JsonIgnore]
+    public string DurationDisplay => CurrentReservation?.DurationDisplay ?? "";
 }
 
 /// <summary>
@@ -134,6 +152,9 @@ public class TableReservationDto
     public string StartedAtDisplay => StartedAt.ToString("HH:mm");
 
     [JsonIgnore]
+    public string StartedAtFullDisplay => StartedAt.ToLocalTime().ToString("MMM dd, hh:mm tt");
+
+    [JsonIgnore]
     public string DurationDisplay
     {
         get
@@ -149,7 +170,12 @@ public class TableReservationDto
     }
 
     [JsonIgnore]
-    public string TotalAmountDisplay => $"€{TotalOrdersAmount:F2}";
+    public decimal ActiveOrdersAmount => Orders
+        .Where(o => (OrderStatus)o.Status != OrderStatus.Cancelled)
+        .Sum(o => o.TotalAmount);
+
+    [JsonIgnore]
+    public string TotalAmountDisplay => $"€{ActiveOrdersAmount:F2}";
 }
 
 /// <summary>
@@ -183,6 +209,8 @@ public class TableOrderSummaryDto
     public bool HasItems => Items?.Count > 0;
     [JsonIgnore]
     public OrderStatus OrderStatus => (OrderStatus)Status;
+    [JsonIgnore]
+    public bool IsNotCancelled => OrderStatus != Api.OrderStatus.Cancelled;
 
     [JsonIgnore]
     public string StatusDisplay
@@ -215,6 +243,9 @@ public class TableOrderSummaryDto
 
     [JsonIgnore]
     public string PlacedAtDisplay => PlacedAt.ToString("HH:mm");
+
+    [JsonIgnore]
+    public string PlacedAtFullDisplay => PlacedAt.ToLocalTime().ToString("MMM dd, HH:mm");
 
     [JsonIgnore]
     public string TotalAmountDisplay => $"€{TotalAmount:F2}";
