@@ -40,7 +40,7 @@
                         <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, Path=SelectOrderCommand}"
                                               CommandParameter="{Binding .}"/>
                     </Border.GestureRecognizers>
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
                         <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6" VerticalOptions="Center">
                             <Label Text="{Binding OrderTypeIcon}" FontSize="15" VerticalOptions="Center"/>
                             <Label Text="{Binding OrderTypeDisplay}" FontSize="13"
@@ -58,13 +58,18 @@
                                FontFamily="OpenSansSemibold" FontSize="18"
                                TextColor="{StaticResource Gray900}" Margin="0,2,0,0"/>
                         <Label Grid.Row="2" Grid.ColumnSpan="2"
+                               Text="{Binding TableDisplay}"
+                               FontSize="13" FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource Primary}"
+                               IsVisible="{Binding HasTable}"/>
+                        <Label Grid.Row="3" Grid.ColumnSpan="2"
                                Text="{Binding PlacedAtDisplay}"
                                FontSize="12" TextColor="{StaticResource Gray500}"/>
-                        <Label Grid.Row="3" Grid.Column="0"
+                        <Label Grid.Row="4" Grid.Column="0"
                                Text="{Binding TotalAmount, StringFormat='Total - €{0:F2}'}"
                                FontFamily="OpenSansSemibold" FontSize="14"
                                TextColor="{StaticResource Primary}" Margin="0,4,0,0"/>
-                        <Label Grid.Row="3" Grid.Column="1"
+                        <Label Grid.Row="4" Grid.Column="1"
                                Text="{h:Translate SwipeToAction}"
                                FontSize="11" FontAttributes="Italic"
                                TextColor="{StaticResource Gray400}"
@@ -86,7 +91,7 @@
                     <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, Path=SelectOrderCommand}"
                                           CommandParameter="{Binding .}"/>
                 </Border.GestureRecognizers>
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
                     <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6" VerticalOptions="Center">
                         <Label Text="{Binding OrderTypeIcon}" FontSize="15" VerticalOptions="Center"/>
                         <Label Text="{Binding OrderTypeDisplay}" FontSize="13"
@@ -104,9 +109,14 @@
                            FontFamily="OpenSansSemibold" FontSize="18"
                            TextColor="{StaticResource Gray900}" Margin="0,2,0,0"/>
                     <Label Grid.Row="2" Grid.ColumnSpan="2"
+                           Text="{Binding TableDisplay}"
+                           FontSize="13" FontFamily="OpenSansSemibold"
+                           TextColor="{StaticResource Primary}"
+                           IsVisible="{Binding HasTable}"/>
+                    <Label Grid.Row="3" Grid.ColumnSpan="2"
                            Text="{Binding PlacedAtDisplay}"
                            FontSize="12" TextColor="{StaticResource Gray500}"/>
-                    <Label Grid.Row="3" Grid.Column="0"
+                    <Label Grid.Row="4" Grid.Column="0"
                            Text="{Binding TotalAmount, StringFormat='Total - €{0:F2}'}"
                            FontFamily="OpenSansSemibold" FontSize="14"
                            TextColor="{StaticResource Primary}" Margin="0,4,0,0"/>
@@ -483,7 +493,7 @@
                         <!-- Order summary card -->
                         <Border Padding="16,14" StrokeShape="RoundRectangle 14"
                                 StrokeThickness="1" Stroke="{StaticResource Gray200}" BackgroundColor="White">
-                            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="6">
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="6">
                                 <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6">
                                     <Label Text="{Binding SelectedOrder.OrderTypeIcon}" FontSize="15" VerticalOptions="Center"/>
                                     <Label Text="{Binding SelectedOrder.OrderTypeDisplay}"
@@ -501,6 +511,11 @@
                                        FontFamily="OpenSansSemibold" FontSize="22"
                                        TextColor="{StaticResource Gray900}"/>
                                 <Label Grid.Row="2" Grid.ColumnSpan="2"
+                                       Text="{Binding SelectedOrder.TableDisplay}"
+                                       FontSize="14" FontFamily="OpenSansSemibold"
+                                       TextColor="{StaticResource Primary}"
+                                       IsVisible="{Binding SelectedOrder.HasTable}"/>
+                                <Label Grid.Row="3" Grid.ColumnSpan="2"
                                        Text="{Binding SelectedOrder.PlacedAtFullDisplay}"
                                        FontSize="13" TextColor="{StaticResource Gray500}"/>
                             </Grid>

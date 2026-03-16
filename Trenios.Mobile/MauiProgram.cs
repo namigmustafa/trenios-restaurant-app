@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Plugin.Maui.Audio;
 using Trenios.Mobile.Pages;
 using Trenios.Mobile.Services;
 using Trenios.Mobile.ViewModels;
@@ -62,6 +63,9 @@ public static class MauiProgram
             };
             return client;
         });
+
+        // Audio
+        builder.Services.AddSingleton<IAudioManager>(AudioManager.Current);
 
         // Register Services
         builder.Services.AddSingleton<ApiService>();

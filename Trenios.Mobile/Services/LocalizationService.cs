@@ -223,7 +223,8 @@ public class LocalizationService : INotifyPropertyChanged
             ["SwipeToAction"] = "Swipe to action",
             ["CancelOrderTitle"] = "Cancel Order",
             ["EnterCancellationReason"] = "Please enter cancellation reason:",
-            ["CancellationPlaceholder"] = "e.g., Customer request, Out of stock"
+            ["CancellationPlaceholder"] = "e.g., Customer request, Out of stock",
+            ["OrdersInQueue"] = "orders in queue"
         },
 
         ["az"] = new()
@@ -365,7 +366,8 @@ public class LocalizationService : INotifyPropertyChanged
             ["SwipeToAction"] = "Sürüşdür",
             ["CancelOrderTitle"] = "Sifarişi Ləğv Et",
             ["EnterCancellationReason"] = "Zəhmət olmasa ləğv səbəbini daxil edin:",
-            ["CancellationPlaceholder"] = "məs: Müştəri sorğusu, Stokda yoxdur"
+            ["CancellationPlaceholder"] = "məs: Müştəri sorğusu, Stokda yoxdur",
+            ["OrdersInQueue"] = "sifariş növbədə"
         },
 
         ["ru"] = new()
@@ -507,7 +509,8 @@ public class LocalizationService : INotifyPropertyChanged
             ["SwipeToAction"] = "Смахните",
             ["CancelOrderTitle"] = "Отменить Заказ",
             ["EnterCancellationReason"] = "Пожалуйста, укажите причину отмены:",
-            ["CancellationPlaceholder"] = "напр: Запрос клиента, Нет в наличии"
+            ["CancellationPlaceholder"] = "напр: Запрос клиента, Нет в наличии",
+            ["OrdersInQueue"] = "заказов в очереди"
         },
 
         ["tr"] = new()
@@ -649,7 +652,8 @@ public class LocalizationService : INotifyPropertyChanged
             ["SwipeToAction"] = "Kaydır",
             ["CancelOrderTitle"] = "Siparişi İptal Et",
             ["EnterCancellationReason"] = "Lütfen iptal nedenini girin:",
-            ["CancellationPlaceholder"] = "örn: Müşteri talebi, Stokta yok"
+            ["CancellationPlaceholder"] = "örn: Müşteri talebi, Stokta yok",
+            ["OrdersInQueue"] = "sipariş sırada"
         },
 
         ["lv"] = new()
@@ -791,7 +795,8 @@ public class LocalizationService : INotifyPropertyChanged
             ["SwipeToAction"] = "Pavilkt",
             ["CancelOrderTitle"] = "Atcelt Pasūtījumu",
             ["EnterCancellationReason"] = "Lūdzu, ievadiet atcelšanas iemeslu:",
-            ["CancellationPlaceholder"] = "piem: Klienta pieprasījums, Nav noliktavā"
+            ["CancellationPlaceholder"] = "piem: Klienta pieprasījums, Nav noliktavā",
+            ["OrdersInQueue"] = "pasūtījumi rindā"
         }
     };
 }

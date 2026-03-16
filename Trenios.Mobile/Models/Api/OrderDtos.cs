@@ -294,6 +294,9 @@ public class OrderItemAdditionResponse
 
     [JsonPropertyName("totalPrice")]
     public decimal TotalPrice { get; set; }
+
+    [JsonIgnore]
+    public string DisplayText => Quantity > 1 ? $"** {AdditionName} x{Quantity}" : $"** {AdditionName}";
 }
 
 public class UpdateOrderStatusRequest
