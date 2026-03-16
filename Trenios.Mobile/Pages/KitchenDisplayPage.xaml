@@ -252,12 +252,12 @@
                 </CollectionView>
             </RefreshView>
 
-            <!-- Loading Overlay -->
+            <!-- Loading Overlay — only on initial load, not during pull-to-refresh -->
             <Border BackgroundColor="#CC000000"
-                    IsVisible="{Binding IsLoading}"
+                    IsVisible="{Binding IsLoadingOverlay}"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 0">
-                <ActivityIndicator IsRunning="{Binding IsLoading}"
+                <ActivityIndicator IsRunning="{Binding IsLoadingOverlay}"
                                    Color="White"
                                    HeightRequest="40"
                                    WidthRequest="40"

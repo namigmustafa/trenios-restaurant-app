@@ -21,15 +21,17 @@ public class KitchenDisplayViewModel : INotifyPropertyChanged
     public bool IsLoading
     {
         get => _isLoading;
-        set { _isLoading = value; OnPropertyChanged(); }
+        set { _isLoading = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsLoadingOverlay)); }
     }
 
     private bool _isRefreshing;
     public bool IsRefreshing
     {
         get => _isRefreshing;
-        set { _isRefreshing = value; OnPropertyChanged(); }
+        set { _isRefreshing = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsLoadingOverlay)); }
     }
+
+    public bool IsLoadingOverlay => IsLoading && !IsRefreshing;
 
     private IAudioPlayer? _notificationPlayer;
 
