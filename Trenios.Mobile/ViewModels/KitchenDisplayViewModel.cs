@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Plugin.Maui.Audio;
 using Trenios.Mobile.Models.Api;
 using Trenios.Mobile.Services;
 
@@ -12,6 +13,7 @@ public class KitchenDisplayViewModel : INotifyPropertyChanged
     private readonly OrderService _orderService;
     private readonly OrderHubService _orderHubService;
     private readonly AuthService _authService;
+    private readonly IAudioManager _audioManager;
 
     public ObservableCollection<OrderResponse> ActiveOrders { get; } = new();
 
@@ -19,8 +21,19 @@ public class KitchenDisplayViewModel : INotifyPropertyChanged
     public bool IsLoading
     {
         get => _isLoading;
-        set { _isLoading = value; OnPropertyChanged(); }
+        set { _isLoading = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsLoadingOverlay)); }
     }
+
+    private bool _isRefreshing;
+    public bool IsRefreshing
+    {
+        get => _isRefreshing;
+        set { _isRefreshing = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsLoadingOverlay)); }
+    }
+
+    public bool IsLoadingOverlay => IsLoading && !IsRefreshing;
+
+    private IAudioPlayer? _notificationPlayer;
 
     private bool _isConnected;
     public bool IsConnected
@@ -48,6 +61,21 @@ public class KitchenDisplayViewModel : INotifyPropertyChanged
 
     public bool HasSelectedOrder => SelectedOrder != null;
 
+    public string RestaurantName => _authService.GetEffectiveRestaurantName() ?? "";
+    public string BranchName => _authService.GetEffectiveBranchName() ?? "";
+    public string? RestaurantLogoUrl => _authService.SelectedRestaurant?.DisplayImageUrl
+        ?? _authService.CurrentUser?.Restaurant?.DisplayImageUrl;
+    public bool HasRestaurantLogo => !string.IsNullOrEmpty(RestaurantLogoUrl);
+    public int OrderQueueCount => ActiveOrders.Count;
+    public string QueueCountText
+    {
+        get
+        {
+            var loc = LocalizationService.Instance;
+            return $"{ActiveOrders.Count} {loc["OrdersInQueue"]}";
+        }
+    }
+
     public ICommand RefreshCommand { get; }
     public ICommand SelectOrderCommand { get; }
     public ICommand StartPreparingCommand { get; }
@@ -55,18 +83,26 @@ public class KitchenDisplayViewModel : INotifyPropertyChanged
     public ICommand LogoutCommand { get; }
     public ICommand ClosePopupCommand { get; }
 
-    public KitchenDisplayViewModel(OrderService orderService, OrderHubService orderHubService, AuthService authService)
+    public KitchenDisplayViewModel(OrderService orderService, OrderHubService orderHubService, AuthService authService, IAudioManager audioManager)
     {
         _orderService = orderService;
         _orderHubService = orderHubService;
         _authService = authService;
+        _audioManager = audioManager;
 
-        RefreshCommand = new Command(async () => await LoadOrdersAsync());
+        RefreshCommand = new Command(async () => await RefreshAsync());
         SelectOrderCommand = new Command<OrderResponse>(SelectOrder);
         StartPreparingCommand = new Command(async () => await UpdateStatusAsync(OrderStatus.Preparing));
         MarkCompletedCommand = new Command(async () => await UpdateStatusAsync(OrderStatus.Completed));
         LogoutCommand = new Command(async () => await LogoutAsync());
         ClosePopupCommand = new Command(() => SelectedOrder = null);
+
+        // Notify queue count when collection changes
+        ActiveOrders.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(OrderQueueCount));
+            OnPropertyChanged(nameof(QueueCountText));
+        };
 
         // Subscribe to SignalR events
         _orderHubService.OnOrderCreated += HandleOrderCreated;
@@ -83,6 +119,13 @@ public class KitchenDisplayViewModel : INotifyPropertyChanged
             await _orderHubService.ConnectAsync(branchId.Value);
             await LoadOrdersAsync();
         }
+    }
+
+    private async Task RefreshAsync()
+    {
+        IsRefreshing = true;
+        await LoadOrdersAsync();
+        IsRefreshing = false;
     }
 
     public async Task LoadOrdersAsync()
@@ -137,8 +180,32 @@ public class KitchenDisplayViewModel : INotifyPropertyChanged
         }
     }
 
+    private async void PlayNewOrderSound()
+    {
+        try
+        {
+#if IOS
+            var session = AVFoundation.AVAudioSession.SharedInstance();
+            session.SetCategory(AVFoundation.AVAudioSessionCategory.Playback,
+                AVFoundation.AVAudioSessionCategoryOptions.MixWithOthers);
+            session.SetActive(true);
+#endif
+            var stream = await FileSystem.OpenAppPackageFileAsync("new_order.mp3");
+            _notificationPlayer?.Stop();
+            _notificationPlayer = _audioManager.CreatePlayer(stream);
+            _notificationPlayer.Play();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Sound] ERROR: {ex.GetType().Name} — {ex.Message}");
+        }
+    }
+
     private void HandleOrderCreated(OrderResponse order)
     {
+        // Play sound on main thread (SignalR fires on background thread)
+        MainThread.BeginInvokeOnMainThread(PlayNewOrderSound);
+
         // Add new order to the beginning if it's a kitchen-relevant status
         if (order.OrderStatus == OrderStatus.Created ||
             order.OrderStatus == OrderStatus.Confirmed ||

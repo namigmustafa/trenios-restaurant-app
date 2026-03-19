@@ -17,6 +17,8 @@ namespace Trenios.Mobile
                     ? new DataTemplate(() => services.GetRequiredService<POSPagePhone>())
                     : new DataTemplate(() => services.GetRequiredService<POSPage>());
             }
+
+            Routing.RegisterRoute(nameof(OrderBreakdownPage), typeof(OrderBreakdownPage));
         }
     }
 }

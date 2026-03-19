@@ -9,6 +9,7 @@ public class RestaurantSelectionViewModel : BaseViewModel
 {
     private readonly SelectionService _selectionService;
     private readonly AuthService _authService;
+    private readonly ProductService _productService;
 
     private string _errorMessage = string.Empty;
     private bool _hasError;
@@ -31,14 +32,24 @@ public class RestaurantSelectionViewModel : BaseViewModel
 
     public string WelcomeMessage => $"{LocalizationService.Instance["Welcome"]}, {UserDisplayName}";
 
+    public string UserRoleName => _authService.CurrentUser?.UserRole switch
+    {
+        UserRole.SuperAdmin => "Super Admin",
+        UserRole.RestaurantOwner => "Restaurant Owner",
+        UserRole.BranchManager => "Branch Manager",
+        UserRole.Cashier => "Cashier",
+        _ => ""
+    };
+
     public ICommand SelectRestaurantCommand { get; }
     public ICommand LogoutCommand { get; }
     public ICommand RefreshCommand { get; }
 
-    public RestaurantSelectionViewModel(SelectionService selectionService, AuthService authService)
+    public RestaurantSelectionViewModel(SelectionService selectionService, AuthService authService, ProductService productService)
     {
         _selectionService = selectionService;
         _authService = authService;
+        _productService = productService;
 
         SelectRestaurantCommand = new Command<RestaurantDto>(async (restaurant) => await SelectRestaurantAsync(restaurant));
         LogoutCommand = new Command(async () => await LogoutAsync());
@@ -89,7 +100,8 @@ public class RestaurantSelectionViewModel : BaseViewModel
     {
         if (restaurant == null) return;
 
-        _authService.SetSelectedRestaurant(restaurant.Id, restaurant.Name);
+        _productService.ClearCache();
+        _authService.SetSelectedRestaurant(restaurant.Id, restaurant.Name, restaurant);
         await Shell.Current.GoToAsync("//BranchSelection");
     }
 

@@ -63,9 +63,9 @@ public class UserDto
     [JsonIgnore]
     public UserRole UserRole => (UserRole)Role;
 
-    // SuperAdmin: no restaurant, no branch
+    // SuperAdmin and RestaurantOwner see restaurant selection
     [JsonIgnore]
-    public bool NeedsRestaurantSelection => UserRole == UserRole.SuperAdmin;
+    public bool NeedsRestaurantSelection => UserRole == UserRole.SuperAdmin || UserRole == UserRole.RestaurantOwner;
 
     // SuperAdmin and RestaurantOwner need to select branch
     [JsonIgnore]
@@ -97,6 +97,18 @@ public class RestaurantDto
 
     [JsonPropertyName("isActive")]
     public bool IsActive { get; set; } = true;
+
+    [JsonPropertyName("imageUrl")]
+    public string? ImageUrl { get; set; }
+
+    [JsonPropertyName("logoUrl")]
+    public string? LogoUrl { get; set; }
+
+    [JsonIgnore]
+    public string? DisplayImageUrl => LogoUrl ?? ImageUrl;
+
+    [JsonPropertyName("branchCount")]
+    public int BranchCount { get; set; }
 }
 
 public class BranchDto
@@ -118,6 +130,9 @@ public class BranchDto
 
     [JsonPropertyName("address")]
     public string? Address { get; set; }
+
+    [JsonIgnore]
+    public string? TruncatedAddress => Address is { Length: > 25 } ? Address[..25] + "..." : Address;
 
     [JsonPropertyName("phone")]
     public string? Phone { get; set; }

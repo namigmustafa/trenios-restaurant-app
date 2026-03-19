@@ -10,404 +10,630 @@
              Title="{h:Translate Orders}"
              Shell.NavBarIsVisible="False">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*" ColumnDefinitions="7*,3*">
-        <!-- Header -->
-        <Grid Grid.Row="0" Grid.ColumnSpan="2"
-              Padding="16,12"
-              BackgroundColor="{StaticResource Primary}"
-              ColumnDefinitions="*,Auto,Auto">
-            <Label Grid.Column="0"
-                   Text="{h:Translate Orders}"
-                   FontFamily="OpenSansSemibold"
-                   FontSize="20"
-                   TextColor="White"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Center"/>
-            <Button Grid.Column="1"
-                    Text="{h:Translate Refresh}"
-                    Style="{StaticResource GhostButton}"
-                    TextColor="White"
-                    Command="{Binding RefreshCommand}"/>
-            <Button Grid.Column="2"
-                    Text="{h:Translate Logout}"
-                    Style="{StaticResource GhostButton}"
-                    TextColor="White"
-                    Command="{Binding LogoutCommand}"/>
-        </Grid>
+    <ContentPage.Resources>
 
-        <!-- Status Filter Tabs with Today Checkbox -->
-        <ScrollView Grid.Row="1" Grid.ColumnSpan="2"
-                    Orientation="Horizontal"
-                    HorizontalScrollBarVisibility="Never"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray800}}">
-            <HorizontalStackLayout Padding="12,8" Spacing="8">
-                <Button Text="{h:Translate All}"
-                        Style="{StaticResource GhostButton}"
-                        BackgroundColor="{Binding FilterAll, Converter={StaticResource BoolToBackgroundConverter}}"
-                        Command="{Binding SetStatusFilterCommand}"
-                        CommandParameter="All"/>
-                <Button Text="{h:Translate Created}"
-                        Style="{StaticResource GhostButton}"
-                        BackgroundColor="{Binding FilterCreated, Converter={StaticResource BoolToBackgroundConverter}}"
-                        Command="{Binding SetStatusFilterCommand}"
-                        CommandParameter="Created"/>
-                <Button Text="{h:Translate Confirmed}"
-                        Style="{StaticResource GhostButton}"
-                        BackgroundColor="{Binding FilterConfirmed, Converter={StaticResource BoolToBackgroundConverter}}"
-                        Command="{Binding SetStatusFilterCommand}"
-                        CommandParameter="Confirmed"/>
-                <Button Text="{h:Translate Preparing}"
-                        Style="{StaticResource GhostButton}"
-                        BackgroundColor="{Binding FilterPreparing, Converter={StaticResource BoolToBackgroundConverter}}"
-                        Command="{Binding SetStatusFilterCommand}"
-                        CommandParameter="Preparing"/>
-                <Button Text="{h:Translate Completed}"
-                        Style="{StaticResource GhostButton}"
-                        BackgroundColor="{Binding FilterCompleted, Converter={StaticResource BoolToBackgroundConverter}}"
-                        Command="{Binding SetStatusFilterCommand}"
-                        CommandParameter="Completed"/>
-
-                <!-- Separator -->
-                <BoxView WidthRequest="1"
-                         Color="{StaticResource Gray300}"
-                         Margin="4,0"/>
-
-                <!-- Today Checkbox -->
-                <HorizontalStackLayout Spacing="6" Padding="4,0">
-                    <CheckBox IsChecked="{Binding ShowTodayOnly}"
-                              VerticalOptions="Center"/>
-                    <Label Text="{h:Translate ShowToday}"
-                           VerticalOptions="Center"
-                           FontSize="13"/>
-                </HorizontalStackLayout>
-            </HorizontalStackLayout>
-        </ScrollView>
-
-        <!-- Date Filter (shown when not today only) -->
-        <Grid Grid.Row="2" Grid.ColumnSpan="2"
-              Padding="12,8"
-              BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray800}}"
-              IsVisible="{Binding ShowTodayOnly, Converter={StaticResource InvertedBoolConverter}}">
-            <HorizontalStackLayout Spacing="8">
-                <Label Text="{h:Translate From}"
-                       VerticalOptions="Center"
-                       FontSize="14"/>
-                <DatePicker Date="{Binding StartDate}"
-                            Format="dd/MM/yyyy"
-                            FontSize="14"
-                            VerticalOptions="Center"/>
-                <Label Text="{h:Translate To}"
-                       VerticalOptions="Center"
-                       FontSize="14"/>
-                <DatePicker Date="{Binding EndDate}"
-                            Format="dd/MM/yyyy"
-                            FontSize="14"
-                            VerticalOptions="Center"/>
-            </HorizontalStackLayout>
-        </Grid>
-
-        <!-- Orders List -->
-        <RefreshView Grid.Row="3" Grid.Column="0"
-                     Grid.ColumnSpan="{Binding HasSelectedOrder, Converter={StaticResource BoolToColumnSpanConverter}}"
-                     IsRefreshing="{Binding IsRefreshing}"
-                     Command="{Binding RefreshCommand}"
-                     Margin="0,0,0,12">
-            <CollectionView x:Name="OrdersCollectionView"
-                            ItemsSource="{Binding Orders}"
-                            SelectionMode="None">
-                <CollectionView.Footer>
-                    <BoxView HeightRequest="20" Color="Transparent"/>
-                </CollectionView.Footer>
-                <CollectionView.EmptyView>
-                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="40">
-                        <Label Text="{h:Translate NoOrdersFound}"
-                               FontSize="16"
-                               TextColor="{StaticResource Gray500}"
-                               HorizontalOptions="Center"/>
-                    </VerticalStackLayout>
-                </CollectionView.EmptyView>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:OrderResponse">
-                        <SwipeView Margin="12,6">
-                            <!-- Left Swipe - Cancel -->
-                            <SwipeView.LeftItems>
-                                <SwipeItems Mode="Reveal">
-                                    <SwipeItem Text="{h:Translate Cancel}"
-                                               BackgroundColor="#e74c3c"
-                                               Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, Path=CancelOrderSwipeCommand}"
-                                               CommandParameter="{Binding .}"/>
-                                </SwipeItems>
-                            </SwipeView.LeftItems>
-
-                            <!-- Right Swipe - Complete -->
-                            <SwipeView.RightItems>
-                                <SwipeItems Mode="Reveal">
-                                    <SwipeItem Text="{h:Translate Complete}"
-                                               BackgroundColor="#27ae60"
-                                               Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, Path=CompleteOrderSwipeCommand}"
-                                               CommandParameter="{Binding .}"/>
-                                </SwipeItems>
-                            </SwipeView.RightItems>
-
-                            <Border Padding="16,12"
-                                    StrokeShape="RoundRectangle 12"
-                                    StrokeThickness="1"
-                                    Stroke="{StaticResource Gray200}"
-                                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}">
-                                <Border.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, Path=SelectOrderCommand}"
-                                                          CommandParameter="{Binding .}"/>
-                                </Border.GestureRecognizers>
-                                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="8">
-                                    <!-- Order Number and Status -->
-                                    <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="12">
-                                        <Label Text="{Binding OrderNumber}"
-                                               FontFamily="OpenSansSemibold"
-                                               FontSize="16"/>
-                                        <Border Padding="8,4"
-                                                StrokeShape="RoundRectangle 4"
-                                                StrokeThickness="0"
-                                                BackgroundColor="{Binding StatusColor}">
-                                            <Label Text="{Binding StatusDisplay}"
-                                                   FontSize="11"
-                                                   TextColor="White"/>
-                                        </Border>
-                                    </HorizontalStackLayout>
-
-                                    <!-- Time -->
-                                    <Label Grid.Row="0" Grid.Column="1"
-                                           Text="{Binding PlacedAtDisplay}"
-                                           FontSize="12"
-                                           TextColor="{StaticResource Gray500}"/>
-
-                                    <!-- Order Type & Table -->
-                                    <HorizontalStackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="6">
-                                        <Label Text="{Binding OrderTypeDisplay}"
-                                               FontSize="12"
-                                               TextColor="{StaticResource Gray500}"/>
-                                        <Label Text="·"
-                                               FontSize="12"
-                                               TextColor="{StaticResource Gray400}"
-                                               IsVisible="{Binding HasTable}"/>
-                                        <Label Text="{Binding TableDisplay}"
-                                               FontSize="12"
-                                               FontFamily="OpenSansSemibold"
-                                               TextColor="{StaticResource Primary}"
-                                               IsVisible="{Binding HasTable}"/>
-                                        <Label Text="·"
-                                               FontSize="12"
-                                               TextColor="{StaticResource Gray400}"/>
-                                        <Label Text="{Binding TotalItems, StringFormat='{0} items'}"
-                                               FontSize="12"
-                                               TextColor="{StaticResource Gray500}"/>
-                                    </HorizontalStackLayout>
-
-                                    <!-- Total -->
-                                    <Label Grid.Row="2" Grid.Column="0"
-                                           Text="{Binding TotalAmount, StringFormat='Total: €{0:F2}'}"
-                                           FontFamily="OpenSansSemibold"
-                                           FontSize="14"
-                                           TextColor="{StaticResource Primary}"/>
-                                </Grid>
-                            </Border>
-                        </SwipeView>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </RefreshView>
-
-        <!-- Order Details Panel - Full screen on Phone, Side panel on Tablet -->
-        <Border IsVisible="{Binding HasSelectedOrder}"
-                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
-                StrokeThickness="1"
-                Stroke="{StaticResource Gray300}"
-                Grid.Row="{OnIdiom Phone=0, Default=3}"
-                Grid.Column="{OnIdiom Phone=0, Default=1}"
-                Grid.RowSpan="{OnIdiom Phone=4, Default=1}"
-                Grid.ColumnSpan="{OnIdiom Phone=2, Default=1}">
-            <Grid RowDefinitions="Auto,*,Auto,Auto">
-                <!-- Details Header -->
-                <Grid Grid.Row="0"
-                      Padding="16,12"
-                      BackgroundColor="{OnIdiom Phone={StaticResource Primary}, Default={StaticResource Gray100}}"
-                      ColumnDefinitions="Auto,*,Auto">
-                    <!-- Back button for Phone -->
-                    <Button Grid.Column="0"
-                            Text="&lt;"
-                            FontSize="16"
-                            Padding="10,8"
-                            BackgroundColor="Transparent"
-                            TextColor="{OnIdiom Phone=White, Default={StaticResource Gray700}}"
-                            Command="{Binding CloseDetailsCommand}"
-                            IsVisible="{OnIdiom Phone=True, Default=False}"/>
-                    <VerticalStackLayout Grid.Column="1"
-                                         HorizontalOptions="{OnIdiom Phone=Center, Default=Start}">
-                        <HorizontalStackLayout Spacing="8"
-                                               HorizontalOptions="{OnIdiom Phone=Center, Default=Start}">
-                            <Label Text="{Binding SelectedOrder.OrderNumber}"
-                                   FontFamily="OpenSansSemibold"
-                                   FontSize="18"
-                                   TextColor="{OnIdiom Phone=White, Default={StaticResource Gray900}}"/>
-                            <Label Text="·"
-                                   FontSize="18"
-                                   TextColor="{OnIdiom Phone={StaticResource Gray200}, Default={StaticResource Gray500}}"
-                                   VerticalOptions="Center"
-                                   IsVisible="{Binding SelectedOrder.HasTable}"/>
-                            <Label Text="{Binding SelectedOrder.TableDisplay}"
-                                   FontFamily="OpenSansSemibold"
-                                   FontSize="16"
-                                   TextColor="{OnIdiom Phone=White, Default={StaticResource Primary}}"
-                                   VerticalOptions="Center"
-                                   IsVisible="{Binding SelectedOrder.HasTable}"/>
+        <!-- Template A: Created / Preparing — swipe enabled -->
+        <DataTemplate x:Key="SwipeableOrderTemplate" x:DataType="models:OrderResponse">
+            <SwipeView Margin="12,4">
+                <SwipeView.LeftItems>
+                    <SwipeItems Mode="Reveal">
+                        <SwipeItem Text="{h:Translate Cancel}"
+                                   BackgroundColor="#e74c3c"
+                                   Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, Path=CancelOrderSwipeCommand}"
+                                   CommandParameter="{Binding .}"/>
+                    </SwipeItems>
+                </SwipeView.LeftItems>
+                <SwipeView.RightItems>
+                    <SwipeItems Mode="Reveal">
+                        <SwipeItem Text="{h:Translate Complete}"
+                                   BackgroundColor="#27ae60"
+                                   Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, Path=CompleteOrderSwipeCommand}"
+                                   CommandParameter="{Binding .}"/>
+                    </SwipeItems>
+                </SwipeView.RightItems>
+                <Border Padding="14,12"
+                        StrokeShape="RoundRectangle 12"
+                        StrokeThickness="1"
+                        Stroke="{StaticResource Gray200}"
+                        BackgroundColor="White">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, Path=SelectOrderCommand}"
+                                              CommandParameter="{Binding .}"/>
+                    </Border.GestureRecognizers>
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
+                        <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                            <Label Text="{Binding OrderTypeIcon}" FontSize="15" VerticalOptions="Center"/>
+                            <Label Text="{Binding OrderTypeDisplay}" FontSize="13"
+                                   TextColor="{StaticResource Gray600}" VerticalOptions="Center"/>
                         </HorizontalStackLayout>
-                        <Label Text="{Binding SelectedOrder.PlacedAtFullDisplay}"
-                               FontSize="12"
-                               TextColor="{OnIdiom Phone={StaticResource Gray200}, Default={StaticResource Gray500}}"
-                               HorizontalOptions="{OnIdiom Phone=Center, Default=Start}"/>
-                    </VerticalStackLayout>
-                    <!-- Close button for Tablet -->
-                    <Button Grid.Column="2"
-                            Text="X"
-                            WidthRequest="40"
-                            HeightRequest="40"
-                            CornerRadius="20"
-                            BackgroundColor="{StaticResource Gray200}"
-                            TextColor="{StaticResource Gray700}"
-                            Command="{Binding CloseDetailsCommand}"
-                            IsVisible="{OnIdiom Phone=False, Default=True}"/>
-                </Grid>
-
-                <!-- Order Items -->
-                <ScrollView Grid.Row="1" Padding="16">
-                    <VerticalStackLayout Spacing="12">
-                        <!-- Status Badge -->
-                        <Border Padding="12,8"
-                                StrokeShape="RoundRectangle 8"
-                                StrokeThickness="0"
-                                BackgroundColor="{Binding SelectedOrder.StatusColor}"
-                                HorizontalOptions="Start">
-                            <Label Text="{Binding SelectedOrder.StatusDisplay}"
-                                   FontFamily="OpenSansSemibold"
-                                   FontSize="14"
-                                   TextColor="White"/>
+                        <Border Grid.Row="0" Grid.Column="1"
+                                Padding="10,4" StrokeShape="RoundRectangle 12"
+                                StrokeThickness="0" BackgroundColor="{Binding StatusColor}"
+                                VerticalOptions="Center">
+                            <Label Text="{Binding StatusDisplay}"
+                                   FontSize="11" FontFamily="OpenSansSemibold" TextColor="White"/>
                         </Border>
+                        <Label Grid.Row="1" Grid.ColumnSpan="2"
+                               Text="{Binding OrderNumber}"
+                               FontFamily="OpenSansSemibold" FontSize="18"
+                               TextColor="{StaticResource Gray900}" Margin="0,2,0,0"/>
+                        <Label Grid.Row="2" Grid.ColumnSpan="2"
+                               Text="{Binding TableDisplay}"
+                               FontSize="13" FontFamily="OpenSansSemibold"
+                               TextColor="{StaticResource Primary}"
+                               IsVisible="{Binding HasTable}"/>
+                        <Label Grid.Row="3" Grid.ColumnSpan="2"
+                               Text="{Binding PlacedAtDisplay}"
+                               FontSize="12" TextColor="{StaticResource Gray500}"/>
+                        <Label Grid.Row="4" Grid.Column="0"
+                               Text="{Binding TotalAmount, StringFormat='Total - €{0:F2}'}"
+                               FontFamily="OpenSansSemibold" FontSize="14"
+                               TextColor="{StaticResource Primary}" Margin="0,4,0,0"/>
+                        <Label Grid.Row="4" Grid.Column="1"
+                               Text="{h:Translate SwipeToAction}"
+                               FontSize="11" FontAttributes="Italic"
+                               TextColor="{StaticResource Gray400}"
+                               VerticalOptions="End"/>
+                    </Grid>
+                </Border>
+            </SwipeView>
+        </DataTemplate>
 
-                        <BoxView HeightRequest="1" Color="{StaticResource Gray200}"/>
+        <!-- Template B: Completed / Cancelled / Confirmed — no swipe -->
+        <DataTemplate x:Key="ReadOnlyOrderTemplate" x:DataType="models:OrderResponse">
+            <Border Margin="12,4"
+                    Padding="14,12"
+                    StrokeShape="RoundRectangle 12"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource Gray200}"
+                    BackgroundColor="White">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OrdersViewModel}}, Path=SelectOrderCommand}"
+                                          CommandParameter="{Binding .}"/>
+                </Border.GestureRecognizers>
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
+                    <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6" VerticalOptions="Center">
+                        <Label Text="{Binding OrderTypeIcon}" FontSize="15" VerticalOptions="Center"/>
+                        <Label Text="{Binding OrderTypeDisplay}" FontSize="13"
+                               TextColor="{StaticResource Gray600}" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                    <Border Grid.Row="0" Grid.Column="1"
+                            Padding="10,4" StrokeShape="RoundRectangle 12"
+                            StrokeThickness="0" BackgroundColor="{Binding StatusColor}"
+                            VerticalOptions="Center">
+                        <Label Text="{Binding StatusDisplay}"
+                               FontSize="11" FontFamily="OpenSansSemibold" TextColor="White"/>
+                    </Border>
+                    <Label Grid.Row="1" Grid.ColumnSpan="2"
+                           Text="{Binding OrderNumber}"
+                           FontFamily="OpenSansSemibold" FontSize="18"
+                           TextColor="{StaticResource Gray900}" Margin="0,2,0,0"/>
+                    <Label Grid.Row="2" Grid.ColumnSpan="2"
+                           Text="{Binding TableDisplay}"
+                           FontSize="13" FontFamily="OpenSansSemibold"
+                           TextColor="{StaticResource Primary}"
+                           IsVisible="{Binding HasTable}"/>
+                    <Label Grid.Row="3" Grid.ColumnSpan="2"
+                           Text="{Binding PlacedAtDisplay}"
+                           FontSize="12" TextColor="{StaticResource Gray500}"/>
+                    <Label Grid.Row="4" Grid.Column="0"
+                           Text="{Binding TotalAmount, StringFormat='Total - €{0:F2}'}"
+                           FontFamily="OpenSansSemibold" FontSize="14"
+                           TextColor="{StaticResource Primary}" Margin="0,4,0,0"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
 
-                        <!-- Items Header -->
-                        <Label Text="{h:Translate ItemsLabel}"
+        <!-- Selector -->
+        <h:OrderDataTemplateSelector x:Key="OrderTemplateSelector"
+                                     SwipeableTemplate="{StaticResource SwipeableOrderTemplate}"
+                                     ReadOnlyTemplate="{StaticResource ReadOnlyOrderTemplate}"/>
+
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*" ColumnDefinitions="7*,3*">
+
+        <!-- ==================== PAGE HEADER ==================== -->
+        <VerticalStackLayout Grid.Row="0" Grid.ColumnSpan="2" BackgroundColor="White">
+            <Grid Padding="16,12" HeightRequest="64" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                <Image Source="trenios_logo_red.png"
+                       HeightRequest="36"
+                       HorizontalOptions="Start"
+                       VerticalOptions="Center"
+                       Aspect="AspectFit"/>
+                <Border Grid.Column="1"
+                        x:Name="LanguageBorder"
+                        Padding="12,6"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="1.5"
+                        Stroke="{StaticResource Gray300}"
+                        BackgroundColor="White"
+                        VerticalOptions="Center">
+                    <Label x:Name="CurrentLanguageLabel"
+                           Text="EN"
+                           FontFamily="OpenSansSemibold"
+                           FontSize="13"
+                           TextColor="{StaticResource Gray700}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLanguageTapped"/>
+                    </Border.GestureRecognizers>
+                </Border>
+                <Border Grid.Column="2"
+                        Padding="12,8"
+                        StrokeShape="RoundRectangle 8"
+                        StrokeThickness="0"
+                        BackgroundColor="{StaticResource Primary}"
+                        VerticalOptions="Center">
+                    <Label Text="&#x2794;"
+                           FontSize="16"
+                           TextColor="White"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"/>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLogoutTapped"/>
+                    </Border.GestureRecognizers>
+                </Border>
+            </Grid>
+            <BoxView HeightRequest="1" Color="{StaticResource Gray200}"/>
+        </VerticalStackLayout>
+
+        <!-- ==================== CONTENT AREA ==================== -->
+        <Grid Grid.Row="1" Grid.Column="0"
+              Grid.ColumnSpan="{Binding HasSelectedOrder, Converter={StaticResource BoolToColumnSpanConverter}}"
+              RowDefinitions="Auto,*"
+              BackgroundColor="{StaticResource Gray100}">
+
+            <!-- Filter / Info strip -->
+            <VerticalStackLayout Grid.Row="0" BackgroundColor="White" Spacing="0">
+
+                <!-- Restaurant · Branch info row -->
+                <Grid Padding="16,10" HeightRequest="52" ColumnDefinitions="Auto,*" BackgroundColor="White">
+                    <Border WidthRequest="34" HeightRequest="34"
+                            StrokeShape="RoundRectangle 8"
+                            StrokeThickness="0"
+                            BackgroundColor="{StaticResource Primary}"
+                            VerticalOptions="Center"
+                            IsVisible="{Binding HasRestaurantLogo, Converter={StaticResource InvertedBoolConverter}}">
+                        <Label Text="{Binding RestaurantName, Converter={StaticResource FirstLetterConverter}}"
+                               TextColor="White"
                                FontFamily="OpenSansSemibold"
                                FontSize="15"
-                               Margin="0,8,0,0"/>
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+                    </Border>
+                    <Image Source="{Binding RestaurantLogoUrl}"
+                           WidthRequest="34" HeightRequest="34"
+                           Aspect="AspectFill"
+                           VerticalOptions="Center"
+                           IsVisible="{Binding HasRestaurantLogo}">
+                        <Image.Clip>
+                            <RoundRectangleGeometry CornerRadius="8" Rect="0,0,34,34"/>
+                        </Image.Clip>
+                    </Image>
+                    <Label Grid.Column="1" VerticalOptions="Center" Margin="10,0,0,0">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="{Binding RestaurantName}"
+                                      FontFamily="OpenSansSemibold"
+                                      FontSize="14"
+                                      TextColor="{StaticResource Gray900}"/>
+                                <Span Text=" · " FontSize="14" TextColor="{StaticResource Gray400}"/>
+                                <Span Text="{Binding BranchName}"
+                                      FontSize="14"
+                                      TextColor="{StaticResource Gray500}"/>
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </Grid>
 
-                        <!-- Items List -->
-                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedOrder.Items}"
-                                             Spacing="8">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="models:OrderItemResponse">
-                                    <Border Padding="12"
-                                            StrokeShape="RoundRectangle 8"
-                                            StrokeThickness="1"
-                                            Stroke="{StaticResource Gray200}"
-                                            BackgroundColor="{StaticResource Gray50}">
-                                        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" RowSpacing="4">
-                                            <!-- Quantity -->
-                                            <Border Grid.Row="0" Grid.Column="0"
-                                                    WidthRequest="28"
-                                                    HeightRequest="28"
-                                                    StrokeShape="RoundRectangle 4"
-                                                    StrokeThickness="0"
-                                                    BackgroundColor="{StaticResource Primary}">
-                                                <Label Text="{Binding QuantityDisplay}"
-                                                       FontSize="12"
-                                                       TextColor="White"
-                                                       HorizontalOptions="Center"
-                                                       VerticalOptions="Center"/>
-                                            </Border>
+                <BoxView HeightRequest="1" Color="{StaticResource Gray200}"/>
 
-                                            <!-- Name -->
-                                            <Label Grid.Row="0" Grid.Column="1"
-                                                   Text="{Binding MenuItemName}"
-                                                   FontFamily="OpenSansSemibold"
-                                                   FontSize="14"
-                                                   VerticalOptions="Center"/>
+                <!-- Status filter pills -->
+                <ScrollView Orientation="Horizontal"
+                            HorizontalScrollBarVisibility="Never"
+                            BackgroundColor="White"
+                            Padding="16,10">
+                    <HorizontalStackLayout Spacing="8">
 
-                                            <!-- Price -->
-                                            <Label Grid.Row="0" Grid.Column="2"
-                                                   Text="{Binding TotalPrice, StringFormat='€{0:F2}'}"
-                                                   FontFamily="OpenSansSemibold"
-                                                   FontSize="14"
-                                                   TextColor="{StaticResource Primary}"
-                                                   VerticalOptions="Center"/>
+                        <!-- All -->
+                        <Border Padding="16,8" StrokeShape="RoundRectangle 20" StrokeThickness="1.5"
+                                Stroke="{StaticResource Gray300}" BackgroundColor="Transparent">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding FilterAll}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                                    <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Label Text="{h:Translate All}" FontSize="13" FontFamily="OpenSansSemibold" TextColor="{StaticResource Gray700}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding FilterAll}" Value="True">
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetStatusFilterCommand}" CommandParameter="All"/>
+                            </Border.GestureRecognizers>
+                        </Border>
 
-                                            <!-- Additions -->
-                                            <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
-                                                   Text="{Binding AdditionsSummary}"
-                                                   FontSize="12"
-                                                   TextColor="{StaticResource Gray500}"
-                                                   IsVisible="{Binding HasAdditions}"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
+                        <!-- Created -->
+                        <Border Padding="16,8" StrokeShape="RoundRectangle 20" StrokeThickness="1.5"
+                                Stroke="{StaticResource Gray300}" BackgroundColor="Transparent">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding FilterCreated}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                                    <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Label Text="{h:Translate Created}" FontSize="13" FontFamily="OpenSansSemibold" TextColor="{StaticResource Gray700}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding FilterCreated}" Value="True">
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetStatusFilterCommand}" CommandParameter="Created"/>
+                            </Border.GestureRecognizers>
+                        </Border>
+
+                        <!-- Preparing -->
+                        <Border Padding="16,8" StrokeShape="RoundRectangle 20" StrokeThickness="1.5"
+                                Stroke="{StaticResource Gray300}" BackgroundColor="Transparent">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding FilterPreparing}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                                    <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Label Text="{h:Translate Preparing}" FontSize="13" FontFamily="OpenSansSemibold" TextColor="{StaticResource Gray700}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding FilterPreparing}" Value="True">
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetStatusFilterCommand}" CommandParameter="Preparing"/>
+                            </Border.GestureRecognizers>
+                        </Border>
+
+                        <!-- Completed -->
+                        <Border Padding="16,8" StrokeShape="RoundRectangle 20" StrokeThickness="1.5"
+                                Stroke="{StaticResource Gray300}" BackgroundColor="Transparent">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding FilterCompleted}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                                    <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Label Text="{h:Translate Completed}" FontSize="13" FontFamily="OpenSansSemibold" TextColor="{StaticResource Gray700}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding FilterCompleted}" Value="True">
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetStatusFilterCommand}" CommandParameter="Completed"/>
+                            </Border.GestureRecognizers>
+                        </Border>
+
+                        <!-- Cancelled -->
+                        <Border Padding="16,8" StrokeShape="RoundRectangle 20" StrokeThickness="1.5"
+                                Stroke="{StaticResource Gray300}" BackgroundColor="Transparent">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding FilterCancelled}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                                    <Setter Property="Stroke" Value="{StaticResource Primary}"/>
+                                </DataTrigger>
+                            </Border.Triggers>
+                            <Label Text="{h:Translate Cancelled}" FontSize="13" FontFamily="OpenSansSemibold" TextColor="{StaticResource Gray700}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding FilterCancelled}" Value="True">
+                                        <Setter Property="TextColor" Value="White"/>
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SetStatusFilterCommand}" CommandParameter="Cancelled"/>
+                            </Border.GestureRecognizers>
+                        </Border>
+
+                    </HorizontalStackLayout>
+                </ScrollView>
+
+                <BoxView HeightRequest="1" Color="{StaticResource Gray200}"/>
+
+                <!-- Show Today checkbox card -->
+                <Border Margin="16,12" Padding="14,12"
+                        StrokeShape="RoundRectangle 12" StrokeThickness="1"
+                        Stroke="{StaticResource Gray200}" BackgroundColor="White">
+                    <HorizontalStackLayout Spacing="10">
+                        <CheckBox IsChecked="{Binding ShowTodayOnly}"
+                                  VerticalOptions="Center"
+                                  Color="{StaticResource Primary}"/>
+                        <Label Text="{h:Translate ShowToday}"
+                               VerticalOptions="Center"
+                               FontSize="14"
+                               TextColor="{StaticResource Gray700}"/>
+                    </HorizontalStackLayout>
+                </Border>
+
+                <!-- Date range row (shown when not today only) -->
+                <Grid Padding="16,0,16,12"
+                      ColumnDefinitions="Auto,Auto,Auto,Auto"
+                      ColumnSpacing="8"
+                      IsVisible="{Binding ShowTodayOnly, Converter={StaticResource InvertedBoolConverter}}">
+                    <Label Text="{h:Translate From}" VerticalOptions="Center" FontSize="13" TextColor="{StaticResource Gray600}"/>
+                    <DatePicker Grid.Column="1" Date="{Binding StartDate}" Format="dd/MM/yyyy" FontSize="13" VerticalOptions="Center"/>
+                    <Label Grid.Column="2" Text="{h:Translate To}" VerticalOptions="Center" FontSize="13" TextColor="{StaticResource Gray600}"/>
+                    <DatePicker Grid.Column="3" Date="{Binding EndDate}" Format="dd/MM/yyyy" FontSize="13" VerticalOptions="Center"/>
+                </Grid>
+
+
+            </VerticalStackLayout>
+
+            <!-- Orders list — grouped by date -->
+            <RefreshView Grid.Row="1"
+                         IsRefreshing="{Binding IsRefreshing}"
+                         Command="{Binding RefreshCommand}">
+                <CollectionView x:Name="OrdersCollectionView"
+                                ItemsSource="{Binding GroupedOrders}"
+                                IsGrouped="True"
+                                SelectionMode="None"
+                                BackgroundColor="Transparent">
+                    <CollectionView.GroupHeaderTemplate>
+                        <DataTemplate x:DataType="vm:OrderGroup">
+                            <Grid Padding="16,12,16,4" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <Label Text="📅" FontSize="14" VerticalOptions="Center"/>
+                                <Label Grid.Column="1"
+                                       Text="{Binding DateLabel}"
+                                       FontFamily="OpenSansSemibold"
+                                       FontSize="14"
+                                       TextColor="{StaticResource Gray800}"
+                                       VerticalOptions="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.GroupHeaderTemplate>
+                    <CollectionView.Footer>
+                        <BoxView HeightRequest="20" Color="Transparent"/>
+                    </CollectionView.Footer>
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="40" Spacing="8">
+                            <Label Text="📋" FontSize="40" HorizontalOptions="Center"/>
+                            <Label Text="{h:Translate NoOrdersFound}"
+                                   FontSize="15"
+                                   TextColor="{StaticResource Gray500}"
+                                   HorizontalOptions="Center"/>
                         </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <h:OrderDataTemplateSelector
+                            SwipeableTemplate="{StaticResource SwipeableOrderTemplate}"
+                            ReadOnlyTemplate="{StaticResource ReadOnlyOrderTemplate}"/>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+        </Grid>
+
+        <!-- ==================== ORDER DETAILS PANEL ==================== -->
+        <Border IsVisible="{Binding HasSelectedOrder}"
+                BackgroundColor="{StaticResource Gray100}"
+                StrokeThickness="0"
+                Grid.Row="{OnIdiom Phone=0, Default=1}"
+                Grid.Column="{OnIdiom Phone=0, Default=1}"
+                Grid.RowSpan="{OnIdiom Phone=2, Default=1}"
+                Grid.ColumnSpan="{OnIdiom Phone=2, Default=1}">
+            <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+                <!-- Details own header (phone only) -->
+                <VerticalStackLayout Grid.Row="0" BackgroundColor="White"
+                                     IsVisible="{OnIdiom Phone=True, Default=False}">
+                    <Grid Padding="16,12" HeightRequest="64" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                        <Image Source="trenios_logo_red.png"
+                               HeightRequest="36" HorizontalOptions="Start"
+                               VerticalOptions="Center" Aspect="AspectFit"/>
+                        <Border Grid.Column="1"
+                                x:Name="DetailsLanguageBorder"
+                                Padding="12,6" StrokeShape="RoundRectangle 8"
+                                StrokeThickness="1.5" Stroke="{StaticResource Gray300}"
+                                BackgroundColor="White" VerticalOptions="Center">
+                            <Label x:Name="DetailsCurrentLanguageLabel"
+                                   Text="EN" FontFamily="OpenSansSemibold" FontSize="13"
+                                   TextColor="{StaticResource Gray700}"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnLanguageTapped"/>
+                            </Border.GestureRecognizers>
+                        </Border>
+                        <Border Grid.Column="2"
+                                Padding="12,8" StrokeShape="RoundRectangle 8"
+                                StrokeThickness="0" BackgroundColor="{StaticResource Primary}"
+                                VerticalOptions="Center">
+                            <Label Text="&#x2794;" FontSize="16" TextColor="White"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnLogoutTapped"/>
+                            </Border.GestureRecognizers>
+                        </Border>
+                    </Grid>
+                    <BoxView HeightRequest="1" Color="{StaticResource Gray200}"/>
+                </VerticalStackLayout>
+
+                <!-- Back / Close row -->
+                <Grid Grid.Row="1" BackgroundColor="White" Padding="8,6" ColumnDefinitions="Auto,*,Auto">
+                    <Border Padding="10,8" StrokeShape="RoundRectangle 8" StrokeThickness="0"
+                            BackgroundColor="Transparent" IsVisible="{OnIdiom Phone=True, Default=False}">
+                        <HorizontalStackLayout Spacing="4">
+                            <Label Text="←" FontSize="16" TextColor="{StaticResource Gray700}" VerticalOptions="Center"/>
+                            <Label Text="{h:Translate Back}" FontSize="14" TextColor="{StaticResource Gray700}" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding CloseDetailsCommand}"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+                    <Border Grid.Column="2"
+                            Padding="10,6" StrokeShape="RoundRectangle 8" StrokeThickness="1"
+                            Stroke="{StaticResource Gray300}" BackgroundColor="Transparent"
+                            IsVisible="{OnIdiom Phone=False, Default=True}">
+                        <Label Text="✕" FontSize="14" TextColor="{StaticResource Gray600}"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding CloseDetailsCommand}"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+                </Grid>
+
+                <!-- Scrollable detail content -->
+                <ScrollView Grid.Row="2" Padding="12">
+                    <VerticalStackLayout Spacing="10">
+
+                        <!-- Order summary card -->
+                        <Border Padding="16,14" StrokeShape="RoundRectangle 14"
+                                StrokeThickness="1" Stroke="{StaticResource Gray200}" BackgroundColor="White">
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="6">
+                                <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="6">
+                                    <Label Text="{Binding SelectedOrder.OrderTypeIcon}" FontSize="15" VerticalOptions="Center"/>
+                                    <Label Text="{Binding SelectedOrder.OrderTypeDisplay}"
+                                           FontSize="13" TextColor="{StaticResource Gray600}" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                                <Border Grid.Row="0" Grid.Column="1"
+                                        Padding="12,5" StrokeShape="RoundRectangle 12"
+                                        StrokeThickness="0" BackgroundColor="{Binding SelectedOrder.StatusColor}"
+                                        VerticalOptions="Center">
+                                    <Label Text="{Binding SelectedOrder.StatusDisplay}"
+                                           FontSize="12" FontFamily="OpenSansSemibold" TextColor="White"/>
+                                </Border>
+                                <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                       Text="{Binding SelectedOrder.OrderNumber}"
+                                       FontFamily="OpenSansSemibold" FontSize="22"
+                                       TextColor="{StaticResource Gray900}"/>
+                                <Label Grid.Row="2" Grid.ColumnSpan="2"
+                                       Text="{Binding SelectedOrder.TableDisplay}"
+                                       FontSize="14" FontFamily="OpenSansSemibold"
+                                       TextColor="{StaticResource Primary}"
+                                       IsVisible="{Binding SelectedOrder.HasTable}"/>
+                                <Label Grid.Row="3" Grid.ColumnSpan="2"
+                                       Text="{Binding SelectedOrder.PlacedAtFullDisplay}"
+                                       FontSize="13" TextColor="{StaticResource Gray500}"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Order items card -->
+                        <Border Padding="16,14" StrokeShape="RoundRectangle 14"
+                                StrokeThickness="1" Stroke="{StaticResource Gray200}" BackgroundColor="White">
+                            <VerticalStackLayout Spacing="0">
+                                <Label Text="{h:Translate OrderDetails}"
+                                       FontFamily="OpenSansSemibold" FontSize="16"
+                                       TextColor="{StaticResource Gray900}" Margin="0,0,0,12"/>
+                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedOrder.Items}" Spacing="0">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="models:OrderItemResponse">
+                                            <VerticalStackLayout Spacing="0">
+                                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" Padding="0,10,0,10">
+                                                    <Label Grid.Column="0"
+                                                           Text="{Binding QuantityDisplay}"
+                                                           FontSize="14" TextColor="{StaticResource Gray700}"
+                                                           VerticalOptions="Center"/>
+                                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                                        <Label Text="{Binding MenuItemName}"
+                                                               FontSize="14" TextColor="{StaticResource Gray900}"/>
+                                                        <Label Text="{Binding AdditionsSummary, StringFormat='Extras: {0}'}"
+                                                               FontSize="12" FontAttributes="Italic"
+                                                               TextColor="{StaticResource Gray500}"
+                                                               IsVisible="{Binding HasAdditions}"/>
+                                                    </VerticalStackLayout>
+                                                    <Label Grid.Column="2"
+                                                           Text="{Binding TotalPrice, StringFormat='€{0:F2}'}"
+                                                           FontSize="14" TextColor="{StaticResource Gray900}"
+                                                           VerticalOptions="Start"/>
+                                                </Grid>
+                                                <BoxView HeightRequest="1" Color="{StaticResource Gray200}"/>
+                                            </VerticalStackLayout>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Totals card -->
+                        <Border Padding="16,14" StrokeShape="RoundRectangle 14"
+                                StrokeThickness="1" Stroke="{StaticResource Gray200}" BackgroundColor="White">
+                            <VerticalStackLayout Spacing="0">
+                                <Grid ColumnDefinitions="*,Auto" Padding="0,0,0,10">
+                                    <Label Text="{h:Translate Subtotal}" FontSize="14" TextColor="{StaticResource Gray500}"/>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding SelectedOrder.SubTotal, StringFormat='€{0:F2}'}"
+                                           FontSize="14" TextColor="{StaticResource Gray700}"/>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,Auto" Padding="0,0,0,10"
+                                      IsVisible="{Binding SelectedOrder.DiscountAmount, Converter={StaticResource IsNotNullConverter}}">
+                                    <Label Text="{h:Translate Discount}" FontSize="14" TextColor="{StaticResource Gray500}"/>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding SelectedOrder.DiscountAmount, StringFormat='-€{0:F2}'}"
+                                           FontSize="14" TextColor="{StaticResource Success}"/>
+                                </Grid>
+                                <BoxView HeightRequest="1" Color="{StaticResource Gray200}" Margin="0,0,0,10"/>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="{h:Translate Total}"
+                                           FontFamily="OpenSansSemibold" FontSize="16"
+                                           TextColor="{StaticResource Gray900}"/>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding SelectedOrder.TotalAmount, StringFormat='€{0:F2}'}"
+                                           FontFamily="OpenSansSemibold" FontSize="16"
+                                           TextColor="{StaticResource Primary}"/>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
 
                     </VerticalStackLayout>
                 </ScrollView>
 
-                <!-- Price Summary (Fixed at bottom) -->
-                <Grid Grid.Row="2"
-                      Padding="16,12"
-                      ColumnDefinitions="*,Auto"
-                      RowDefinitions="Auto,Auto,Auto,Auto"
-                      RowSpacing="6"
-                      BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}">
-                    <BoxView Grid.ColumnSpan="2" HeightRequest="1" Color="{StaticResource Gray200}" VerticalOptions="Start" Margin="0,-12,0,8"/>
-
-                    <Label Grid.Row="0" Grid.Column="0" Text="{h:Translate Subtotal}" FontSize="13"/>
-                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding SelectedOrder.SubTotal, StringFormat='€{0:F2}'}" FontSize="13"/>
-
-                    <Label Grid.Row="1" Grid.Column="0" Text="{h:Translate Tax}" FontSize="13"/>
-                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedOrder.TaxAmount, StringFormat='€{0:F2}'}" FontSize="13"/>
-
-                    <Label Grid.Row="2" Grid.Column="0" Text="{h:Translate Discount}" FontSize="13" IsVisible="{Binding SelectedOrder.DiscountAmount, Converter={StaticResource IsNotNullConverter}}"/>
-                    <Label Grid.Row="2" Grid.Column="1" Text="{Binding SelectedOrder.DiscountAmount, StringFormat='-€{0:F2}'}" FontSize="13" TextColor="{StaticResource Success}" IsVisible="{Binding SelectedOrder.DiscountAmount, Converter={StaticResource IsNotNullConverter}}"/>
-
-                    <Label Grid.Row="3" Grid.Column="0" Text="{h:Translate Total}" FontFamily="OpenSansSemibold" FontSize="16"/>
-                    <Label Grid.Row="3" Grid.Column="1" Text="{Binding SelectedOrder.TotalAmount, StringFormat='€{0:F2}'}" FontFamily="OpenSansSemibold" FontSize="16" TextColor="{StaticResource Primary}"/>
-                </Grid>
-
-                <!-- Actions -->
+                <!-- Action buttons -->
                 <Grid Grid.Row="3"
-                      Padding="16"
-                      ColumnDefinitions="*,*"
-                      ColumnSpacing="12"
-                      BackgroundColor="{StaticResource Gray100}"
-                      IsVisible="{Binding SelectedOrder.CanChangeStatus}">
-                    <Button Grid.Column="0"
-                            Text="{h:Translate CancelOrder}"
-                            Style="{StaticResource DangerButton}"
-                            Command="{Binding UpdateStatusCommand}"
-                            CommandParameter="Cancelled"/>
-                    <Button Grid.Column="1"
-                            Text="{h:Translate Complete}"
-                            Style="{StaticResource PrimaryButton}"
-                            Command="{Binding UpdateStatusCommand}"
-                            CommandParameter="Completed"/>
+                      Padding="12,10" ColumnDefinitions="*,*" ColumnSpacing="10"
+                      BackgroundColor="White"
+                      IsVisible="{Binding SelectedOrderCanChangeStatus}">
+                    <BoxView Grid.ColumnSpan="2" HeightRequest="1"
+                             Color="{StaticResource Gray200}"
+                             VerticalOptions="Start" Margin="0,-10,0,0"/>
+                    <Border Grid.Column="0" Padding="0,14"
+                            StrokeShape="RoundRectangle 12" StrokeThickness="1.5"
+                            Stroke="{StaticResource Primary}" BackgroundColor="White">
+                        <Label Text="{h:Translate CancelOrder}"
+                               FontFamily="OpenSansSemibold" FontSize="14"
+                               TextColor="{StaticResource Primary}" HorizontalOptions="Center"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding UpdateStatusCommand}" CommandParameter="Cancelled"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+                    <Border Grid.Column="1" Padding="0,14"
+                            StrokeShape="RoundRectangle 12" StrokeThickness="0"
+                            BackgroundColor="{StaticResource Primary}">
+                        <Label Text="{h:Translate Complete}"
+                               FontFamily="OpenSansSemibold" FontSize="14"
+                               TextColor="White" HorizontalOptions="Center"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding UpdateStatusCommand}" CommandParameter="Completed"/>
+                        </Border.GestureRecognizers>
+                    </Border>
                 </Grid>
             </Grid>
         </Border>
 
-        <!-- Loading Overlay -->
-        <Grid Grid.RowSpan="4" Grid.ColumnSpan="2"
-              IsVisible="{Binding IsLoading}"
+        <!-- ==================== LOADING OVERLAY ==================== -->
+        <!-- IsLoadingOverlay = IsLoading && !IsRefreshing — avoids double spinner during pull-to-refresh -->
+        <Grid Grid.RowSpan="2" Grid.ColumnSpan="2"
+              IsVisible="{Binding IsLoadingOverlay}"
               BackgroundColor="#80000000">
-            <ActivityIndicator IsRunning="{Binding IsLoading}"
-                               Color="{StaticResource Primary}"
-                               WidthRequest="50"
-                               HeightRequest="50"
+            <ActivityIndicator IsRunning="{Binding IsLoadingOverlay}"
+                               Color="White"
+                               WidthRequest="50" HeightRequest="50"
                                HorizontalOptions="Center"
                                VerticalOptions="Center"/>
         </Grid>
+
     </Grid>
 </ContentPage>

@@ -17,11 +17,19 @@ public partial class POSPagePhone : ContentPage
         _orderService = orderService;
         BindingContext = viewModel;
 
+        UpdateLanguageLabel();
+        LocalizationService.Instance.OnLanguageChanged += UpdateLanguageLabel;
+
         // Subscribe to cart changes for button visibility
         _orderService.OnCartChanged += OnCartChanged;
 
         // Return to products view after order is submitted
         _viewModel.OnOrderCompleted += OnOrderCompleted;
+    }
+
+    private void UpdateLanguageLabel()
+    {
+        CurrentLanguageLabel.Text = LocalizationService.Instance.CurrentLanguage.ToUpper();
     }
 
     protected override void OnAppearing()
@@ -42,8 +50,6 @@ public partial class POSPagePhone : ContentPage
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            System.Diagnostics.Debug.WriteLine($"[POSPagePhone.OnCartChanged] Cart changed - HasItems: {_viewModel.HasItems}, TotalItems: {_viewModel.TotalItems}");
-
             if (PhoneCartView.IsVisible)
             {
                 // Cart view is open - refresh items so +/- quantity changes are visible (iOS fix)
@@ -76,13 +82,32 @@ public partial class POSPagePhone : ContentPage
             await Task.Delay(100);
         }
 
-        // Now populate cart items - CollectionView is visible and laid out
+        // Now populate cart items
         var tempItems = _orderService.CartItems.ToList();
         _viewModel.CartItems.Clear();
         foreach (var item in tempItems)
         {
             _viewModel.CartItems.Add(item);
         }
+    }
+
+    private void OnBackToProducts(object? sender, EventArgs e)
+    {
+        PhoneCartView.IsVisible = false;
+        PhoneProductsView.IsVisible = true;
+        PhoneHeader.IsVisible = true;
+        PhoneBottomBar.ClearValue(VisualElement.IsVisibleProperty);
+    }
+
+    private void OnOrderCompleted()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            PhoneCartView.IsVisible = false;
+            PhoneProductsView.IsVisible = true;
+            PhoneHeader.IsVisible = true;
+            PhoneBottomBar.IsVisible = false;
+        });
     }
 
     private void OnTableTapped(object? sender, EventArgs e)
@@ -110,23 +135,28 @@ public partial class POSPagePhone : ContentPage
         _viewModel.SelectedTable = table;
     }
 
-    private void OnOrderCompleted()
+    private void OnLogoutTapped(object? sender, EventArgs e)
     {
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            // Return to products view after order is submitted
-            PhoneCartView.IsVisible = false;
-            PhoneProductsView.IsVisible = true;
-            PhoneHeader.IsVisible = true;
-            PhoneBottomBar.IsVisible = false;
-        });
+        if (_viewModel.LogoutCommand is Command command && command.CanExecute(null))
+            command.Execute(null);
     }
 
-    private void OnBackToProducts(object? sender, EventArgs e)
+    private async void OnLanguageTapped(object? sender, EventArgs e)
     {
-        PhoneCartView.IsVisible = false;
-        PhoneProductsView.IsVisible = true;
-        PhoneHeader.IsVisible = true;
-        PhoneBottomBar.ClearValue(VisualElement.IsVisibleProperty);
+        var localization = LocalizationService.Instance;
+        var languages = localization.AvailableLanguages;
+        var options = languages.Select(l => l.Name).ToArray();
+
+        var result = await DisplayActionSheet("Select Language", "Cancel", null, options);
+
+        if (result != null && result != "Cancel")
+        {
+            var selected = languages.FirstOrDefault(l => l.Name == result);
+            if (selected != default)
+            {
+                localization.SetLanguage(selected.Code);
+                UpdateLanguageLabel();
+            }
+        }
     }
 }

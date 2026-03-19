@@ -6,6 +6,18 @@ using Trenios.Mobile.Services;
 
 namespace Trenios.Mobile.ViewModels;
 
+public class OrderGroup : List<OrderResponse>
+{
+    public string DateLabel { get; }
+    public DateTime Date { get; }
+
+    public OrderGroup(DateTime date, string dateLabel, IEnumerable<OrderResponse> orders) : base(orders)
+    {
+        Date = date;
+        DateLabel = dateLabel;
+    }
+}
+
 public class OrdersViewModel : INotifyPropertyChanged
 {
     private readonly ApiService _apiService;
@@ -18,22 +30,44 @@ public class OrdersViewModel : INotifyPropertyChanged
     private DateTime _startDate = DateTime.Today;
     private DateTime _endDate = DateTime.Today;
     private bool _showTodayOnly = true;
+    private IReadOnlyList<OrderGroup> _groupedOrders = Array.Empty<OrderGroup>();
+
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ObservableCollection<OrderResponse> Orders { get; } = new();
 
+    public IReadOnlyList<OrderGroup> GroupedOrders
+    {
+        get => _groupedOrders;
+        private set { _groupedOrders = value; OnPropertyChanged(nameof(GroupedOrders)); }
+    }
+
+
     public bool IsLoading
     {
         get => _isLoading;
-        set { _isLoading = value; OnPropertyChanged(nameof(IsLoading)); }
+        set
+        {
+            _isLoading = value;
+            OnPropertyChanged(nameof(IsLoading));
+            OnPropertyChanged(nameof(IsLoadingOverlay));
+        }
     }
 
     public bool IsRefreshing
     {
         get => _isRefreshing;
-        set { _isRefreshing = value; OnPropertyChanged(nameof(IsRefreshing)); }
+        set
+        {
+            _isRefreshing = value;
+            OnPropertyChanged(nameof(IsRefreshing));
+            OnPropertyChanged(nameof(IsLoadingOverlay));
+        }
     }
+
+    // Only show full-screen overlay on initial load, not during pull-to-refresh
+    public bool IsLoadingOverlay => IsLoading && !IsRefreshing;
 
     public OrderResponse? SelectedOrder
     {
@@ -43,10 +77,12 @@ public class OrdersViewModel : INotifyPropertyChanged
             _selectedOrder = value;
             OnPropertyChanged(nameof(SelectedOrder));
             OnPropertyChanged(nameof(HasSelectedOrder));
+            OnPropertyChanged(nameof(SelectedOrderCanChangeStatus));
         }
     }
 
     public bool HasSelectedOrder => SelectedOrder != null;
+    public bool SelectedOrderCanChangeStatus => SelectedOrder?.CanChangeStatus ?? false;
 
     public OrderStatus? StatusFilter
     {
@@ -60,6 +96,7 @@ public class OrdersViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(FilterConfirmed));
             OnPropertyChanged(nameof(FilterPreparing));
             OnPropertyChanged(nameof(FilterCompleted));
+            OnPropertyChanged(nameof(FilterCancelled));
             _ = LoadOrdersAsync();
         }
     }
@@ -69,6 +106,13 @@ public class OrdersViewModel : INotifyPropertyChanged
     public bool FilterConfirmed => StatusFilter == OrderStatus.Confirmed;
     public bool FilterPreparing => StatusFilter == OrderStatus.Preparing;
     public bool FilterCompleted => StatusFilter == OrderStatus.Completed;
+    public bool FilterCancelled => StatusFilter == OrderStatus.Cancelled;
+
+    public string RestaurantName => _authService.GetEffectiveRestaurantName() ?? "";
+    public string BranchName => _authService.GetEffectiveBranchName() ?? "";
+    public string? RestaurantLogoUrl => _authService.SelectedRestaurant?.DisplayImageUrl
+        ?? _authService.CurrentUser?.Restaurant?.DisplayImageUrl;
+    public bool HasRestaurantLogo => !string.IsNullOrEmpty(RestaurantLogoUrl);
 
     public bool ShowTodayOnly
     {
@@ -156,25 +200,42 @@ public class OrdersViewModel : INotifyPropertyChanged
                 url += $"&status={(int)StatusFilter.Value}";
             }
 
-            // Add date filter parameters
-            url += $"&startDate={StartDate:yyyy-MM-dd}";
-            url += $"&endDate={EndDate:yyyy-MM-dd}T23:59:59";
+            url += $"&startDate={StartDate:yyyy-MM-dd}T00:00:00Z";
+            url += $"&endDate={EndDate:yyyy-MM-dd}T23:59:59Z";
 
             var result = await _apiService.GetAsync<List<OrderResponse>>(url);
 
             if (result.IsSuccess && result.Data != null)
             {
+                // Client-side date filter as safety net (API may not honour date params).
+                var sorted = result.Data
+                    .Where(o => o.PlacedAt.ToLocalTime().Date >= StartDate.Date
+                             && o.PlacedAt.ToLocalTime().Date <= EndDate.Date)
+                    .OrderByDescending(o => o.PlacedAt)
+                    .ToList();
+
                 Orders.Clear();
-                foreach (var order in result.Data.OrderByDescending(o => o.PlacedAt))
-                {
+                foreach (var order in sorted)
                     Orders.Add(order);
-                }
+
+                GroupedOrders = sorted
+                    .GroupBy(o => o.PlacedAt.ToLocalTime().Date)
+                    .OrderByDescending(g => g.Key)
+                    .Select(g => new OrderGroup(g.Key, GetDateLabel(g.Key), g))
+                    .ToList();
             }
         }
         finally
         {
             IsLoading = false;
         }
+    }
+
+    private static string GetDateLabel(DateTime date)
+    {
+        if (date == DateTime.Today) return LocalizationService.Instance["Today"];
+        if (date == DateTime.Today.AddDays(-1)) return LocalizationService.Instance["Yesterday"];
+        return date.ToString("dd MMM yyyy");
     }
 
     private async Task RefreshAsync()
@@ -240,9 +301,6 @@ public class OrdersViewModel : INotifyPropertyChanged
 
             // Update selected order
             SelectedOrder = Orders.FirstOrDefault(o => o.Id == SelectedOrder?.Id);
-
-            // Notify to close swipes
-            OnPropertyChanged(nameof(Orders));
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
@@ -265,8 +323,6 @@ public class OrdersViewModel : INotifyPropertyChanged
         if (result.IsSuccess)
         {
             await LoadOrdersAsync();
-            // Notify to close swipes
-            OnPropertyChanged(nameof(Orders));
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
@@ -304,8 +360,6 @@ public class OrdersViewModel : INotifyPropertyChanged
         if (result.IsSuccess)
         {
             await LoadOrdersAsync();
-            // Notify to close swipes
-            OnPropertyChanged(nameof(Orders));
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {

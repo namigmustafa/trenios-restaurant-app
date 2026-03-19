@@ -3,11 +3,11 @@ using Trenios.Mobile.Services;
 
 namespace Trenios.Mobile.Pages;
 
-public partial class KitchenDisplayPage : ContentPage
+public partial class ReportingPage : ContentPage
 {
-    private readonly KitchenDisplayViewModel _viewModel;
+    private readonly ReportingViewModel _viewModel;
 
-    public KitchenDisplayPage(KitchenDisplayViewModel viewModel)
+    public ReportingPage(ReportingViewModel viewModel)
     {
         InitializeComponent();
         _viewModel = viewModel;
@@ -20,19 +20,13 @@ public partial class KitchenDisplayPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        _ = _viewModel.InitializeAsync();
-    }
-
-    protected override async void OnDisappearing()
-    {
-        base.OnDisappearing();
-        await _viewModel.DisconnectAsync();
+        if (_viewModel.IsAuthorized && !_viewModel.HasData && !_viewModel.IsLoading)
+            _ = _viewModel.LoadReportAsync();
     }
 
     private void UpdateLanguageLabels()
     {
-        var lang = LocalizationService.Instance.CurrentLanguage.ToUpper();
-        CurrentLanguageLabel.Text = lang;
+        LanguageLabel.Text = LocalizationService.Instance.CurrentLanguage.ToUpper();
     }
 
     private void OnLogoutTapped(object? sender, EventArgs e)

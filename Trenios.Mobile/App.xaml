@@ -28,6 +28,7 @@
             <converters:BoolToColumnSpanConverter x:Key="BoolToColumnSpanConverter"/>
             <converters:BoolToMarginConverter x:Key="BoolToMarginConverter"/>
             <converters:BoolToWidthConverter x:Key="BoolToWidthConverter"/>
+            <converters:ImageFallbackConverter x:Key="ImageFallbackConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

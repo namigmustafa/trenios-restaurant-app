@@ -103,6 +103,15 @@ public class OrderResponse
     public OrderStatus OrderStatus => (OrderStatus)Status;
 
     [JsonIgnore]
+    public string OrderTypeIcon => OrderType switch
+    {
+        OrderType.DineIn => "🍽",
+        OrderType.TakeAway => "🛍",
+        OrderType.Delivery => "🚗",
+        _ => "📦"
+    };
+
+    [JsonIgnore]
     public string OrderTypeDisplay
     {
         get
@@ -154,10 +163,10 @@ public class OrderResponse
     };
 
     [JsonIgnore]
-    public string PlacedAtDisplay => PlacedAt.ToString("HH:mm");
+    public string PlacedAtDisplay => PlacedAt.ToLocalTime().ToString("HH:mm");
 
     [JsonIgnore]
-    public string PlacedAtFullDisplay => PlacedAt.ToString("dd MMM yyyy HH:mm");
+    public string PlacedAtFullDisplay => PlacedAt.ToLocalTime().ToString("dd MMM yyyy HH:mm");
 
     [JsonIgnore]
     public int TotalItems => Items.Sum(i => i.Quantity);
@@ -285,6 +294,9 @@ public class OrderItemAdditionResponse
 
     [JsonPropertyName("totalPrice")]
     public decimal TotalPrice { get; set; }
+
+    [JsonIgnore]
+    public string DisplayText => Quantity > 1 ? $"** {AdditionName} x{Quantity}" : $"** {AdditionName}";
 }
 
 public class UpdateOrderStatusRequest

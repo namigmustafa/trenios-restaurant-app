@@ -57,8 +57,7 @@ public class LoginViewModel : BaseViewModel
     private bool CanLogin()
     {
         return !string.IsNullOrWhiteSpace(Username) &&
-               !string.IsNullOrWhiteSpace(Password) &&
-               Password.Length >= 4;
+               !string.IsNullOrWhiteSpace(Password);
     }
 
     private async Task LoginAsync()
@@ -83,7 +82,7 @@ public class LoginViewModel : BaseViewModel
             }
             else
             {
-                ErrorMessage = errorMessage ?? "Login failed. Please try again.";
+                ErrorMessage = LocalizationService.Instance.Get("InvalidCredentials");
                 HasError = true;
             }
         }

@@ -60,6 +60,15 @@
                 ContentTemplate="{DataTemplate pages:KitchenDisplayPage}" />
         </Tab>
 
+        <Tab Title="Reports">
+            <Tab.Icon>
+                <FontImageSource Glyph="&#xF2D8;" FontFamily="FluentIcons" Size="22" />
+            </Tab.Icon>
+            <ShellContent
+                Route="ReportingPage"
+                ContentTemplate="{DataTemplate pages:ReportingPage}" />
+        </Tab>
+
     </TabBar>
 
 </Shell>

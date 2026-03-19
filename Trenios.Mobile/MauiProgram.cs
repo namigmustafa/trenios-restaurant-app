@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Plugin.Maui.Audio;
 using Trenios.Mobile.Pages;
 using Trenios.Mobile.Services;
 using Trenios.Mobile.ViewModels;
@@ -7,9 +9,6 @@ namespace Trenios.Mobile;
 
 public static class MauiProgram
 {
-    // Configure your API base URL here
-    private const string ApiBaseUrl = "https://app-trenios-test.azurewebsites.net";
-
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
@@ -20,14 +19,40 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 fonts.AddFont("FluentSystemIcons-Regular.ttf", "FluentIcons");
+            })
+            .ConfigureMauiHandlers(handlers =>
+            {
+                Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("BorderlessEntry", (handler, view) =>
+                {
+#if ANDROID
+                    handler.PlatformView.BackgroundTintList =
+                        Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent);
+#elif IOS
+                    handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
+#endif
+                });
             });
+
+        // Load appsettings
+        using var defaultSettings = FileSystem.OpenAppPackageFileAsync("appsettings.json").Result;
+        var configBuilder = new ConfigurationBuilder().AddJsonStream(defaultSettings);
+
+#if PROD
+        using var prodSettings = FileSystem.OpenAppPackageFileAsync("appsettings.Production.json").Result;
+        configBuilder.AddJsonStream(prodSettings);
+#endif
+
+        var config = configBuilder.Build();
+        builder.Configuration.AddConfiguration(config);
+
+        var apiBaseUrl = config["ApiBaseUrl"]!;
 
         // Register HttpClient
         builder.Services.AddSingleton(sp =>
         {
             var client = new HttpClient
             {
-                BaseAddress = new Uri(ApiBaseUrl),
+                BaseAddress = new Uri(apiBaseUrl),
                 Timeout = TimeSpan.FromSeconds(30)
             };
             client.DefaultRequestHeaders.Add("Accept", "application/json");
@@ -39,6 +64,9 @@ public static class MauiProgram
             return client;
         });
 
+        // Audio
+        builder.Services.AddSingleton<IAudioManager>(AudioManager.Current);
+
         // Register Services
         builder.Services.AddSingleton<ApiService>();
         builder.Services.AddSingleton<AuthService>();
@@ -46,6 +74,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<ProductService>();
         builder.Services.AddSingleton<OrderService>();
         builder.Services.AddSingleton<TableService>();
+        builder.Services.AddSingleton<ReportingService>();
         builder.Services.AddSingleton<OrderHubService>();
         builder.Services.AddSingleton(_ => LocalizationService.Instance);
 
@@ -57,6 +86,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<OrdersViewModel>();
         builder.Services.AddSingleton<KitchenDisplayViewModel>();
         builder.Services.AddSingleton<TablesViewModel>();
+        builder.Services.AddSingleton<ReportingViewModel>();
+        builder.Services.AddTransient<OrderBreakdownViewModel>();
 
         // Register Pages
         builder.Services.AddTransient<LoginPage>();
@@ -67,6 +98,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<OrdersPage>();
         builder.Services.AddSingleton<KitchenDisplayPage>();
         builder.Services.AddSingleton<TablesPage>();
+        builder.Services.AddSingleton<ReportingPage>();
+        builder.Services.AddTransient<OrderBreakdownPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();
