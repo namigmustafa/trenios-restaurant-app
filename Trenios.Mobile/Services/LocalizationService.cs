@@ -227,7 +227,46 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancellationPlaceholder"] = "e.g., Customer request, Out of stock",
             ["OrdersInQueue"] = "orders in queue",
             ["ConfirmCancelOrder"] = "Are you sure you want to cancel this order?",
-            ["CancelOrderSuccess"] = "Order cancelled successfully"
+            ["CancelOrderSuccess"] = "Order cancelled successfully",
+
+            // Reporting
+            ["Reports"] = "Reports",
+            ["TotalRevenue"] = "Total Revenue",
+            ["TotalOrders"] = "Total Orders",
+            ["AvgOrder"] = "Avg. Order",
+            ["CompletionRate"] = "Completion Rate",
+            ["VsPreviousPeriod"] = "vs previous period",
+            ["ShowTodayOnly"] = "Show Today Only",
+            ["StartDate"] = "Start Date",
+            ["EndDate"] = "End Date",
+            ["LoadReport"] = "Load Report",
+            ["AllRestaurants"] = "All Restaurants",
+            ["AllBranches"] = "All Branches",
+            ["PerformanceInsight"] = "Performance Insight",
+            ["InProgress"] = "In Progress",
+            ["NotAuthorized"] = "You are not authorized to view this page",
+            ["NoDataYet"] = "No report data. Select filters and tap Load Report.",
+
+            // Reporting - new sections
+            ["TopSellingProducts"] = "TOP SELLING PRODUCTS",
+            ["SalesTrends"] = "SALES TRENDS",
+            ["ShowMore"] = "Show More",
+            ["TreniosReporting"] = "Trenios Reporting",
+            ["DailyPerformanceSummary"] = "Daily Performance Summary",
+            ["OrderBreakdown"] = "Order Breakdown",
+            ["OverviewSalesByType"] = "Overview of sales by delivery type",
+            ["ByOrderType"] = "BY ORDER TYPE",
+            ["OrderCounts"] = "ORDER COUNTS",
+            ["PeriodBreakdown"] = "PERIOD BREAKDOWN",
+            ["HourlySales"] = "HOURLY SALES",
+            ["Count"] = "Count",
+
+            // Time periods
+            ["Morning"] = "Morning",
+            ["Lunch"] = "Lunch",
+            ["Afternoon"] = "Afternoon",
+            ["Dinner"] = "Dinner",
+            ["LateNight"] = "Late Night"
         },
 
         ["az"] = new()
@@ -373,7 +412,46 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancellationPlaceholder"] = "məs: Müştəri sorğusu, Stokda yoxdur",
             ["OrdersInQueue"] = "sifariş növbədə",
             ["ConfirmCancelOrder"] = "Bu sifarişi ləğv etmək istədiyinizə əminsiniz?",
-            ["CancelOrderSuccess"] = "Sifariş uğurla ləğv edildi"
+            ["CancelOrderSuccess"] = "Sifariş uğurla ləğv edildi",
+
+            // Reporting
+            ["Reports"] = "Hesabatlar",
+            ["TotalRevenue"] = "Ümumi Gəlir",
+            ["TotalOrders"] = "Ümumi Sifarişlər",
+            ["AvgOrder"] = "Ort. Sifariş",
+            ["CompletionRate"] = "Tamamlanma Faizi",
+            ["VsPreviousPeriod"] = "əvvəlki dövrə nisbətən",
+            ["ShowTodayOnly"] = "Yalnız Bu Gün",
+            ["StartDate"] = "Başlanğıc Tarixi",
+            ["EndDate"] = "Bitmə Tarixi",
+            ["LoadReport"] = "Hesabatı Yüklə",
+            ["AllRestaurants"] = "Bütün Restoranlar",
+            ["AllBranches"] = "Bütün Filiallar",
+            ["PerformanceInsight"] = "Performans Analizi",
+            ["InProgress"] = "Davam edir",
+            ["NotAuthorized"] = "Bu səhifəyə baxmaq üçün icazəniz yoxdur",
+            ["NoDataYet"] = "Hesabat məlumatı yoxdur. Filtrləri seçin və Hesabatı Yüklə düyməsinə basın.",
+
+            // Reporting - new sections
+            ["TopSellingProducts"] = "ƏN ÇOX SATILAN MƏHSULLAR",
+            ["SalesTrends"] = "SATIŞ TRENDLƏRİ",
+            ["ShowMore"] = "Daha çox göstər",
+            ["TreniosReporting"] = "Trenios Hesabatlar",
+            ["DailyPerformanceSummary"] = "Günlük Performans Xülasəsi",
+            ["OrderBreakdown"] = "Sifariş Bölgüsü",
+            ["OverviewSalesByType"] = "Çatdırılma növünə görə satış icmalı",
+            ["ByOrderType"] = "SİFARİŞ NÖVÜNƏ GÖRƏ",
+            ["OrderCounts"] = "SİFARİŞ SAYI",
+            ["PeriodBreakdown"] = "DÖVRƏ GÖRƏ BÖLGÜ",
+            ["HourlySales"] = "SAATİ ÜZRƏ SATIŞ",
+            ["Count"] = "Sayı",
+
+            // Time periods
+            ["Morning"] = "Səhər",
+            ["Lunch"] = "Nahar",
+            ["Afternoon"] = "Günorta",
+            ["Dinner"] = "Axşam",
+            ["LateNight"] = "Gecə"
         },
 
         ["ru"] = new()
@@ -519,7 +597,46 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancellationPlaceholder"] = "напр: Запрос клиента, Нет в наличии",
             ["OrdersInQueue"] = "заказов в очереди",
             ["ConfirmCancelOrder"] = "Вы уверены, что хотите отменить этот заказ?",
-            ["CancelOrderSuccess"] = "Заказ успешно отменён"
+            ["CancelOrderSuccess"] = "Заказ успешно отменён",
+
+            // Reporting
+            ["Reports"] = "Отчёты",
+            ["TotalRevenue"] = "Общий Доход",
+            ["TotalOrders"] = "Всего Заказов",
+            ["AvgOrder"] = "Ср. Заказ",
+            ["CompletionRate"] = "Процент Завершения",
+            ["VsPreviousPeriod"] = "по сравнению с прошлым периодом",
+            ["ShowTodayOnly"] = "Только Сегодня",
+            ["StartDate"] = "Начальная Дата",
+            ["EndDate"] = "Конечная Дата",
+            ["LoadReport"] = "Загрузить Отчёт",
+            ["AllRestaurants"] = "Все Рестораны",
+            ["AllBranches"] = "Все Филиалы",
+            ["PerformanceInsight"] = "Анализ Эффективности",
+            ["InProgress"] = "В Процессе",
+            ["NotAuthorized"] = "У вас нет прав для просмотра этой страницы",
+            ["NoDataYet"] = "Нет данных отчёта. Выберите фильтры и нажмите Загрузить Отчёт.",
+
+            // Reporting - new sections
+            ["TopSellingProducts"] = "САМЫЕ ПРОДАВАЕМЫЕ БЛЮДА",
+            ["SalesTrends"] = "ТРЕНДЫ ПРОДАЖ",
+            ["ShowMore"] = "Показать больше",
+            ["TreniosReporting"] = "Trenios Отчёты",
+            ["DailyPerformanceSummary"] = "Сводка за день",
+            ["OrderBreakdown"] = "Разбивка Заказов",
+            ["OverviewSalesByType"] = "Обзор продаж по типу доставки",
+            ["ByOrderType"] = "ПО ТИПУ ЗАКАЗА",
+            ["OrderCounts"] = "КОЛИЧЕСТВО ЗАКАЗОВ",
+            ["PeriodBreakdown"] = "РАЗБИВКА ПО ПЕРИОДАМ",
+            ["HourlySales"] = "ПРОДАЖИ ПО ЧАСАМ",
+            ["Count"] = "Кол-во",
+
+            // Time periods
+            ["Morning"] = "Утро",
+            ["Lunch"] = "Обед",
+            ["Afternoon"] = "День",
+            ["Dinner"] = "Ужин",
+            ["LateNight"] = "Ночь"
         },
 
         ["tr"] = new()
@@ -665,7 +782,46 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancellationPlaceholder"] = "örn: Müşteri talebi, Stokta yok",
             ["OrdersInQueue"] = "sipariş sırada",
             ["ConfirmCancelOrder"] = "Bu siparişi iptal etmek istediğinize emin misiniz?",
-            ["CancelOrderSuccess"] = "Sipariş başarıyla iptal edildi"
+            ["CancelOrderSuccess"] = "Sipariş başarıyla iptal edildi",
+
+            // Reporting
+            ["Reports"] = "Raporlar",
+            ["TotalRevenue"] = "Toplam Gelir",
+            ["TotalOrders"] = "Toplam Sipariş",
+            ["AvgOrder"] = "Ort. Sipariş",
+            ["CompletionRate"] = "Tamamlanma Oranı",
+            ["VsPreviousPeriod"] = "önceki döneme göre",
+            ["ShowTodayOnly"] = "Sadece Bugün",
+            ["StartDate"] = "Başlangıç Tarihi",
+            ["EndDate"] = "Bitiş Tarihi",
+            ["LoadReport"] = "Raporu Yükle",
+            ["AllRestaurants"] = "Tüm Restoranlar",
+            ["AllBranches"] = "Tüm Şubeler",
+            ["PerformanceInsight"] = "Performans Analizi",
+            ["InProgress"] = "Devam Ediyor",
+            ["NotAuthorized"] = "Bu sayfayı görüntüleme yetkiniz yok",
+            ["NoDataYet"] = "Rapor verisi yok. Filtreleri seçin ve Raporu Yükle düğmesine basın.",
+
+            // Reporting - new sections
+            ["TopSellingProducts"] = "EN ÇOK SATILAN ÜRÜNLER",
+            ["SalesTrends"] = "SATIŞ TRENDLERİ",
+            ["ShowMore"] = "Daha fazla göster",
+            ["TreniosReporting"] = "Trenios Raporlama",
+            ["DailyPerformanceSummary"] = "Günlük Performans Özeti",
+            ["OrderBreakdown"] = "Sipariş Dağılımı",
+            ["OverviewSalesByType"] = "Teslimat türüne göre satış özeti",
+            ["ByOrderType"] = "SİPARİŞ TÜRÜNE GÖRE",
+            ["OrderCounts"] = "SİPARİŞ SAYILARI",
+            ["PeriodBreakdown"] = "DÖNEM DAĞILIMI",
+            ["HourlySales"] = "SAATLİK SATIŞLAR",
+            ["Count"] = "Adet",
+
+            // Time periods
+            ["Morning"] = "Sabah",
+            ["Lunch"] = "Öğle",
+            ["Afternoon"] = "Öğleden Sonra",
+            ["Dinner"] = "Akşam",
+            ["LateNight"] = "Gece"
         },
 
         ["lv"] = new()
@@ -811,7 +967,46 @@ public class LocalizationService : INotifyPropertyChanged
             ["CancellationPlaceholder"] = "piem: Klienta pieprasījums, Nav noliktavā",
             ["OrdersInQueue"] = "pasūtījumi rindā",
             ["ConfirmCancelOrder"] = "Vai tiešām vēlaties atcelt šo pasūtījumu?",
-            ["CancelOrderSuccess"] = "Pasūtījums veiksmīgi atcelts"
+            ["CancelOrderSuccess"] = "Pasūtījums veiksmīgi atcelts",
+
+            // Reporting
+            ["Reports"] = "Atskaites",
+            ["TotalRevenue"] = "Kopējie Ieņēmumi",
+            ["TotalOrders"] = "Kopā Pasūtījumi",
+            ["AvgOrder"] = "Vid. Pasūtījums",
+            ["CompletionRate"] = "Izpildes Rādītājs",
+            ["VsPreviousPeriod"] = "salīdzinot ar iepriekšējo periodu",
+            ["ShowTodayOnly"] = "Tikai Šodien",
+            ["StartDate"] = "Sākuma Datums",
+            ["EndDate"] = "Beigu Datums",
+            ["LoadReport"] = "Ielādēt Atskaiti",
+            ["AllRestaurants"] = "Visi Restorāni",
+            ["AllBranches"] = "Visas Filiāles",
+            ["PerformanceInsight"] = "Veiktspējas Analīze",
+            ["InProgress"] = "Procesā",
+            ["NotAuthorized"] = "Jums nav atļaujas skatīt šo lapu",
+            ["NoDataYet"] = "Nav atskaites datu. Izvēlieties filtrus un nospiediet Ielādēt Atskaiti.",
+
+            // Reporting - new sections
+            ["TopSellingProducts"] = "VISLABĀK PĀRDOTIE PRODUKTI",
+            ["SalesTrends"] = "PĀRDOŠANAS TENDENCES",
+            ["ShowMore"] = "Rādīt vairāk",
+            ["TreniosReporting"] = "Trenios Atskaites",
+            ["DailyPerformanceSummary"] = "Dienas veiktspējas kopsavilkums",
+            ["OrderBreakdown"] = "Pasūtījumu sadalījums",
+            ["OverviewSalesByType"] = "Pārdošanas pārskats pēc piegādes veida",
+            ["ByOrderType"] = "PĒC PASŪTĪJUMA VEIDA",
+            ["OrderCounts"] = "PASŪTĪJUMU SKAITS",
+            ["PeriodBreakdown"] = "PERIODA SADALĪJUMS",
+            ["HourlySales"] = "STUNDAS PĀRDOŠANA",
+            ["Count"] = "Skaits",
+
+            // Time periods
+            ["Morning"] = "Rīts",
+            ["Lunch"] = "Pusdienas",
+            ["Afternoon"] = "Pēcpusdiena",
+            ["Dinner"] = "Vakariņas",
+            ["LateNight"] = "Nakts"
         }
     };
 }

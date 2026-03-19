@@ -7,6 +7,7 @@ namespace Trenios.Mobile.Helpers;
 public static class IconFont
 {
     public const string Add = "\uF119";           // ic_fluent_add_20_regular (61705)
+    public const string DataBarVertical = "\uF2D8"; // ic_fluent_data_bar_vertical_20_regular
     public const string Subtract = "\uEBD0";      // ic_fluent_subtract_20_regular (60368)
     public const string ArrowLeft = "\uF17B";      // ic_fluent_arrow_left_20_regular (61787)
     public const string ArrowRight = "\uF1A1";     // ic_fluent_arrow_right_20_regular (61825)

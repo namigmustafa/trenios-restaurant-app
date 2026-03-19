@@ -200,8 +200,8 @@ public class OrdersViewModel : INotifyPropertyChanged
                 url += $"&status={(int)StatusFilter.Value}";
             }
 
-            url += $"&startDate={StartDate:yyyy-MM-dd}T00:00:00";
-            url += $"&endDate={EndDate:yyyy-MM-dd}T23:59:59";
+            url += $"&startDate={StartDate:yyyy-MM-dd}T00:00:00Z";
+            url += $"&endDate={EndDate:yyyy-MM-dd}T23:59:59Z";
 
             var result = await _apiService.GetAsync<List<OrderResponse>>(url);
 

@@ -74,6 +74,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<ProductService>();
         builder.Services.AddSingleton<OrderService>();
         builder.Services.AddSingleton<TableService>();
+        builder.Services.AddSingleton<ReportingService>();
         builder.Services.AddSingleton<OrderHubService>();
         builder.Services.AddSingleton(_ => LocalizationService.Instance);
 
@@ -85,6 +86,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<OrdersViewModel>();
         builder.Services.AddSingleton<KitchenDisplayViewModel>();
         builder.Services.AddSingleton<TablesViewModel>();
+        builder.Services.AddSingleton<ReportingViewModel>();
+        builder.Services.AddTransient<OrderBreakdownViewModel>();
 
         // Register Pages
         builder.Services.AddTransient<LoginPage>();
@@ -95,6 +98,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<OrdersPage>();
         builder.Services.AddSingleton<KitchenDisplayPage>();
         builder.Services.AddSingleton<TablesPage>();
+        builder.Services.AddSingleton<ReportingPage>();
+        builder.Services.AddTransient<OrderBreakdownPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();
