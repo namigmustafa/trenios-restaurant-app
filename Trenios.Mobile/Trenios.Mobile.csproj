@@ -67,7 +67,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="appsettings.Production.json" />
+	  <None Remove="nul" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<MauiAsset Include="appsettings.json" LogicalName="appsettings.json" />
+		<MauiAsset Include="appsettings.Production.json" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(DefineConstants.Contains('PROD'))">
