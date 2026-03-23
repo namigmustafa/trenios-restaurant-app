@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Input;
+using Trenios.Mobile.Helpers;
 using Trenios.Mobile.Models.Api;
 using Trenios.Mobile.Services;
 
@@ -240,7 +241,7 @@ public class TablesViewModel : INotifyPropertyChanged
             {
                 await ShowAlertAsync(
                     loc["Checkout"],
-                    $"{loc["CheckoutSuccess"]}\n{loc["TotalAmount"]}: €{response.TotalAmount:F2}",
+                    $"{loc["CheckoutSuccess"]}\n{loc["TotalAmount"]}: {CurrencyFormatter.Format(response.TotalAmount)}",
                     loc["OK"]
                 );
 

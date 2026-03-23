@@ -153,7 +153,9 @@ public class POSViewModel : BaseViewModel
 
     public decimal CustomizationAdditionsTotal => _cachedAdditionsTotal;
     public decimal CustomizationItemPrice => _cachedItemPrice;
+    public string CustomizationItemPriceDisplay => Helpers.CurrencyFormatter.Format(_cachedItemPrice);
     public decimal CustomizationTotalPrice => _cachedTotalPrice;
+    public string CustomizationTotalPriceDisplay => Helpers.CurrencyFormatter.Format(_cachedTotalPrice);
 
     public string? ValidationMessage
     {
@@ -164,6 +166,7 @@ public class POSViewModel : BaseViewModel
     public bool HasValidationError => !string.IsNullOrEmpty(_validationMessage);
 
     public decimal Subtotal => _orderService.Subtotal;
+    public string SubtotalDisplay => Helpers.CurrencyFormatter.Format(_orderService.Subtotal);
     public decimal Tax => _orderService.Tax;
     public decimal Total => _orderService.Total;
     public int TotalItems => _orderService.TotalItems;
@@ -552,9 +555,15 @@ public class POSViewModel : BaseViewModel
         if (additionsChanged)
             OnPropertyChanged(nameof(CustomizationAdditionsTotal));
         if (itemPriceChanged)
+        {
             OnPropertyChanged(nameof(CustomizationItemPrice));
+            OnPropertyChanged(nameof(CustomizationItemPriceDisplay));
+        }
         if (totalPriceChanged)
+        {
             OnPropertyChanged(nameof(CustomizationTotalPrice));
+            OnPropertyChanged(nameof(CustomizationTotalPriceDisplay));
+        }
     }
 
     private void ToggleAddition(SelectableAddition addition)
@@ -761,7 +770,7 @@ public class POSViewModel : BaseViewModel
 
             if (order != null)
             {
-                var message = $"Order #{order.OrderNumber}\nTotal: €{order.TotalAmount:F2}";
+                var message = $"Order #{order.OrderNumber}\nTotal: {Helpers.CurrencyFormatter.Format(order.TotalAmount)}";
                 if (order.HasTable)
                 {
                     message += $"\n{order.TableDisplay}";
@@ -916,6 +925,7 @@ public class POSViewModel : BaseViewModel
 
                 // Fire property changes
                 OnPropertyChanged(nameof(Subtotal));
+                OnPropertyChanged(nameof(SubtotalDisplay));
                 OnPropertyChanged(nameof(Tax));
                 OnPropertyChanged(nameof(Total));
                 OnPropertyChanged(nameof(TotalItems));
@@ -1211,6 +1221,7 @@ public class SelectableAddition : INotifyPropertyChanged
             {
                 NotifyPropertyChanged(nameof(Quantity));
                 NotifyPropertyChanged(nameof(TotalPrice));
+                NotifyPropertyChanged(nameof(TotalPriceDisplay));
             }
 
             _parentGroup.OnAdditionChanged();
@@ -1277,6 +1288,7 @@ public class SelectableAddition : INotifyPropertyChanged
 
             NotifyPropertyChanged(nameof(Quantity));
             NotifyPropertyChanged(nameof(TotalPrice));
+            NotifyPropertyChanged(nameof(TotalPriceDisplay));
 
             _parentGroup.OnAdditionChanged();
             _onSelectionChanged?.Invoke();
@@ -1308,6 +1320,9 @@ public class SelectableAddition : INotifyPropertyChanged
 
     public double ItemOpacity => _isDisabled ? 0.4 : 1.0;
     public decimal TotalPrice => UnitPrice * _quantity;
+    public string TotalPriceDisplay => Helpers.CurrencyFormatter.Format(TotalPrice);
+    public string UnitPriceDisplay => Helpers.CurrencyFormatter.Format(UnitPrice);
+    public string UnitPricePlusDisplay => UnitPrice > 0 ? $"+{Helpers.CurrencyFormatter.Format(UnitPrice)}" : string.Empty;
     public bool HasPrice => UnitPrice > 0;
     public decimal Price => UnitPrice; // Backward compatibility
 
@@ -1315,11 +1330,15 @@ public class SelectableAddition : INotifyPropertyChanged
     private static readonly Color PrimaryColor = Application.Current?.Resources.TryGetValue("Primary", out var primary) == true && primary is Color c1 ? c1 : Colors.Orange;
     private static readonly Color Gray200Color = Application.Current?.Resources.TryGetValue("Gray200", out var gray200) == true && gray200 is Color c2 ? c2 : Colors.LightGray;
     private static readonly Color Gray50Color = Application.Current?.Resources.TryGetValue("Gray50", out var gray50) == true && gray50 is Color c3 ? c3 : Color.FromRgb(249, 249, 249);
+    private static readonly Color Gray700Color = Application.Current?.Resources.TryGetValue("Gray700", out var gray700) == true && gray700 is Color c4 ? c4 : Color.FromRgb(55, 65, 81);
+    private static readonly Color Gray800Color = Application.Current?.Resources.TryGetValue("Gray800", out var gray800) == true && gray800 is Color c5 ? c5 : Color.FromRgb(31, 41, 55);
     private static readonly Color WhiteColor = Colors.White;
     private static readonly Color TransparentColor = Colors.Transparent;
 
-    public Color StrokeColor => _isSelected ? PrimaryColor : Gray200Color;
-    public Color BackgroundColor => _isSelected ? Gray50Color : WhiteColor;
+    private static bool IsDark => Application.Current?.RequestedTheme == AppTheme.Dark;
+
+    public Color StrokeColor => _isSelected ? PrimaryColor : (IsDark ? Gray700Color : Gray200Color);
+    public Color BackgroundColor => _isSelected ? (IsDark ? Gray700Color : Gray50Color) : (IsDark ? Gray800Color : WhiteColor);
     public Color CheckboxBackgroundColor => _isSelected ? PrimaryColor : TransparentColor;
 
     public event PropertyChangedEventHandler? PropertyChanged;

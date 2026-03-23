@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Trenios.Mobile.Helpers;
 
 namespace Trenios.Mobile.Models.Api;
 
@@ -106,6 +107,9 @@ public class RestaurantDto
 
     [JsonIgnore]
     public string? DisplayImageUrl => LogoUrl ?? ImageUrl;
+
+    [JsonPropertyName("currency")]
+    public Currency Currency { get; set; } = Currency.EUR;
 
     [JsonPropertyName("branchCount")]
     public int BranchCount { get; set; }

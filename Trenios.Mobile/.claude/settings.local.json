@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet build:*)"
+      "Bash(dotnet build:*)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Projects/Personal/trenios-app-restaurant-app/Trenios/Trenios.Mobile/**)",
+      "Bash(done)",
+      "Bash(findstr /n \"BackgroundColor\\\\|TextColor\\\\|Stroke\\\\|Color\\\\|SearchBar\\\\|Entry\\\\|PlaceholderColor\")"
     ]
   }
 }

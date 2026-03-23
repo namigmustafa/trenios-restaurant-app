@@ -36,7 +36,7 @@ public partial class OrdersPage : ContentPage
     {
         base.OnAppearing();
         // Fire-and-forget: page appears immediately, data loads in background
-        _ = _viewModel.LoadOrdersAsync();
+        _ = _viewModel.InitializeAsync();
     }
 
     private void UpdateLanguageLabels()

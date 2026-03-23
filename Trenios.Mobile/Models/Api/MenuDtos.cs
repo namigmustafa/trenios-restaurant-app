@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Trenios.Mobile.Helpers;
 
 namespace Trenios.Mobile.Models.Api;
 
@@ -115,6 +116,9 @@ public class BranchMenuItemDto
     }
 
     [JsonIgnore]
+    public string PriceDisplay => CurrencyFormatter.Format(Price);
+
+    [JsonIgnore]
     public bool HasImage => !string.IsNullOrEmpty(PrimaryImageUrl);
 }
 
@@ -192,4 +196,7 @@ public class AdditionDto
     // Alias for compatibility
     [JsonIgnore]
     public decimal CurrentPrice => AdditionalCost;
+
+    [JsonIgnore]
+    public string AdditionalCostDisplay => CurrencyFormatter.Format(AdditionalCost);
 }

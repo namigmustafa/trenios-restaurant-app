@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Trenios.Mobile.Helpers;
 using Trenios.Mobile.Models.Api;
 using Trenios.Mobile.Services;
 
@@ -102,6 +103,7 @@ public class RestaurantSelectionViewModel : BaseViewModel
 
         _productService.ClearCache();
         _authService.SetSelectedRestaurant(restaurant.Id, restaurant.Name, restaurant);
+        CurrencyFormatter.Current = restaurant.Currency;
         await Shell.Current.GoToAsync("//BranchSelection");
     }
 

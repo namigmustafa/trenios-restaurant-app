@@ -25,7 +25,7 @@
                     </Border.GestureRecognizers>
                     <Grid RowDefinitions="100,Auto">
                         <!-- Image or Placeholder on Top -->
-                        <Grid Grid.Row="0" BackgroundColor="{StaticResource Gray100}">
+                        <Grid Grid.Row="0" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray700}}">
                             <Image Source="{Binding PrimaryImageUrl}"
                                    Aspect="AspectFit"
                                    IsVisible="{Binding HasImage}"/>
@@ -47,7 +47,7 @@
                                    LineBreakMode="TailTruncation"
                                    MaxLines="2"
                                    HeightRequest="38"/>
-                            <Label Text="{Binding Price, StringFormat='€{0:F2}'}"
+                            <Label Text="{Binding PriceDisplay}"
                                    FontSize="16"
                                    FontFamily="OpenSansSemibold"
                                    TextColor="{StaticResource Primary}"/>
@@ -71,7 +71,7 @@
 
                         <!-- Price -->
                         <Label Grid.Row="0" Grid.Column="1"
-                               Text="{Binding TotalPrice, StringFormat='€{0:F2}'}"
+                               Text="{Binding TotalPriceDisplay}"
                                Style="{StaticResource Price}"
                                FontSize="14"/>
 
@@ -121,13 +121,13 @@
             <!-- Left: Products -->
             <Grid Grid.Column="0"
                   RowDefinitions="Auto,*"
-                  BackgroundColor="{StaticResource Gray100}">
+                  BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
 
                 <!-- Top section: Header + Info + Search + Categories -->
-                <VerticalStackLayout Grid.Row="0" Spacing="0" BackgroundColor="White">
+                <VerticalStackLayout Grid.Row="0" Spacing="0" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}">
 
                     <!-- Header bar: Logo · Language · Logout -->
-                    <Border StrokeThickness="0" BackgroundColor="White"
+                    <Border StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                             HeightRequest="96" Padding="20,0">
                         <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                             <!-- Logo -->
@@ -141,7 +141,7 @@
                             <Border Grid.Column="1"
                                     StrokeShape="RoundRectangle 8"
                                     StrokeThickness="1.5"
-                                    Stroke="{StaticResource Gray200}"
+                                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
                                     BackgroundColor="Transparent"
                                     Padding="16,10"
                                     VerticalOptions="Center">
@@ -152,7 +152,7 @@
                                        Text="EN"
                                        FontFamily="OpenSansSemibold"
                                        FontSize="14"
-                                       TextColor="{StaticResource Gray700}"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
                                        VerticalOptions="Center"
                                        HorizontalOptions="Center"/>
                             </Border>
@@ -177,16 +177,16 @@
                     </Border>
 
                     <!-- Divider -->
-                    <BoxView HeightRequest="1" BackgroundColor="{StaticResource Gray200}"/>
+                    <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"/>
 
                     <!-- Restaurant · Branch info row -->
                     <Grid Padding="20,12" ColumnDefinitions="Auto,*" ColumnSpacing="12"
-                          BackgroundColor="White">
+                          BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}">
                         <Border Grid.Column="0"
                                 StrokeShape="RoundRectangle 10"
                                 StrokeThickness="0"
                                 HeightRequest="44" WidthRequest="44"
-                                BackgroundColor="{StaticResource Gray100}"
+                                BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray700}}"
                                 VerticalOptions="Center">
                             <Image Source="{Binding RestaurantLogoUrl}"
                                    Aspect="AspectFill"
@@ -197,7 +197,7 @@
                                 <FormattedString>
                                     <Span Text="{Binding RestaurantName}"
                                           FontFamily="OpenSansSemibold"
-                                          TextColor="{StaticResource Gray900}"/>
+                                          TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
                                     <Span Text=" · " TextColor="{StaticResource Gray400}"/>
                                     <Span Text="{Binding BranchName}" TextColor="{StaticResource Gray600}"/>
                                 </FormattedString>
@@ -210,8 +210,8 @@
                             Padding="14,0"
                             StrokeShape="RoundRectangle 12"
                             StrokeThickness="1"
-                            Stroke="{StaticResource Gray200}"
-                            BackgroundColor="White"
+                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                             HeightRequest="50">
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                             <Label Text="🔍" FontSize="16" TextColor="{StaticResource Gray400}" VerticalOptions="Center"/>
@@ -232,27 +232,23 @@
                         <HorizontalStackLayout Spacing="10">
                             <!-- All pill -->
                             <Border StrokeShape="RoundRectangle 20" StrokeThickness="1"
+                                    BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource Gray800}}"
+                                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
                                     Padding="18,0" HeightRequest="40" VerticalOptions="Center">
                                 <Border.Triggers>
                                     <DataTrigger TargetType="Border" Binding="{Binding IsAllSelected}" Value="True">
                                         <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
                                         <Setter Property="Stroke" Value="{StaticResource Primary}"/>
                                     </DataTrigger>
-                                    <DataTrigger TargetType="Border" Binding="{Binding IsAllSelected}" Value="False">
-                                        <Setter Property="BackgroundColor" Value="White"/>
-                                        <Setter Property="Stroke" Value="{StaticResource Gray200}"/>
-                                    </DataTrigger>
                                 </Border.Triggers>
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding SelectAllCategoriesCommand}"/>
                                 </Border.GestureRecognizers>
-                                <Label Text="{h:Translate All}" FontFamily="OpenSansSemibold" FontSize="14" VerticalOptions="Center">
+                                <Label Text="{h:Translate All}" FontFamily="OpenSansSemibold" FontSize="14" VerticalOptions="Center"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}">
                                     <Label.Triggers>
                                         <DataTrigger TargetType="Label" Binding="{Binding IsAllSelected}" Value="True">
                                             <Setter Property="TextColor" Value="White"/>
-                                        </DataTrigger>
-                                        <DataTrigger TargetType="Label" Binding="{Binding IsAllSelected}" Value="False">
-                                            <Setter Property="TextColor" Value="{StaticResource Gray600}"/>
                                         </DataTrigger>
                                     </Label.Triggers>
                                 </Label>
@@ -264,15 +260,13 @@
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate x:DataType="vm:SelectableCategory">
                                         <Border StrokeShape="RoundRectangle 20" StrokeThickness="1"
+                                                BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource Gray800}}"
+                                                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
                                                 Padding="18,0" HeightRequest="40" VerticalOptions="Center">
                                             <Border.Triggers>
                                                 <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
                                                     <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
                                                     <Setter Property="Stroke" Value="{StaticResource Primary}"/>
-                                                </DataTrigger>
-                                                <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="False">
-                                                    <Setter Property="BackgroundColor" Value="White"/>
-                                                    <Setter Property="Stroke" Value="{StaticResource Gray200}"/>
                                                 </DataTrigger>
                                             </Border.Triggers>
                                             <Border.GestureRecognizers>
@@ -280,13 +274,11 @@
                                                     Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectCategoryCommand}"
                                                     CommandParameter="{Binding .}"/>
                                             </Border.GestureRecognizers>
-                                            <Label Text="{Binding Name}" FontFamily="OpenSansSemibold" FontSize="14" VerticalOptions="Center">
+                                            <Label Text="{Binding Name}" FontFamily="OpenSansSemibold" FontSize="14" VerticalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}">
                                                 <Label.Triggers>
                                                     <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
                                                         <Setter Property="TextColor" Value="White"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="False">
-                                                        <Setter Property="TextColor" Value="{StaticResource Gray600}"/>
                                                     </DataTrigger>
                                                 </Label.Triggers>
                                             </Label>
@@ -387,7 +379,7 @@
                            Style="{StaticResource Title}"
                            VerticalOptions="Center"/>
                     <Label Grid.Column="1"
-                           Text="{Binding Subtotal, StringFormat='€{0:F2}'}"
+                           Text="{Binding SubtotalDisplay}"
                            Style="{StaticResource TotalPrice}"/>
                 </Grid>
 
@@ -406,26 +398,26 @@
         <Grid x:Name="PhoneLayout"
               RowDefinitions="Auto,*,Auto"
               IsVisible="True"
-              BackgroundColor="{StaticResource Gray100}">
+              BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
 
             <!-- Header section: Logo + Info + Search + Categories -->
-            <VerticalStackLayout Grid.Row="0" x:Name="PhoneHeader" Spacing="0" BackgroundColor="White">
+            <VerticalStackLayout Grid.Row="0" x:Name="PhoneHeader" Spacing="0" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}">
 
                 <!-- Top bar: Logo · Language · Logout -->
-                <Border StrokeThickness="0" BackgroundColor="White" HeightRequest="72" Padding="16,0">
+                <Border StrokeThickness="0" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}" HeightRequest="72" Padding="16,0">
                     <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                         <Image Source="trenios_logo_red.png" HeightRequest="100" WidthRequest="100"
                                Aspect="AspectFit" HorizontalOptions="Start" VerticalOptions="Center"/>
                         <Border Grid.Column="1"
                                 StrokeShape="RoundRectangle 8" StrokeThickness="1.5"
-                                Stroke="{StaticResource Gray200}" BackgroundColor="Transparent"
+                                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}" BackgroundColor="Transparent"
                                 Padding="14,8" VerticalOptions="Center">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnLanguageTapped"/>
                             </Border.GestureRecognizers>
                             <Label x:Name="CurrentLanguageLabelPhone" Text="EN"
                                    FontFamily="OpenSansSemibold" FontSize="13"
-                                   TextColor="{StaticResource Gray700}"
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
                                    VerticalOptions="Center" HorizontalOptions="Center"/>
                         </Border>
                         <Border Grid.Column="2"
@@ -441,12 +433,12 @@
                     </Grid>
                 </Border>
 
-                <BoxView HeightRequest="1" BackgroundColor="{StaticResource Gray200}"/>
+                <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"/>
 
                 <!-- Restaurant · Branch info -->
-                <Grid Padding="16,10" ColumnDefinitions="Auto,*" ColumnSpacing="10" BackgroundColor="White">
+                <Grid Padding="16,10" ColumnDefinitions="Auto,*" ColumnSpacing="10" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}">
                     <Border Grid.Column="0" StrokeShape="RoundRectangle 8" StrokeThickness="0"
-                            HeightRequest="36" WidthRequest="36" BackgroundColor="{StaticResource Gray100}"
+                            HeightRequest="36" WidthRequest="36" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray700}}"
                             VerticalOptions="Center">
                         <Image Source="{Binding RestaurantLogoUrl}" Aspect="AspectFill"
                                IsVisible="{Binding HasRestaurantLogo}"/>
@@ -455,7 +447,7 @@
                         <Label.FormattedText>
                             <FormattedString>
                                 <Span Text="{Binding RestaurantName}" FontFamily="OpenSansSemibold"
-                                      TextColor="{StaticResource Gray900}"/>
+                                      TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
                                 <Span Text=" · " TextColor="{StaticResource Gray400}"/>
                                 <Span Text="{Binding BranchName}" TextColor="{StaticResource Gray600}"/>
                             </FormattedString>
@@ -466,7 +458,7 @@
                 <!-- Search bar -->
                 <Border Margin="12,0,12,10" Padding="12,0"
                         StrokeShape="RoundRectangle 12" StrokeThickness="1"
-                        Stroke="{StaticResource Gray200}" BackgroundColor="White" HeightRequest="46">
+                        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}" HeightRequest="46">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
                         <Label Text="🔍" FontSize="14" TextColor="{StaticResource Gray400}" VerticalOptions="Center"/>
                         <Entry Grid.Column="1" Text="{Binding SearchText, Mode=TwoWay}"
@@ -481,27 +473,23 @@
                             Padding="12,0,12,12" HeightRequest="52">
                     <HorizontalStackLayout Spacing="8">
                         <Border StrokeShape="RoundRectangle 20" StrokeThickness="1"
+                                BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource Gray800}}"
+                                Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
                                 Padding="16,0" HeightRequest="36" VerticalOptions="Center">
                             <Border.Triggers>
                                 <DataTrigger TargetType="Border" Binding="{Binding IsAllSelected}" Value="True">
                                     <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
                                     <Setter Property="Stroke" Value="{StaticResource Primary}"/>
                                 </DataTrigger>
-                                <DataTrigger TargetType="Border" Binding="{Binding IsAllSelected}" Value="False">
-                                    <Setter Property="BackgroundColor" Value="White"/>
-                                    <Setter Property="Stroke" Value="{StaticResource Gray200}"/>
-                                </DataTrigger>
                             </Border.Triggers>
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding SelectAllCategoriesCommand}"/>
                             </Border.GestureRecognizers>
-                            <Label Text="{h:Translate All}" FontFamily="OpenSansSemibold" FontSize="13" VerticalOptions="Center">
+                            <Label Text="{h:Translate All}" FontFamily="OpenSansSemibold" FontSize="13" VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}">
                                 <Label.Triggers>
                                     <DataTrigger TargetType="Label" Binding="{Binding IsAllSelected}" Value="True">
                                         <Setter Property="TextColor" Value="White"/>
-                                    </DataTrigger>
-                                    <DataTrigger TargetType="Label" Binding="{Binding IsAllSelected}" Value="False">
-                                        <Setter Property="TextColor" Value="{StaticResource Gray600}"/>
                                     </DataTrigger>
                                 </Label.Triggers>
                             </Label>
@@ -510,15 +498,13 @@
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="vm:SelectableCategory">
                                     <Border StrokeShape="RoundRectangle 20" StrokeThickness="1"
+                                            BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource Gray800}}"
+                                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
                                             Padding="16,0" HeightRequest="36" VerticalOptions="Center">
                                         <Border.Triggers>
                                             <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
                                                 <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
                                                 <Setter Property="Stroke" Value="{StaticResource Primary}"/>
-                                            </DataTrigger>
-                                            <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="False">
-                                                <Setter Property="BackgroundColor" Value="White"/>
-                                                <Setter Property="Stroke" Value="{StaticResource Gray200}"/>
                                             </DataTrigger>
                                         </Border.Triggers>
                                         <Border.GestureRecognizers>
@@ -526,13 +512,11 @@
                                                 Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectCategoryCommand}"
                                                 CommandParameter="{Binding .}"/>
                                         </Border.GestureRecognizers>
-                                        <Label Text="{Binding Name}" FontFamily="OpenSansSemibold" FontSize="13" VerticalOptions="Center">
+                                        <Label Text="{Binding Name}" FontFamily="OpenSansSemibold" FontSize="13" VerticalOptions="Center"
+                                               TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}">
                                             <Label.Triggers>
                                                 <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
                                                     <Setter Property="TextColor" Value="White"/>
-                                                </DataTrigger>
-                                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="False">
-                                                    <Setter Property="TextColor" Value="{StaticResource Gray600}"/>
                                                 </DataTrigger>
                                             </Label.Triggers>
                                         </Label>
@@ -547,7 +531,7 @@
             <!-- Main Content Area -->
             <Grid Grid.Row="1" x:Name="PhoneContentGrid">
                 <!-- Products View -->
-                <Grid x:Name="PhoneProductsView" BackgroundColor="{StaticResource Gray100}">
+                <Grid x:Name="PhoneProductsView" BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
                     <!-- Products Grid - 3 columns on phone -->
                     <Grid>
                         <CollectionView ItemsSource="{Binding FilteredMenuItems}"
@@ -624,7 +608,7 @@
                                Style="{StaticResource Title}"
                                VerticalOptions="Center"/>
                         <Label Grid.Column="1"
-                               Text="{Binding Subtotal, StringFormat='€{0:F2}'}"
+                               Text="{Binding SubtotalDisplay}"
                                Style="{StaticResource TotalPrice}"/>
                     </Grid>
 
@@ -675,7 +659,7 @@
                                 <FormattedString>
                                     <Span Text="{h:Translate ShowOrders}"/>
                                     <Span Text=" - "/>
-                                    <Span Text="{Binding Subtotal, StringFormat='€{0:F2}'}"/>
+                                    <Span Text="{Binding SubtotalDisplay}"/>
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
@@ -717,7 +701,7 @@
                                FontSize="24"
                                LineBreakMode="TailTruncation"/>
                         <Label Grid.Column="1"
-                               Text="{Binding SelectedMenuItem.Price, StringFormat='€{0:F2}'}"
+                               Text="{Binding SelectedMenuItem.PriceDisplay}"
                                TextColor="White"
                                FontFamily="OpenSansSemibold"
                                FontSize="22"/>
@@ -727,7 +711,7 @@
                     <Grid Grid.Row="1"
                           Padding="24,18"
                           ColumnDefinitions="Auto,*,Auto"
-                          BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}">
+                          BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray800}}">
                         <Label Text="{h:Translate Quantity}"
                                FontFamily="OpenSansSemibold"
                                FontSize="20"
@@ -837,7 +821,7 @@
                                                                VerticalOptions="Center"/>
                                                         <!-- Price -->
                                                         <Label Grid.Column="2"
-                                                               Text="{Binding UnitPrice, StringFormat='+€{0:F2}'}"
+                                                               Text="{Binding UnitPricePlusDisplay}"
                                                                FontSize="14"
                                                                TextColor="{StaticResource Primary}"
                                                                VerticalOptions="Center"
@@ -904,7 +888,7 @@
                                                                 <Label Text="{Binding Name}"
                                                                        FontSize="16"/>
                                                             </HorizontalStackLayout>
-                                                            <Label Text="{Binding UnitPrice, StringFormat='€{0:F2} each'}"
+                                                            <Label Text="{Binding UnitPriceDisplay, StringFormat='{0} each'}"
                                                                    FontSize="13"
                                                                    TextColor="{StaticResource Gray500}"
                                                                    IsVisible="{Binding HasPrice}"/>
@@ -920,7 +904,7 @@
                                                                     HeightRequest="34"
                                                                     StrokeShape="RoundRectangle 17"
                                                                     StrokeThickness="0"
-                                                                    BackgroundColor="{StaticResource Gray200}">
+                                                                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
                                                                 <Border.GestureRecognizers>
                                                                     <TapGestureRecognizer Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.DecreaseAdditionQuantityCommand}"
                                                                                           CommandParameter="{Binding .}"/>
@@ -962,7 +946,7 @@
                                                             </Border>
 
                                                             <!-- Total Price -->
-                                                            <Label Text="{Binding TotalPrice, StringFormat='€{0:F2}'}"
+                                                            <Label Text="{Binding TotalPriceDisplay}"
                                                                    FontSize="15"
                                                                    FontFamily="OpenSansSemibold"
                                                                    TextColor="{StaticResource Primary}"
@@ -995,15 +979,15 @@
                                        Style="{StaticResource Caption}"/>
                                 <Label Style="{StaticResource Caption}">
                                     <Label.Text>
-                                        <MultiBinding StringFormat="€{0:F2} x {1}">
-                                            <Binding Path="CustomizationItemPrice"/>
+                                        <MultiBinding StringFormat="{}{0} x {1}">
+                                            <Binding Path="CustomizationItemPriceDisplay"/>
                                             <Binding Path="CustomizationQuantity"/>
                                         </MultiBinding>
                                     </Label.Text>
                                 </Label>
                             </VerticalStackLayout>
                             <Label Grid.Column="1"
-                                   Text="{Binding CustomizationTotalPrice, StringFormat='€{0:F2}'}"
+                                   Text="{Binding CustomizationTotalPriceDisplay}"
                                    FontFamily="OpenSansSemibold"
                                    FontSize="22"
                                    TextColor="{StaticResource Primary}"
@@ -1041,7 +1025,7 @@
         <Grid IsVisible="{Binding IsBusy}"
               BackgroundColor="#80000000"
               ZIndex="200">
-            <Frame BackgroundColor="{StaticResource White}"
+            <Frame BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                    CornerRadius="16"
                    Padding="40,30"
                    HasShadow="True"
@@ -1064,7 +1048,7 @@
         <Grid IsVisible="{Binding IsLoadingAdditions}"
               BackgroundColor="#CC000000"
               ZIndex="250">
-            <Frame BackgroundColor="{StaticResource White}"
+            <Frame BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                    CornerRadius="16"
                    Padding="40,30"
                    HasShadow="True"

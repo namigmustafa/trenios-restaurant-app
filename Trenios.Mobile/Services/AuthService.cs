@@ -1,3 +1,4 @@
+using Trenios.Mobile.Helpers;
 using Trenios.Mobile.Models.Api;
 
 namespace Trenios.Mobile.Services;
@@ -145,6 +146,7 @@ public class AuthService
         {
             CurrentBranch = CurrentUser.Branch;
             SelectedBranchId = CurrentUser.EffectiveBranchId;
+            CurrencyFormatter.Current = CurrentUser.Restaurant?.Currency ?? Currency.EUR;
         }
 
         OnAuthStateChanged?.Invoke();

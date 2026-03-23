@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.LifecycleEvents;
 using Plugin.Maui.Audio;
 using Trenios.Mobile.Pages;
 using Trenios.Mobile.Services;
@@ -31,7 +32,23 @@ public static class MauiProgram
                     handler.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #endif
                 });
-            });
+            })
+#if IOS
+            .ConfigureLifecycleEvents(events =>
+            {
+                events.AddiOS(ios => ios.FinishedLaunching((app, launchOptions) =>
+                {
+                    var appearance = new UIKit.UITabBarAppearance();
+                    appearance.ConfigureWithOpaqueBackground();
+                    appearance.ShadowColor = UIKit.UIColor.Clear;
+                    UIKit.UITabBar.Appearance.StandardAppearance = appearance;
+                    if (UIKit.UIDevice.CurrentDevice.CheckSystemVersion(15, 0))
+                        UIKit.UITabBar.Appearance.ScrollEdgeAppearance = appearance;
+                    return true;
+                }));
+            })
+#endif
+            ;
 
         // Load appsettings
         using var defaultSettings = FileSystem.OpenAppPackageFileAsync("appsettings.json").Result;

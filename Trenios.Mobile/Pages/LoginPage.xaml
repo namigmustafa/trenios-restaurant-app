@@ -6,7 +6,7 @@
              x:Class="Trenios.Mobile.Pages.LoginPage"
              x:DataType="vm:LoginViewModel"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="{StaticResource White}">
+             BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray900}}">
 
     <Grid>
         <!-- Main content — VerticalOptions="Center" centers within the Grid -->
@@ -26,12 +26,12 @@
                     <Label Text="{h:Translate Username}"
                            FontFamily="OpenSansSemibold"
                            FontSize="14"
-                           TextColor="{StaticResource Gray800}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray800}, Dark={StaticResource Gray200}}"
                            Margin="0,0,0,8"/>
                     <Border StrokeShape="RoundRectangle 14"
                             StrokeThickness="1"
-                            Stroke="{StaticResource Gray200}"
-                            BackgroundColor="{StaticResource White}"
+                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                             Padding="16,0"
                             Margin="0,0,0,20">
                         <Border.Triggers>
@@ -51,12 +51,12 @@
                     <Label Text="{h:Translate Password}"
                            FontFamily="OpenSansSemibold"
                            FontSize="14"
-                           TextColor="{StaticResource Gray800}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray800}, Dark={StaticResource Gray200}}"
                            Margin="0,0,0,8"/>
                     <Border StrokeShape="RoundRectangle 14"
                             StrokeThickness="1"
-                            Stroke="{StaticResource Gray200}"
-                            BackgroundColor="{StaticResource White}"
+                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                             Padding="16,0"
                             Margin="0,0,0,4">
                         <Border.Triggers>
@@ -114,8 +114,8 @@
                     <Border x:Name="LanguageDropdown"
                             StrokeShape="RoundRectangle 12"
                             StrokeThickness="1"
-                            Stroke="{StaticResource Gray200}"
-                            BackgroundColor="{StaticResource White}"
+                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                             HeightRequest="44"
                             Margin="0,16,0,0">
                         <Border.GestureRecognizers>
@@ -151,7 +151,7 @@
                     HorizontalOptions="Center"
                     StrokeShape="RoundRectangle 16"
                     StrokeThickness="0"
-                    BackgroundColor="{StaticResource White}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                     Padding="0"
                     WidthRequest="300">
                 <Border.GestureRecognizers>

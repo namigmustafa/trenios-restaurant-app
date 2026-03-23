@@ -22,6 +22,7 @@ public class OrdersViewModel : INotifyPropertyChanged
 {
     private readonly ApiService _apiService;
     private readonly AuthService _authService;
+    private readonly OrderHubService _orderHubService;
 
     private bool _isLoading;
     private bool _isRefreshing;
@@ -169,10 +170,11 @@ public class OrdersViewModel : INotifyPropertyChanged
     public ICommand CancelOrderSwipeCommand { get; }
     public ICommand LogoutCommand { get; }
 
-    public OrdersViewModel(ApiService apiService, AuthService authService)
+    public OrdersViewModel(ApiService apiService, AuthService authService, OrderHubService orderHubService)
     {
         _apiService = apiService;
         _authService = authService;
+        _orderHubService = orderHubService;
 
         LoadOrdersCommand = new Command(async () => await LoadOrdersAsync());
         RefreshCommand = new Command(async () => await RefreshAsync());
@@ -183,6 +185,19 @@ public class OrdersViewModel : INotifyPropertyChanged
         CompleteOrderSwipeCommand = new Command<OrderResponse>(async (order) => await CompleteOrderAsync(order));
         CancelOrderSwipeCommand = new Command<OrderResponse>(async (order) => await CancelOrderAsync(order));
         LogoutCommand = new Command(async () => await LogoutAsync());
+
+        // Subscribe to real-time hub events
+        _orderHubService.OnOrderCreated += HandleOrderCreated;
+        _orderHubService.OnOrderStatusUpdated += HandleOrderStatusUpdated;
+    }
+
+    public async Task InitializeAsync()
+    {
+        var branchId = _authService.GetEffectiveBranchId();
+        if (branchId.HasValue)
+            await _orderHubService.ConnectAsync(branchId.Value);
+
+        await LoadOrdersAsync();
     }
 
     public async Task LoadOrdersAsync()
@@ -218,17 +233,59 @@ public class OrdersViewModel : INotifyPropertyChanged
                 foreach (var order in sorted)
                     Orders.Add(order);
 
-                GroupedOrders = sorted
-                    .GroupBy(o => o.PlacedAt.ToLocalTime().Date)
-                    .OrderByDescending(g => g.Key)
-                    .Select(g => new OrderGroup(g.Key, GetDateLabel(g.Key), g))
-                    .ToList();
+                RebuildGroups();
             }
         }
         finally
         {
             IsLoading = false;
         }
+    }
+
+    private void RebuildGroups()
+    {
+        GroupedOrders = Orders
+            .OrderByDescending(o => o.PlacedAt)
+            .GroupBy(o => o.PlacedAt.ToLocalTime().Date)
+            .OrderByDescending(g => g.Key)
+            .Select(g => new OrderGroup(g.Key, GetDateLabel(g.Key), g))
+            .ToList();
+    }
+
+    // Updates a single order in the local collection without a full reload.
+    // Used by hub event handlers and after PATCH responses to avoid race conditions.
+    private void ApplyOrderUpdate(OrderResponse updatedOrder)
+    {
+        bool matchesDate = updatedOrder.PlacedAt.ToLocalTime().Date >= StartDate.Date
+                        && updatedOrder.PlacedAt.ToLocalTime().Date <= EndDate.Date;
+        bool matchesFilter = !StatusFilter.HasValue || updatedOrder.OrderStatus == StatusFilter.Value;
+
+        var existing = Orders.FirstOrDefault(o => o.Id == updatedOrder.Id);
+
+        if (existing != null)
+        {
+            if (matchesFilter && matchesDate)
+            {
+                var idx = Orders.IndexOf(existing);
+                Orders[idx] = updatedOrder;
+            }
+            else
+            {
+                Orders.Remove(existing);
+            }
+        }
+        else if (matchesFilter && matchesDate)
+        {
+            // Insert maintaining descending PlacedAt order
+            var insertIdx = Orders.ToList().FindIndex(o => o.PlacedAt < updatedOrder.PlacedAt);
+            if (insertIdx < 0) Orders.Add(updatedOrder);
+            else Orders.Insert(insertIdx, updatedOrder);
+        }
+
+        RebuildGroups();
+
+        if (SelectedOrder?.Id == updatedOrder.Id)
+            SelectedOrder = Orders.FirstOrDefault(o => o.Id == updatedOrder.Id);
     }
 
     private static string GetDateLabel(DateTime date)
@@ -296,11 +353,10 @@ public class OrdersViewModel : INotifyPropertyChanged
 
         if (result.IsSuccess)
         {
-            // Reload orders to get updated data
-            await LoadOrdersAsync();
-
-            // Update selected order
-            SelectedOrder = Orders.FirstOrDefault(o => o.Id == SelectedOrder?.Id);
+            if (result.Data != null)
+                ApplyOrderUpdate(result.Data);
+            else
+                _ = LoadOrdersAsync(); // fallback if API returns no body
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
@@ -322,7 +378,10 @@ public class OrdersViewModel : INotifyPropertyChanged
 
         if (result.IsSuccess)
         {
-            await LoadOrdersAsync();
+            if (result.Data != null)
+                ApplyOrderUpdate(result.Data);
+            else
+                _ = LoadOrdersAsync();
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
@@ -359,12 +418,25 @@ public class OrdersViewModel : INotifyPropertyChanged
 
         if (result.IsSuccess)
         {
-            await LoadOrdersAsync();
+            if (result.Data != null)
+                ApplyOrderUpdate(result.Data);
+            else
+                _ = LoadOrdersAsync();
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
             await Application.Current?.MainPage?.DisplayAlert(loc["Error"], result.ErrorMessage, loc["OK"]);
         }
+    }
+
+    private void HandleOrderCreated(OrderResponse order)
+    {
+        ApplyOrderUpdate(order);
+    }
+
+    private void HandleOrderStatusUpdated(OrderResponse order)
+    {
+        ApplyOrderUpdate(order);
     }
 
     private async Task LogoutAsync()

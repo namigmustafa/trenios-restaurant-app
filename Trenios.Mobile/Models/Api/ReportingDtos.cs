@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Trenios.Mobile.Helpers;
 using Trenios.Mobile.Services;
 
 namespace Trenios.Mobile.Models.Api;
@@ -52,10 +53,10 @@ public class SalesSummaryReport
     public int InProgressOrders => TotalOrders - CompletedOrders - CancelledOrders;
 
     [JsonIgnore]
-    public string TotalRevenueDisplay => $"€{TotalRevenue:F2}";
+    public string TotalRevenueDisplay => CurrencyFormatter.Format(TotalRevenue);
 
     [JsonIgnore]
-    public string AverageOrderValueDisplay => $"€{AverageOrderValue:F2}";
+    public string AverageOrderValueDisplay => CurrencyFormatter.Format(AverageOrderValue);
 
     [JsonIgnore]
     public string CompletionRateDisplay => $"{CompletionRate:F1}%";
@@ -145,7 +146,7 @@ public class OrdersSummaryReport
     public int CancelledOrders { get; set; }
 
     [JsonIgnore]
-    public string TotalRevenueDisplay => $"€{TotalRevenue:F2}";
+    public string TotalRevenueDisplay => CurrencyFormatter.Format(TotalRevenue);
 }
 
 public class OrderTypeReport
@@ -184,7 +185,7 @@ public class OrderTypeItem
     public OrderTypePreviousPeriod? PreviousPeriod { get; set; }
 
     [JsonIgnore]
-    public string RevenueDisplay => $"€{Revenue:F2}";
+    public string RevenueDisplay => CurrencyFormatter.Format(Revenue);
 
     [JsonIgnore]
     public string PercentDisplay => $"{PercentOfTotal:F1}%";
@@ -279,7 +280,7 @@ public class SalesPeriodItem
     public decimal PercentOfTotal { get; set; }
 
     [JsonIgnore]
-    public string RevenueDisplay => $"€{Revenue:F2}";
+    public string RevenueDisplay => CurrencyFormatter.Format(Revenue);
 
     [JsonIgnore]
     public string PercentDisplay => $"{PercentOfTotal:F1}%";
@@ -355,7 +356,7 @@ public class SalesHourItem
     public decimal PercentOfTotal { get; set; }
 
     [JsonIgnore]
-    public string RevenueDisplay => $"€{Revenue:F2}";
+    public string RevenueDisplay => CurrencyFormatter.Format(Revenue);
 
     [JsonIgnore]
     public string OrdersDisplay => $"{Orders} {LocalizationService.Instance.Get("Orders")}";
@@ -420,7 +421,7 @@ public class TopSellingItem
     public decimal PercentOfTotal { get; set; }
 
     [JsonIgnore]
-    public string RevenueDisplay => $"€{Revenue:F2}";
+    public string RevenueDisplay => CurrencyFormatter.Format(Revenue);
 
     [JsonIgnore]
     public string PercentDisplay => $"{PercentOfTotal:F1}%";
@@ -480,7 +481,7 @@ public class SalesTrendsReport
         : Color.FromRgb(231, 76, 60);
 
     [JsonIgnore]
-    public string AveragePerPeriodDisplay => $"€{AveragePerPeriod:F2}";
+    public string AveragePerPeriodDisplay => CurrencyFormatter.Format(AveragePerPeriod);
 }
 
 public class SalesTrendDataPoint
@@ -501,11 +502,11 @@ public class SalesTrendDataPoint
     public decimal AverageOrderValue { get; set; }
 
     [JsonIgnore]
-    public string RevenueDisplay => $"€{Revenue:F2}";
+    public string RevenueDisplay => CurrencyFormatter.Format(Revenue);
 
     [JsonIgnore]
     public string OrdersDisplay => $"{Orders} {LocalizationService.Instance.Get("Orders")}";
 
     [JsonIgnore]
-    public string AverageOrderValueDisplay => $"€{AverageOrderValue:F2} avg";
+    public string AverageOrderValueDisplay => $"{CurrencyFormatter.Format(AverageOrderValue)} avg";
 }
