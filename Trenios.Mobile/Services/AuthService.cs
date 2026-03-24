@@ -141,12 +141,15 @@ public class AuthService
         // Clear previous selections when logging in as different user
         ClearSelections();
 
+        // Set currency for any user with a known restaurant (SuperAdmin has none at login — set later in RestaurantSelectionViewModel)
+        CurrencyFormatter.Current = CurrentUser.Restaurant?.Currency ?? Currency.EUR;
+
         // For BranchManager/Cashier, pre-populate branch from JWT so POSViewModel works immediately
         if (CurrentUser.CanGoDirectlyToPOS)
         {
             CurrentBranch = CurrentUser.Branch;
             SelectedBranchId = CurrentUser.EffectiveBranchId;
-            CurrencyFormatter.Current = CurrentUser.Restaurant?.Currency ?? Currency.EUR;
+            SelectedRestaurant = CurrentUser.Restaurant;
         }
 
         OnAuthStateChanged?.Invoke();
