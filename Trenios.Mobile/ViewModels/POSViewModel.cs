@@ -169,6 +169,9 @@ public class POSViewModel : BaseViewModel
     public string SubtotalDisplay => Helpers.CurrencyFormatter.Format(_orderService.Subtotal);
     public decimal Tax => _orderService.Tax;
     public decimal Total => _orderService.Total;
+    public decimal DiscountAmount => _orderService.CartDiscountAmount;
+    public string DiscountAmountDisplay => $"-{Helpers.CurrencyFormatter.Format(_orderService.CartDiscountAmount)}";
+    public bool HasCartDiscount => _orderService.HasCartDiscount;
     public int TotalItems => _orderService.TotalItems;
     public bool HasItems => _orderService.HasItems;
     public bool CanRepeat => _orderService.LastCompletedOrder != null;
@@ -642,9 +645,36 @@ public class POSViewModel : BaseViewModel
                 SelectedMenuItem,
                 quantity: CustomizationQuantity,
                 additions: selectedAdditions);
+
+            // Resolve current prices and discounts from backend
+            _ = RefreshCartDiscountsAsync();
         }
 
         CancelCustomization();
+    }
+
+    /// <summary>
+    /// Calls validate-cart and applies the backend-resolved prices/discounts to CartState.
+    /// Runs fire-and-forget after item adds — this updates discount badges and strikethrough
+    /// prices for display. Submission always does its own validate-cart call for correctness.
+    /// </summary>
+    private async Task RefreshCartDiscountsAsync()
+    {
+        if (!_orderService.HasItems) return;
+
+        try
+        {
+            System.Diagnostics.Debug.WriteLine("[RefreshCartDiscounts] Calling validate-cart for badge display...");
+            var (response, error) = await _orderService.ValidateCartAsync();
+            System.Diagnostics.Debug.WriteLine($"[RefreshCartDiscounts] validate-cart done: success={response != null}, error={error}");
+            if (response != null)
+                _orderService.ApplyValidationResult(response);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[RefreshCartDiscounts] EXCEPTION: {ex.Message}");
+            // Display refresh failure is non-critical — prices will be refreshed on submit
+        }
     }
 
     private void CancelCustomization()
@@ -765,40 +795,66 @@ public class POSViewModel : BaseViewModel
         try
         {
             IsBusy = true;
-
-            var (order, error) = await _orderService.SubmitOrderAsync(orderType, tableId);
-
-            if (order != null)
-            {
-                var message = $"Order #{order.OrderNumber}\nTotal: {Helpers.CurrencyFormatter.Format(order.TotalAmount)}";
-                if (order.HasTable)
-                {
-                    message += $"\n{order.TableDisplay}";
-                }
-
-                await Application.Current!.MainPage!.DisplayAlert(
-                    LocalizationService.Instance["OrderSubmitted"],
-                    message,
-                    LocalizationService.Instance["OK"]);
-
-                OnOrderCompleted?.Invoke();
-            }
-            else
-            {
-                var errorMessage = string.IsNullOrWhiteSpace(error)
-                    ? LocalizationService.Instance["FailedToSubmit"]
-                    : error;
-                await Application.Current!.MainPage!.DisplayAlert(
-                    LocalizationService.Instance["Error"],
-                    errorMessage,
-                    LocalizationService.Instance["OK"]);
-            }
+            await SubmitOrderInternalAsync(orderType, tableId);
         }
         finally
         {
             IsBusy = false;
             SelectedTable = null;
         }
+    }
+
+    private async Task SubmitOrderInternalAsync(OrderType orderType, Guid? tableId)
+    {
+        var (order, priceChanged, error) = await _orderService.SubmitOrderAsync(orderType, tableId);
+
+        if (order != null)
+        {
+            // Success
+            var message = $"Order #{order.OrderNumber}\nTotal: {Helpers.CurrencyFormatter.Format(order.TotalAmount)}";
+            if (order.HasTable)
+                message += $"\n{order.TableDisplay}";
+
+            await Application.Current!.MainPage!.DisplayAlert(
+                LocalizationService.Instance["OrderSubmitted"],
+                message,
+                LocalizationService.Instance["OK"]);
+
+            OnOrderCompleted?.Invoke();
+            return;
+        }
+
+        if (priceChanged != null)
+        {
+            // HTTP 409 — prices changed between validate-cart and submit
+            // CartState already updated by OrderService.SubmitOrderAsync via ApplyValidationResult
+            var changeDetails = string.Join("\n", priceChanged.Changes.Select(c =>
+                $"• {c.MenuItemName}: {Helpers.CurrencyFormatter.Format(c.ExpectedPrice)} → {Helpers.CurrencyFormatter.Format(c.CurrentPrice)}"));
+
+            var continueWithNewPrices = await Application.Current!.MainPage!.DisplayAlert(
+                LocalizationService.Instance["PriceChanged"],
+                $"{LocalizationService.Instance["PriceChangedMessage"]}\n\n{changeDetails}",
+                LocalizationService.Instance["ContinueWithNewPrice"],
+                LocalizationService.Instance["Cancel"]);
+
+            if (continueWithNewPrices)
+            {
+                // Resubmit with the updated prices already in CartState
+                IsBusy = true;
+                try { await SubmitOrderInternalAsync(orderType, tableId); }
+                finally { IsBusy = false; }
+            }
+            return;
+        }
+
+        // Generic error
+        var errorMessage = string.IsNullOrWhiteSpace(error)
+            ? LocalizationService.Instance["FailedToSubmit"]
+            : error;
+        await Application.Current!.MainPage!.DisplayAlert(
+            LocalizationService.Instance["Error"],
+            errorMessage,
+            LocalizationService.Instance["OK"]);
     }
 
     private async Task LogoutAsync()
@@ -928,6 +984,9 @@ public class POSViewModel : BaseViewModel
                 OnPropertyChanged(nameof(SubtotalDisplay));
                 OnPropertyChanged(nameof(Tax));
                 OnPropertyChanged(nameof(Total));
+                OnPropertyChanged(nameof(DiscountAmount));
+                OnPropertyChanged(nameof(DiscountAmountDisplay));
+                OnPropertyChanged(nameof(HasCartDiscount));
                 OnPropertyChanged(nameof(TotalItems));
                 OnPropertyChanged(nameof(HasItems));
                 OnPropertyChanged(nameof(CanRepeat));

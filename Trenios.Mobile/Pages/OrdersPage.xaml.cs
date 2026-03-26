@@ -26,9 +26,12 @@ public partial class OrdersPage : ContentPage
             {
                 await Dispatcher.DispatchAsync(() =>
                 {
-                    var items = OrdersCollectionView.ItemsSource;
+                    // Always read from the ViewModel, not from ItemsSource.
+                    // Reading ItemsSource after the first cycle returns a stale static
+                    // reference (the data binding is broken by setting ItemsSource = null),
+                    // so subsequent updates would silently restore the old list.
                     OrdersCollectionView.ItemsSource = null;
-                    OrdersCollectionView.ItemsSource = items;
+                    OrdersCollectionView.ItemsSource = _viewModel.GroupedOrders;
                 });
             }
         };

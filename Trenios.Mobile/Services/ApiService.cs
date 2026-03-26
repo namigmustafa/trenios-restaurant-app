@@ -130,16 +130,17 @@ public class ApiService
     private async Task<ApiResult<T>> HandleResponse<T>(HttpResponseMessage response)
     {
         var content = await response.Content.ReadAsStringAsync();
+        var statusCode = (int)response.StatusCode;
 
         if (response.IsSuccessStatusCode)
         {
             if (string.IsNullOrEmpty(content))
             {
-                return ApiResult<T>.Success(default!);
+                return ApiResult<T>.Success(default!, statusCode);
             }
 
             var result = JsonSerializer.Deserialize<T>(content, _jsonOptions);
-            return ApiResult<T>.Success(result!);
+            return ApiResult<T>.Success(result!, statusCode);
         }
 
         // Try to parse API error
@@ -148,7 +149,7 @@ public class ApiService
             var error = JsonSerializer.Deserialize<ApiError>(content, _jsonOptions);
             if (error != null && !string.IsNullOrWhiteSpace(error.Message))
             {
-                return ApiResult<T>.Failure(error.Message, error.Code);
+                return ApiResult<T>.Failure(error.Message, error.Code, statusCode, content);
             }
         }
         catch
@@ -160,10 +161,10 @@ public class ApiService
         if (!string.IsNullOrWhiteSpace(content))
         {
             var truncated = content.Length > 200 ? content.Substring(0, 200) + "..." : content;
-            return ApiResult<T>.Failure($"HTTP {(int)response.StatusCode}: {truncated}");
+            return ApiResult<T>.Failure($"HTTP {statusCode}: {truncated}", null, statusCode, content);
         }
 
-        return ApiResult<T>.Failure($"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}");
+        return ApiResult<T>.Failure($"HTTP {statusCode}: {response.ReasonPhrase}", null, statusCode);
     }
 }
 
@@ -173,17 +174,24 @@ public class ApiResult<T>
     public T? Data { get; private set; }
     public string? ErrorMessage { get; private set; }
     public string? ErrorCode { get; private set; }
+    public int StatusCode { get; private set; }
 
-    public static ApiResult<T> Success(T data) => new()
+    /// <summary>Raw response body — populated on non-success responses for custom parsing (e.g. HTTP 409).</summary>
+    public string? RawContent { get; private set; }
+
+    public static ApiResult<T> Success(T data, int statusCode = 200) => new()
     {
         IsSuccess = true,
-        Data = data
+        Data = data,
+        StatusCode = statusCode
     };
 
-    public static ApiResult<T> Failure(string message, string? code = null) => new()
+    public static ApiResult<T> Failure(string message, string? code = null, int statusCode = 0, string? rawContent = null) => new()
     {
         IsSuccess = false,
         ErrorMessage = message,
-        ErrorCode = code
+        ErrorCode = code,
+        StatusCode = statusCode,
+        RawContent = rawContent
     };
 }

@@ -120,6 +120,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["OrderSubmitted"] = "Order Submitted",
             ["Error"] = "Error",
             ["FailedToSubmit"] = "Failed to submit order",
+            ["PriceChanged"] = "Price Changed",
+            ["PriceChangedMessage"] = "Some prices changed since you last checked. Updated prices:",
+            ["ContinueWithNewPrice"] = "Continue with New Prices",
 
             // Kitchen
             ["KitchenDisplay"] = "Kitchen Display",
@@ -339,6 +342,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["OrderSubmitted"] = "Sifariş Göndərildi",
             ["Error"] = "Xəta",
             ["FailedToSubmit"] = "Sifariş göndərilə bilmədi",
+            ["PriceChanged"] = "Qiymət Dəyişdi",
+            ["PriceChangedMessage"] = "Son yoxlamadan bəri bəzi qiymətlər dəyişdi. Yenilənmiş qiymətlər:",
+            ["ContinueWithNewPrice"] = "Yeni Qiymətlərlə Davam Et",
 
             // Kitchen
             ["KitchenDisplay"] = "Mətbəx Ekranı",
@@ -524,6 +530,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["OrderSubmitted"] = "Заказ Отправлен",
             ["Error"] = "Ошибка",
             ["FailedToSubmit"] = "Не удалось отправить заказ",
+            ["PriceChanged"] = "Цена Изменилась",
+            ["PriceChangedMessage"] = "С момента последней проверки некоторые цены изменились. Обновлённые цены:",
+            ["ContinueWithNewPrice"] = "Продолжить с Новыми Ценами",
 
             // Kitchen
             ["KitchenDisplay"] = "Экран Кухни",
@@ -709,6 +718,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["OrderSubmitted"] = "Sipariş Gönderildi",
             ["Error"] = "Hata",
             ["FailedToSubmit"] = "Sipariş gönderilemedi",
+            ["PriceChanged"] = "Fiyat Değişti",
+            ["PriceChangedMessage"] = "Son kontrolünüzden bu yana bazı fiyatlar değişti. Güncel fiyatlar:",
+            ["ContinueWithNewPrice"] = "Yeni Fiyatlarla Devam Et",
 
             // Kitchen
             ["KitchenDisplay"] = "Mutfak Ekranı",
@@ -894,6 +906,9 @@ public class LocalizationService : INotifyPropertyChanged
             ["OrderSubmitted"] = "Pasūtījums Iesniegts",
             ["Error"] = "Kļūda",
             ["FailedToSubmit"] = "Neizdevās iesniegt pasūtījumu",
+            ["PriceChanged"] = "Cena Mainījusies",
+            ["PriceChangedMessage"] = "Kopš pēdējās pārbaudes dažas cenas ir mainījušās. Atjauninātās cenas:",
+            ["ContinueWithNewPrice"] = "Turpināt ar Jaunajām Cenām",
 
             // Kitchen
             ["KitchenDisplay"] = "Virtuves Ekrāns",

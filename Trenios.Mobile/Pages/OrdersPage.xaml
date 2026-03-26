@@ -549,19 +549,45 @@
                                                     <Label Grid.Column="0"
                                                            Text="{Binding QuantityDisplay}"
                                                            FontSize="14" TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
-                                                           VerticalOptions="Center"/>
-                                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                                           VerticalOptions="Start" Margin="0,2,0,0"/>
+                                                    <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
                                                         <Label Text="{Binding MenuItemName}"
                                                                FontSize="14" TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
+                                                        <!-- Discount badge -->
+                                                        <Border Padding="6,2" StrokeShape="RoundRectangle 4"
+                                                                StrokeThickness="0" BackgroundColor="#DCFCE7"
+                                                                IsVisible="{Binding HasDiscount}"
+                                                                HorizontalOptions="Start">
+                                                            <Label Text="{Binding DiscountLabel}"
+                                                                   FontSize="11" FontFamily="OpenSansSemibold"
+                                                                   TextColor="#16A34A"/>
+                                                        </Border>
                                                         <Label Text="{Binding AdditionsSummary, StringFormat='Extras: {0}'}"
                                                                FontSize="12" FontAttributes="Italic"
                                                                TextColor="{StaticResource Gray500}"
                                                                IsVisible="{Binding HasAdditions}"/>
                                                     </VerticalStackLayout>
-                                                    <Label Grid.Column="2"
-                                                           Text="{Binding TotalPriceDisplay}"
-                                                           FontSize="14" TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"
-                                                           VerticalOptions="Start"/>
+                                                    <!-- Price column: strikethrough original + discounted -->
+                                                    <VerticalStackLayout Grid.Column="2" Spacing="1" VerticalOptions="Start" HorizontalOptions="End">
+                                                        <Label Text="{Binding OriginalTotalPriceDisplay}"
+                                                               FontSize="12" TextColor="{StaticResource Gray400}"
+                                                               TextDecorations="Strikethrough"
+                                                               IsVisible="{Binding HasDiscount}"
+                                                               HorizontalOptions="End"/>
+                                                        <Label Text="{Binding TotalPriceDisplay}"
+                                                               FontSize="14"
+                                                               HorizontalOptions="End">
+                                                            <Label.Triggers>
+                                                                <DataTrigger TargetType="Label" Binding="{Binding HasDiscount}" Value="True">
+                                                                    <Setter Property="TextColor" Value="#16A34A"/>
+                                                                    <Setter Property="FontFamily" Value="OpenSansSemibold"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger TargetType="Label" Binding="{Binding HasDiscount}" Value="False">
+                                                                    <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
+                                                                </DataTrigger>
+                                                            </Label.Triggers>
+                                                        </Label>
+                                                    </VerticalStackLayout>
                                                 </Grid>
                                                 <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"/>
                                             </VerticalStackLayout>
@@ -582,7 +608,7 @@
                                            FontSize="14" TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"/>
                                 </Grid>
                                 <Grid ColumnDefinitions="*,Auto" Padding="0,0,0,10"
-                                      IsVisible="{Binding SelectedOrder.DiscountAmount, Converter={StaticResource IsNotNullConverter}}">
+                                      IsVisible="{Binding SelectedOrder.HasDiscount}">
                                     <Label Text="{h:Translate Discount}" FontSize="14" TextColor="{StaticResource Gray500}"/>
                                     <Label Grid.Column="1"
                                            Text="{Binding SelectedOrder.DiscountAmountDisplay}"

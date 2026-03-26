@@ -40,3 +40,16 @@ public enum SelectionType
     Single = 1,
     Multiple = 2
 }
+
+public enum DiscountType
+{
+    Percentage = 1,
+    FixedAmount = 2
+}
+
+public enum DiscountTarget
+{
+    AllItems = 1,
+    Category = 2,
+    SpecificItem = 3
+}

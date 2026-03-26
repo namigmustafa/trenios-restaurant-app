@@ -563,13 +563,22 @@
                                                                        FontSize="13"
                                                                        FontFamily="OpenSansSemibold"
                                                                        TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
-                                                                       VerticalOptions="Start"/>
-                                                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                                                       VerticalOptions="Start" Margin="0,2,0,0"/>
+                                                                <VerticalStackLayout Grid.Column="1" Spacing="3">
                                                                     <Label Text="{Binding MenuItemName}"
                                                                            FontSize="13"
                                                                            FontFamily="OpenSansSemibold"
                                                                            TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"
                                                                            LineBreakMode="TailTruncation"/>
+                                                                    <!-- Discount badge -->
+                                                                    <Border Padding="6,2" StrokeShape="RoundRectangle 4"
+                                                                            StrokeThickness="0" BackgroundColor="#DCFCE7"
+                                                                            IsVisible="{Binding HasDiscount}"
+                                                                            HorizontalOptions="Start">
+                                                                        <Label Text="{Binding DiscountLabel}"
+                                                                               FontSize="11" FontFamily="OpenSansSemibold"
+                                                                               TextColor="#16A34A"/>
+                                                                    </Border>
                                                                     <Label Text="{Binding AdditionsSummary}"
                                                                            FontSize="12"
                                                                            FontAttributes="Italic"
@@ -577,11 +586,27 @@
                                                                            IsVisible="{Binding HasAdditions}"
                                                                            LineBreakMode="TailTruncation"/>
                                                                 </VerticalStackLayout>
-                                                                <Label Grid.Column="2"
-                                                                       Text="{Binding TotalPriceDisplay}"
-                                                                       FontSize="13"
-                                                                       TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
-                                                                       VerticalOptions="Start"/>
+                                                                <!-- Price column: strikethrough original + discounted -->
+                                                                <VerticalStackLayout Grid.Column="2" Spacing="1" VerticalOptions="Start" HorizontalOptions="End">
+                                                                    <Label Text="{Binding OriginalTotalPriceDisplay}"
+                                                                           FontSize="11" TextColor="{StaticResource Gray400}"
+                                                                           TextDecorations="Strikethrough"
+                                                                           IsVisible="{Binding HasDiscount}"
+                                                                           HorizontalOptions="End"/>
+                                                                    <Label Text="{Binding TotalPriceDisplay}"
+                                                                           FontSize="13"
+                                                                           HorizontalOptions="End">
+                                                                        <Label.Triggers>
+                                                                            <DataTrigger TargetType="Label" Binding="{Binding HasDiscount}" Value="True">
+                                                                                <Setter Property="TextColor" Value="#16A34A"/>
+                                                                                <Setter Property="FontFamily" Value="OpenSansSemibold"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger TargetType="Label" Binding="{Binding HasDiscount}" Value="False">
+                                                                                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"/>
+                                                                            </DataTrigger>
+                                                                        </Label.Triggers>
+                                                                    </Label>
+                                                                </VerticalStackLayout>
                                                             </Grid>
                                                         </DataTemplate>
                                                     </BindableLayout.ItemTemplate>

@@ -229,11 +229,14 @@ public class OrdersViewModel : INotifyPropertyChanged
                     .OrderByDescending(o => o.PlacedAt)
                     .ToList();
 
-                Orders.Clear();
-                foreach (var order in sorted)
-                    Orders.Add(order);
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    Orders.Clear();
+                    foreach (var order in sorted)
+                        Orders.Add(order);
 
-                RebuildGroups();
+                    RebuildGroups();
+                });
             }
         }
         finally
