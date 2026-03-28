@@ -60,7 +60,7 @@ build-ios:
         -H "Authorization: Bearer $GITHUB_TOKEN" \
         -H "Accept: application/vnd.github.v3+json" \
         https://api.github.com/repos/$GITHUB_IOS_REPO/actions/workflows/ios-test.yml/dispatches \
-        -d "{\"ref\":\"$CI_COMMIT_BRANCH\"}"
+        -d "{\"ref\":\"$CI_COMMIT_BRANCH\",\"inputs\":{\"pipeline_iid\":\"$CI_PIPELINE_IID\"}}"
     - echo "iOS build triggered on GitHub Actions"
 
 publish-android-test:
@@ -138,7 +138,7 @@ build-ios-prod:
         -H "Authorization: Bearer $GITHUB_TOKEN" \
         -H "Accept: application/vnd.github.v3+json" \
         https://api.github.com/repos/$GITHUB_IOS_REPO/actions/workflows/ios-prod.yml/dispatches \
-        -d '{"ref":"main"}'
+        -d "{\"ref\":\"main\",\"inputs\":{\"pipeline_iid\":\"$CI_PIPELINE_IID\"}}"
     - echo "iOS production build triggered on GitHub Actions"
 
 publish-android-prod:
