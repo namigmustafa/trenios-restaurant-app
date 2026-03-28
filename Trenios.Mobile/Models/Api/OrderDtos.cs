@@ -148,7 +148,7 @@ public class OrderResponse
     public bool HasActivitySessions => ActivitySessions.Count > 0;
 
     [JsonIgnore]
-    public bool HasTable => !string.IsNullOrEmpty(TableNumber);
+    public bool HasTable => TableId.HasValue || !string.IsNullOrEmpty(TableNumber);
 
     [JsonIgnore]
     public string TableDisplay => HasTable ? $"{LocalizationService.Instance["Table"]} {TableNumber}" : string.Empty;

@@ -97,6 +97,7 @@ public class OrdersViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(HasSelectedOrder));
             OnPropertyChanged(nameof(SelectedOrderCanChangeStatus));
             OnPropertyChanged(nameof(CanCompleteSelectedOrder));
+            OnPropertyChanged(nameof(CanAddActivity));
             OnPropertyChanged(nameof(ShowActivitiesCard));
         }
     }
@@ -107,7 +108,12 @@ public class OrdersViewModel : INotifyPropertyChanged
     public bool HasSelectedOrder => SelectedOrder != null;
     public bool SelectedOrderCanChangeStatus => SelectedOrder?.CanChangeStatus ?? false;
     public bool CanCompleteSelectedOrder => SelectedOrder?.CanChangeStatus == true && SelectedOrder?.HasActiveSession == false;
-    public bool ShowActivitiesCard => SelectedOrder?.HasActivitySessions == true || SelectedOrderCanChangeStatus;
+    public bool IsActivityEnabled => _authService.IsActivityEnabled;
+    public bool CanAddActivity => IsActivityEnabled && SelectedOrderCanChangeStatus;
+
+    // Show the activities card if the feature is enabled OR if the order has historic session data
+    public bool ShowActivitiesCard => (IsActivityEnabled && (SelectedOrder?.HasActivitySessions == true || SelectedOrderCanChangeStatus))
+                                      || SelectedOrder?.HasActivitySessions == true;
 
     public OrderStatus? StatusFilter
     {
@@ -273,6 +279,21 @@ public class OrdersViewModel : INotifyPropertyChanged
                     .OrderByDescending(o => o.PlacedAt)
                     .ToList();
 
+                // Preserve tableId/tableNumber from in-memory orders when the list
+                // endpoint omits those fields (backend may not include them in list responses).
+                foreach (var order in sorted)
+                {
+                    if (!order.TableId.HasValue && string.IsNullOrEmpty(order.TableNumber))
+                    {
+                        var existing = Orders.FirstOrDefault(o => o.Id == order.Id);
+                        if (existing != null)
+                        {
+                            order.TableId = existing.TableId;
+                            order.TableNumber = existing.TableNumber;
+                        }
+                    }
+                }
+
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     var previousSelectedId = SelectedOrder?.Id;
@@ -377,9 +398,16 @@ public class OrdersViewModel : INotifyPropertyChanged
         if (SelectedOrder == null) return;
         if (!Enum.TryParse<OrderStatus>(statusStr, out var newStatus)) return;
 
+        var loc = LocalizationService.Instance;
+
+        if (SelectedOrder.HasTable && (newStatus == OrderStatus.Completed || newStatus == OrderStatus.Cancelled))
+        {
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], loc["TableOrderBlocksAction"], loc["OK"]);
+            return;
+        }
+
         if (newStatus == OrderStatus.Completed && SelectedOrder.HasActiveSession)
         {
-            var loc = LocalizationService.Instance;
             await Application.Current?.MainPage?.DisplayAlert(loc["Error"], loc["ActiveSessionBlocksComplete"], loc["OK"]);
             return;
         }
@@ -389,7 +417,6 @@ public class OrdersViewModel : INotifyPropertyChanged
         // If cancelling, prompt for reason
         if (newStatus == OrderStatus.Cancelled)
         {
-            var loc = LocalizationService.Instance;
             cancellationReason = await Application.Current?.MainPage?.DisplayPromptAsync(
                 loc["CancelOrderTitle"],
                 loc["EnterCancellationReason"],
@@ -436,14 +463,26 @@ public class OrdersViewModel : INotifyPropertyChanged
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
-            var loc = LocalizationService.Instance;
-            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], result.ErrorMessage, loc["OK"]);
+            // If the backend blocked completion due to an active session, show the localized message
+            // instead of the raw English server error (list endpoint may not return hasActiveSession).
+            var message = newStatus == OrderStatus.Completed
+                ? loc["ActiveSessionBlocksComplete"]
+                : result.ErrorMessage;
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], message, loc["OK"]);
         }
     }
 
     private async Task CompleteOrderAsync(OrderResponse? order)
     {
         if (order == null || !order.CanSwipe) return;
+
+        var loc = LocalizationService.Instance;
+
+        if (order.HasTable)
+        {
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], loc["TableOrderBlocksAction"], loc["OK"]);
+            return;
+        }
 
         var request = new UpdateOrderStatusRequest
         {
@@ -461,7 +500,6 @@ public class OrdersViewModel : INotifyPropertyChanged
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
-            var loc = LocalizationService.Instance;
             await Application.Current?.MainPage?.DisplayAlert(loc["Error"], result.ErrorMessage, loc["OK"]);
         }
     }
@@ -470,8 +508,13 @@ public class OrdersViewModel : INotifyPropertyChanged
     {
         if (order == null || !order.CanSwipe) return;
 
-        // Prompt for cancellation reason
         var loc = LocalizationService.Instance;
+
+        if (order.HasTable)
+        {
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], loc["TableOrderBlocksAction"], loc["OK"]);
+            return;
+        }
         var cancellationReason = await Application.Current?.MainPage?.DisplayPromptAsync(
             loc["CancelOrderTitle"],
             loc["EnterCancellationReason"],

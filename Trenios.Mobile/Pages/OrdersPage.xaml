@@ -680,7 +680,7 @@
                                         StrokeShape="RoundRectangle 20" StrokeThickness="0"
                                         BackgroundColor="{StaticResource Primary}"
                                         HorizontalOptions="Center"
-                                        IsVisible="{Binding SelectedOrderCanChangeStatus}">
+                                        IsVisible="{Binding CanAddActivity}">
                                     <HorizontalStackLayout Spacing="5">
                                         <Label Text="+" FontSize="16" TextColor="White"
                                                FontFamily="OpenSansSemibold" VerticalOptions="Center"/>

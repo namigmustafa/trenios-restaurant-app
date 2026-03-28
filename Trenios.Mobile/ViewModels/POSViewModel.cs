@@ -738,14 +738,23 @@ public class POSViewModel : BaseViewModel
             var branchId = _authService.GetEffectiveBranchId();
             if (branchId.HasValue)
             {
-                var (tables, error) = await _tableService.GetTablesAsync(branchId.Value);
+                // Use the reservation-aware endpoint so we can filter out occupied tables.
+                var (tablesWithStatus, error) = await _tableService.GetTablesWithReservationsAsync(branchId.Value);
 
                 Tables.Clear();
-                if (tables != null)
+                if (tablesWithStatus != null)
                 {
-                    foreach (var table in tables)
+                    foreach (var t in tablesWithStatus.Where(t => !t.IsReserved))
                     {
-                        Tables.Add(table);
+                        Tables.Add(new TableDto
+                        {
+                            Id = t.Id,
+                            BranchId = t.BranchId,
+                            BranchName = t.BranchName,
+                            Number = t.Number,
+                            Capacity = t.Capacity,
+                            IsActive = t.IsActive
+                        });
                     }
                 }
             }

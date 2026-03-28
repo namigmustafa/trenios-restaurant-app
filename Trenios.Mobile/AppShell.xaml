@@ -69,7 +69,7 @@
                 ContentTemplate="{DataTemplate pages:ReportingPage}" />
         </Tab>
 
-        <Tab Title="Activities">
+        <Tab x:Name="ActivitiesTab" Title="Activities">
             <Tab.Icon>
                 <FontImageSource Glyph="🎯" Size="22" />
             </Tab.Icon>

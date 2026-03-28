@@ -244,24 +244,6 @@
                                                                     </Border.GestureRecognizers>
                                                                 </Border>
 
-                                                                <!-- Cancel button (shown when active) -->
-                                                                <Border IsVisible="{Binding IsOccupied}"
-                                                                        Padding="12,8"
-                                                                        StrokeShape="RoundRectangle 8"
-                                                                        StrokeThickness="1"
-                                                                        Stroke="{StaticResource Gray300}"
-                                                                        BackgroundColor="Transparent">
-                                                                    <Label Text="{h:Translate CancelSession}"
-                                                                           FontFamily="OpenSansSemibold"
-                                                                           FontSize="13"
-                                                                           TextColor="{StaticResource Gray600}"
-                                                                           HorizontalOptions="Center"/>
-                                                                    <Border.GestureRecognizers>
-                                                                        <TapGestureRecognizer
-                                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ActivityBoardViewModel}}, Path=CancelSessionCommand}"
-                                                                            CommandParameter="{Binding}"/>
-                                                                    </Border.GestureRecognizers>
-                                                                </Border>
                                                             </VerticalStackLayout>
                                                         </Grid>
                                                         </VerticalStackLayout>
