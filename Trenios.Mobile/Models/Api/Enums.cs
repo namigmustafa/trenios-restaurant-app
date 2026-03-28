@@ -53,3 +53,16 @@ public enum DiscountTarget
     Category = 2,
     SpecificItem = 3
 }
+
+public enum ActivityPricingUnit
+{
+    PerMinute = 1,
+    PerHour = 2
+}
+
+public enum ActivitySessionStatus
+{
+    Active = 1,
+    Completed = 2,
+    Cancelled = 3
+}

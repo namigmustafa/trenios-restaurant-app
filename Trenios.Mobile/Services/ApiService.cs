@@ -127,6 +127,49 @@ public class ApiService
         }
     }
 
+    public async Task<ApiResult<T>> DeleteAsync<T>(string endpoint)
+    {
+        try
+        {
+            var response = await _httpClient.DeleteAsync(endpoint);
+            return await HandleResponse<T>(response);
+        }
+        catch (HttpRequestException ex)
+        {
+            return ApiResult<T>.Failure($"Network error: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            return ApiResult<T>.Failure($"Error: {ex.Message}");
+        }
+    }
+
+    public async Task<ApiResult<bool>> DeleteAsync(string endpoint)
+    {
+        try
+        {
+            var response = await _httpClient.DeleteAsync(endpoint);
+            if (response.IsSuccessStatusCode) return ApiResult<bool>.Success(true, (int)response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            try
+            {
+                var error = System.Text.Json.JsonSerializer.Deserialize<ApiError>(content, _jsonOptions);
+                if (error != null && !string.IsNullOrWhiteSpace(error.Message))
+                    return ApiResult<bool>.Failure(error.Message, error.Code, (int)response.StatusCode);
+            }
+            catch { }
+            return ApiResult<bool>.Failure($"HTTP {(int)response.StatusCode}", null, (int)response.StatusCode);
+        }
+        catch (HttpRequestException ex)
+        {
+            return ApiResult<bool>.Failure($"Network error: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            return ApiResult<bool>.Failure($"Error: {ex.Message}");
+        }
+    }
+
     private async Task<ApiResult<T>> HandleResponse<T>(HttpResponseMessage response)
     {
         var content = await response.Content.ReadAsStringAsync();

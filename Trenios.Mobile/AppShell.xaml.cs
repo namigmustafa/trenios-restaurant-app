@@ -19,6 +19,7 @@ namespace Trenios.Mobile
             }
 
             Routing.RegisterRoute(nameof(OrderBreakdownPage), typeof(OrderBreakdownPage));
+            Routing.RegisterRoute(nameof(AddToOrderPage), typeof(AddToOrderPage));
         }
     }
 }

@@ -69,6 +69,15 @@
                 ContentTemplate="{DataTemplate pages:ReportingPage}" />
         </Tab>
 
+        <Tab Title="Activities">
+            <Tab.Icon>
+                <FontImageSource Glyph="🎯" Size="22" />
+            </Tab.Icon>
+            <ShellContent
+                Route="ActivityBoardPage"
+                ContentTemplate="{DataTemplate pages:ActivityBoardPage}" />
+        </Tab>
+
     </TabBar>
 
 </Shell>

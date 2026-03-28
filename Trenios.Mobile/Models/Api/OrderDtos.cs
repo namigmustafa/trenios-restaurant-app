@@ -4,6 +4,12 @@ using Trenios.Mobile.Services;
 
 namespace Trenios.Mobile.Models.Api;
 
+public class AddOrderItemsRequest
+{
+    [JsonPropertyName("items")]
+    public List<CreateOrderItemRequest> Items { get; set; } = new();
+}
+
 public class CreateOrderRequest
 {
     [JsonPropertyName("branchId")]
@@ -97,6 +103,12 @@ public class OrderResponse
     [JsonPropertyName("items")]
     public List<OrderItemResponse> Items { get; set; } = new();
 
+    [JsonPropertyName("activitySessions")]
+    public List<ActivitySessionSummaryDto> ActivitySessions { get; set; } = new();
+
+    [JsonPropertyName("hasActiveSession")]
+    public bool HasActiveSession { get; set; }
+
     [JsonPropertyName("placedAt")]
     public DateTime PlacedAt { get; set; }
 
@@ -131,6 +143,9 @@ public class OrderResponse
             };
         }
     }
+
+    [JsonIgnore]
+    public bool HasActivitySessions => ActivitySessions.Count > 0;
 
     [JsonIgnore]
     public bool HasTable => !string.IsNullOrEmpty(TableNumber);
@@ -345,6 +360,9 @@ public class OrderItemAdditionResponse
 {
     [JsonPropertyName("id")]
     public Guid Id { get; set; }
+
+    [JsonPropertyName("additionId")]
+    public Guid AdditionId { get; set; }
 
     [JsonPropertyName("additionName")]
     public string AdditionName { get; set; } = string.Empty;
