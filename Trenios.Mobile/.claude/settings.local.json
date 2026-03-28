@@ -6,7 +6,9 @@
       "Bash(do echo:*)",
       "Read(//c/Projects/Personal/trenios-app-restaurant-app/Trenios/Trenios.Mobile/**)",
       "Bash(done)",
-      "Bash(findstr /n \"BackgroundColor\\\\|TextColor\\\\|Stroke\\\\|Color\\\\|SearchBar\\\\|Entry\\\\|PlaceholderColor\")"
+      "Bash(findstr /n \"BackgroundColor\\\\|TextColor\\\\|Stroke\\\\|Color\\\\|SearchBar\\\\|Entry\\\\|PlaceholderColor\")",
+      "Bash(ls \"C:\\\\Projects\\\\Personal\\\\trenios-app-restaurant-app\\\\Trenios\\\\Trenios.Mobile\\\\Models\\\\Api\"\" && ls \"C:ProjectsPersonaltrenios-app-restaurant-appTreniosTrenios.MobileServices\"\")",
+      "Bash(ls \"C:\\\\Projects\\\\Personal\\\\trenios-app-restaurant-app\\\\Trenios\\\\Trenios.Mobile\\\\ViewModels\"\" && ls \"C:ProjectsPersonaltrenios-app-restaurant-appTreniosTrenios.MobilePages\"\")"
     ]
   }
 }

@@ -40,3 +40,29 @@ public enum SelectionType
     Single = 1,
     Multiple = 2
 }
+
+public enum DiscountType
+{
+    Percentage = 1,
+    FixedAmount = 2
+}
+
+public enum DiscountTarget
+{
+    AllItems = 1,
+    Category = 2,
+    SpecificItem = 3
+}
+
+public enum ActivityPricingUnit
+{
+    PerMinute = 1,
+    PerHour = 2
+}
+
+public enum ActivitySessionStatus
+{
+    Active = 1,
+    Completed = 2,
+    Cancelled = 3
+}

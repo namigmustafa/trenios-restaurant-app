@@ -1,5 +1,6 @@
 using System.Windows.Input;
 using Trenios.Mobile.Services;
+using Trenios.Mobile;
 
 namespace Trenios.Mobile.ViewModels;
 
@@ -79,6 +80,9 @@ public class LoginViewModel : BaseViewModel
                 // Navigate based on user role
                 var route = _authService.GetPostLoginRoute();
                 await Shell.Current.GoToAsync(route);
+
+                if (Shell.Current is AppShell appShell)
+                    appShell.ApplyBranchSettings(_authService);
             }
             else
             {

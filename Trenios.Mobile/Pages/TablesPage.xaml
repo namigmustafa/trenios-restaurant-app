@@ -563,13 +563,21 @@
                                                                        FontSize="13"
                                                                        FontFamily="OpenSansSemibold"
                                                                        TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
-                                                                       VerticalOptions="Start"/>
-                                                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                                                       VerticalOptions="Start" Margin="0,2,0,0"/>
+                                                                <VerticalStackLayout Grid.Column="1" Spacing="3">
                                                                     <Label Text="{Binding MenuItemName}"
                                                                            FontSize="13"
                                                                            FontFamily="OpenSansSemibold"
                                                                            TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"
                                                                            LineBreakMode="TailTruncation"/>
+                                                                    <Border Padding="6,2" StrokeShape="RoundRectangle 4"
+                                                                            StrokeThickness="0" BackgroundColor="#DCFCE7"
+                                                                            IsVisible="{Binding HasDiscount}"
+                                                                            HorizontalOptions="Start">
+                                                                        <Label Text="{Binding DiscountLabel}"
+                                                                               FontSize="11" FontFamily="OpenSansSemibold"
+                                                                               TextColor="#16A34A"/>
+                                                                    </Border>
                                                                     <Label Text="{Binding AdditionsSummary}"
                                                                            FontSize="12"
                                                                            FontAttributes="Italic"
@@ -577,16 +585,130 @@
                                                                            IsVisible="{Binding HasAdditions}"
                                                                            LineBreakMode="TailTruncation"/>
                                                                 </VerticalStackLayout>
-                                                                <Label Grid.Column="2"
-                                                                       Text="{Binding TotalPriceDisplay}"
-                                                                       FontSize="13"
-                                                                       TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
-                                                                       VerticalOptions="Start"/>
+                                                                <VerticalStackLayout Grid.Column="2" Spacing="1" VerticalOptions="Start" HorizontalOptions="End">
+                                                                    <Label Text="{Binding OriginalTotalPriceDisplay}"
+                                                                           FontSize="11" TextColor="{StaticResource Gray400}"
+                                                                           TextDecorations="Strikethrough"
+                                                                           IsVisible="{Binding HasDiscount}"
+                                                                           HorizontalOptions="End"/>
+                                                                    <Label Text="{Binding TotalPriceDisplay}"
+                                                                           FontSize="13"
+                                                                           HorizontalOptions="End">
+                                                                        <Label.Triggers>
+                                                                            <DataTrigger TargetType="Label" Binding="{Binding HasDiscount}" Value="True">
+                                                                                <Setter Property="TextColor" Value="#16A34A"/>
+                                                                                <Setter Property="FontFamily" Value="OpenSansSemibold"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger TargetType="Label" Binding="{Binding HasDiscount}" Value="False">
+                                                                                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"/>
+                                                                            </DataTrigger>
+                                                                        </Label.Triggers>
+                                                                    </Label>
+                                                                </VerticalStackLayout>
                                                             </Grid>
                                                         </DataTemplate>
                                                     </BindableLayout.ItemTemplate>
                                                 </VerticalStackLayout>
                                             </VerticalStackLayout>
+
+                                            <!-- + Add New Menu button -->
+                                            <Border Margin="0,10,0,0" Padding="14,8"
+                                                    StrokeShape="RoundRectangle 20" StrokeThickness="0"
+                                                    BackgroundColor="{StaticResource Primary}"
+                                                    HorizontalOptions="Center"
+                                                    IsVisible="{Binding CanChangeStatus}">
+                                                <HorizontalStackLayout Spacing="5">
+                                                    <Label Text="+" FontSize="16" TextColor="White"
+                                                           FontFamily="OpenSansSemibold" VerticalOptions="Center"/>
+                                                    <Label Text="{h:Translate AddNewMenu}"
+                                                           FontFamily="OpenSansSemibold" FontSize="13"
+                                                           TextColor="White" VerticalOptions="Center"/>
+                                                </HorizontalStackLayout>
+                                                <Border.GestureRecognizers>
+                                                    <TapGestureRecognizer
+                                                        Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.AddItemsToOrderCommand}"
+                                                        CommandParameter="{Binding .}"/>
+                                                </Border.GestureRecognizers>
+                                            </Border>
+
+                                            <!-- Activities section -->
+                                            <VerticalStackLayout Spacing="0" Margin="0,12,0,0">
+                                                <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}" Margin="0,0,0,10"/>
+                                                <Label Text="{h:Translate Activities}"
+                                                       FontFamily="OpenSansSemibold" FontSize="13"
+                                                       TextColor="{StaticResource Gray500}"
+                                                       Margin="0,0,0,8"
+                                                       IsVisible="{Binding HasActivitySessions}"/>
+                                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding ActivitySessions}" Spacing="4"
+                                                                     IsVisible="{Binding HasActivitySessions}">
+                                                    <BindableLayout.ItemTemplate>
+                                                        <DataTemplate x:DataType="models:ActivitySessionSummaryDto">
+                                                            <VerticalStackLayout Spacing="0">
+                                                                <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                                                      ColumnSpacing="10" Padding="0,10,0,10">
+                                                                    <Label Grid.Column="0" Text="🎯"
+                                                                           FontSize="14" VerticalOptions="Center"/>
+                                                                    <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                                                                        <Label Text="{Binding ActivityName}"
+                                                                               FontSize="14"
+                                                                               TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
+                                                                        <Label Text="{Binding DurationDisplay}"
+                                                                               FontSize="12" FontFamily="OpenSansSemibold"
+                                                                               TextColor="{Binding StatusColor}"/>
+                                                                    </VerticalStackLayout>
+                                                                    <Label Grid.Column="2"
+                                                                           Text="{Binding TotalAmountDisplay}"
+                                                                           FontSize="14"
+                                                                           TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"
+                                                                           VerticalOptions="Center"/>
+                                                                    <Border Grid.Column="3" Padding="10,6"
+                                                                            StrokeShape="RoundRectangle 8" StrokeThickness="0"
+                                                                            BackgroundColor="{StaticResource Primary}"
+                                                                            VerticalOptions="Center"
+                                                                            IsVisible="{Binding IsActive}">
+                                                                        <Label Text="{h:Translate Stop}"
+                                                                               FontFamily="OpenSansSemibold" FontSize="12"
+                                                                               TextColor="White"/>
+                                                                        <Border.GestureRecognizers>
+                                                                            <TapGestureRecognizer
+                                                                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.StopSessionCommand}"
+                                                                                CommandParameter="{Binding .}"/>
+                                                                        </Border.GestureRecognizers>
+                                                                    </Border>
+                                                                </Grid>
+                                                                <BoxView HeightRequest="1"
+                                                                         Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"/>
+                                                            </VerticalStackLayout>
+                                                        </DataTemplate>
+                                                    </BindableLayout.ItemTemplate>
+                                                </VerticalStackLayout>
+
+                                                <!-- + Add Activity button (only when feature is enabled and order is active) -->
+                                                <Border Margin="0,8,0,0" Padding="14,8"
+                                                        StrokeShape="RoundRectangle 20" StrokeThickness="0"
+                                                        BackgroundColor="{StaticResource Primary}"
+                                                        HorizontalOptions="Center"
+                                                        IsVisible="{Binding Source={x:Reference ThisPage}, Path=BindingContext.IsActivityEnabled}">
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border" Binding="{Binding CanChangeStatus}" Value="False">
+                                                            <Setter Property="IsVisible" Value="False"/>
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <HorizontalStackLayout Spacing="5">
+                                                        <Label Text="+" FontSize="16" TextColor="White"
+                                                               FontFamily="OpenSansSemibold" VerticalOptions="Center"/>
+                                                        <Label Text="{h:Translate AddActivity}"
+                                                               FontFamily="OpenSansSemibold" FontSize="13"
+                                                               TextColor="White" VerticalOptions="Center"/>
+                                                    </HorizontalStackLayout>
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer
+                                                            Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.AddActivityToOrderCommand}"
+                                                            CommandParameter="{Binding .}"/>
+                                                    </Border.GestureRecognizers>
+                                                </Border>
+                                            </VerticalStackLayout>
+
                                         </VerticalStackLayout>
                                     </Border>
                                 </DataTemplate>
@@ -762,6 +884,105 @@
                                 Command="{Binding ConfirmMoveCommand}"
                                 IsEnabled="{Binding TargetTable, Converter={StaticResource IsNotNullConverter}}"/>
                     </VerticalStackLayout>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ==================== ACTIVITY SELECTION OVERLAY ==================== -->
+        <Grid Grid.RowSpan="2" Grid.ColumnSpan="2"
+              IsVisible="{Binding ShowActivitySelection}"
+              BackgroundColor="#80000000">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding CloseActivitySelectionCommand}"/>
+            </Grid.GestureRecognizers>
+            <Border VerticalOptions="Center" HorizontalOptions="Fill"
+                    StrokeShape="RoundRectangle 16" StrokeThickness="0"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
+                    MaximumHeightRequest="600" Margin="16" Padding="0">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer/>
+                </Border.GestureRecognizers>
+                <Grid RowDefinitions="Auto,*">
+                    <Grid Grid.Row="0" Padding="16,14" ColumnDefinitions="*,Auto"
+                          BackgroundColor="{StaticResource Primary}">
+                        <Label Text="{h:Translate AddActivity}"
+                               FontFamily="OpenSansSemibold" FontSize="17"
+                               TextColor="White" VerticalOptions="Center"/>
+                        <Border Grid.Column="1" Padding="10,6"
+                                StrokeShape="RoundRectangle 8" StrokeThickness="0"
+                                BackgroundColor="#33FFFFFF">
+                            <Label Text="✕" FontSize="14" TextColor="White"
+                                   HorizontalOptions="Center" VerticalOptions="Center"/>
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CloseActivitySelectionCommand}"/>
+                            </Border.GestureRecognizers>
+                        </Border>
+                    </Grid>
+                    <ScrollView Grid.Row="1">
+                        <VerticalStackLayout Padding="0,8" Spacing="0">
+                            <ActivityIndicator IsRunning="{Binding IsLoadingActivities}"
+                                               IsVisible="{Binding IsLoadingActivities}"
+                                               Color="{StaticResource Primary}"
+                                               HorizontalOptions="Center"
+                                               HeightRequest="80"/>
+                            <VerticalStackLayout IsVisible="{Binding IsLoadingActivities, Converter={StaticResource InvertedBoolConverter}}"
+                                                 BindableLayout.ItemsSource="{Binding ActivityBoardGroups}"
+                                                 Spacing="0">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="models:ActivityBoardGroupDto">
+                                        <VerticalStackLayout Spacing="0">
+                                            <Label Text="{Binding ActivityTypeName}"
+                                                   FontFamily="OpenSansSemibold" FontSize="13"
+                                                   TextColor="{StaticResource Gray500}"
+                                                   Padding="16,10,16,6"/>
+                                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Activities}" Spacing="0">
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate x:DataType="models:ActivityBoardItemDto">
+                                                        <VerticalStackLayout Spacing="0">
+                                                            <Grid ColumnDefinitions="*,Auto" Padding="16,12" ColumnSpacing="12">
+                                                                <VerticalStackLayout Spacing="3" VerticalOptions="Center">
+                                                                    <Label Text="{Binding Name}"
+                                                                           FontFamily="OpenSansSemibold" FontSize="15"
+                                                                           TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
+                                                                    <Label Text="{Binding UnitPriceDisplay}"
+                                                                           FontSize="13" TextColor="{StaticResource Gray500}"/>
+                                                                </VerticalStackLayout>
+                                                                <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                                                                    <Border Padding="8,4" HorizontalOptions="End"
+                                                                            StrokeShape="RoundRectangle 6" StrokeThickness="0"
+                                                                            BackgroundColor="{Binding StatusBackgroundColor}">
+                                                                        <Label Text="{Binding StatusDisplay}"
+                                                                               FontFamily="OpenSansSemibold" FontSize="11"
+                                                                               TextColor="{Binding StatusColor}"/>
+                                                                    </Border>
+                                                                    <Border Padding="12,7"
+                                                                            StrokeShape="RoundRectangle 8" StrokeThickness="0"
+                                                                            BackgroundColor="{StaticResource Primary}"
+                                                                            IsVisible="{Binding IsOccupied, Converter={StaticResource InvertedBoolConverter}}">
+                                                                        <Label Text="{h:Translate Start}"
+                                                                               FontFamily="OpenSansSemibold" FontSize="13"
+                                                                               TextColor="White" HorizontalOptions="Center"/>
+                                                                        <Border.GestureRecognizers>
+                                                                            <TapGestureRecognizer
+                                                                                Command="{Binding Source={x:Reference ThisPage}, Path=BindingContext.SelectActivityCommand}"
+                                                                                CommandParameter="{Binding .}"/>
+                                                                        </Border.GestureRecognizers>
+                                                                    </Border>
+                                                                </VerticalStackLayout>
+                                                            </Grid>
+                                                            <BoxView HeightRequest="1"
+                                                                     Color="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray700}}"
+                                                                     Margin="16,0"/>
+                                                        </VerticalStackLayout>
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </VerticalStackLayout>
+                                        </VerticalStackLayout>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </ScrollView>
                 </Grid>
             </Border>
         </Grid>

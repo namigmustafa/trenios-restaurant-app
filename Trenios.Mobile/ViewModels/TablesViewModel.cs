@@ -12,6 +12,7 @@ public class TablesViewModel : INotifyPropertyChanged
     private readonly TableService _tableService;
     private readonly AuthService _authService;
     private readonly OrderService _orderService;
+    private readonly ActivityService _activityService;
 
     private bool _isLoading;
     private bool _isRefreshing;
@@ -19,6 +20,9 @@ public class TablesViewModel : INotifyPropertyChanged
     private bool _showMoveTableDialog;
     private TableWithReservationDto? _targetTable;
     private string _statusFilter = "All";
+    private bool _showActivitySelection;
+    private bool _isLoadingActivities;
+    private TableOrderSummaryDto? _selectedOrderForActivity;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -67,6 +71,7 @@ public class TablesViewModel : INotifyPropertyChanged
     public string? RestaurantLogoUrl => _authService.SelectedRestaurant?.DisplayImageUrl
         ?? _authService.CurrentUser?.Restaurant?.DisplayImageUrl;
     public bool HasRestaurantLogo => !string.IsNullOrEmpty(RestaurantLogoUrl);
+    public bool IsActivityEnabled => _authService.IsActivityEnabled;
 
     public int AvailableCount => Tables.Count(t => !t.IsReserved);
     public int OccupiedCount => Tables.Count(t => t.IsReserved);
@@ -90,6 +95,19 @@ public class TablesViewModel : INotifyPropertyChanged
     public bool FilterOccupied => StatusFilter == "Occupied";
 
     public ObservableCollection<TableWithReservationDto> FilteredTables { get; } = new();
+    public ObservableCollection<ActivityBoardGroupDto> ActivityBoardGroups { get; } = new();
+
+    public bool ShowActivitySelection
+    {
+        get => _showActivitySelection;
+        set { _showActivitySelection = value; OnPropertyChanged(nameof(ShowActivitySelection)); }
+    }
+
+    public bool IsLoadingActivities
+    {
+        get => _isLoadingActivities;
+        set { _isLoadingActivities = value; OnPropertyChanged(nameof(IsLoadingActivities)); }
+    }
 
     public bool ShowMoveTableDialog
     {
@@ -116,12 +134,18 @@ public class TablesViewModel : INotifyPropertyChanged
     public ICommand LogoutCommand { get; }
     public ICommand SetStatusFilterCommand { get; }
     public ICommand CancelOrderCommand { get; }
+    public ICommand AddItemsToOrderCommand { get; }
+    public ICommand AddActivityToOrderCommand { get; }
+    public ICommand SelectActivityCommand { get; }
+    public ICommand CloseActivitySelectionCommand { get; }
+    public ICommand StopSessionCommand { get; }
 
-    public TablesViewModel(TableService tableService, AuthService authService, OrderService orderService)
+    public TablesViewModel(TableService tableService, AuthService authService, OrderService orderService, ActivityService activityService)
     {
         _tableService = tableService;
         _authService = authService;
         _orderService = orderService;
+        _activityService = activityService;
 
         LoadTablesCommand = new Command(async () => await LoadTablesAsync());
         RefreshCommand = new Command(async () => await RefreshAsync());
@@ -136,6 +160,11 @@ public class TablesViewModel : INotifyPropertyChanged
         LogoutCommand = new Command(async () => await LogoutAsync());
         SetStatusFilterCommand = new Command<string>(filter => StatusFilter = filter ?? "All");
         CancelOrderCommand = new Command<TableOrderSummaryDto>(async (order) => await CancelOrderAsync(order));
+        AddItemsToOrderCommand = new Command<TableOrderSummaryDto>(async (order) => await AddItemsToOrderAsync(order));
+        AddActivityToOrderCommand = new Command<TableOrderSummaryDto>(async (order) => await AddActivityToOrderAsync(order));
+        SelectActivityCommand = new Command<ActivityBoardItemDto>(async (a) => await SelectActivityAsync(a));
+        CloseActivitySelectionCommand = new Command(() => ShowActivitySelection = false);
+        StopSessionCommand = new Command<ActivitySessionSummaryDto>(async (s) => await StopSessionAsync(s));
     }
 
     public async Task LoadTablesAsync()
@@ -151,6 +180,8 @@ public class TablesViewModel : INotifyPropertyChanged
 
             if (tables != null)
             {
+                var previousSelectedId = SelectedTable?.Id;
+
                 Tables.Clear();
                 // Sort: reserved tables first, then by table number
                 foreach (var table in tables.OrderByDescending(t => t.IsReserved).ThenBy(t => t.Number))
@@ -160,6 +191,14 @@ public class TablesViewModel : INotifyPropertyChanged
                 UpdateFilteredTables();
                 OnPropertyChanged(nameof(AvailableCount));
                 OnPropertyChanged(nameof(OccupiedCount));
+
+                // Re-select and refresh order items for the previously open table
+                if (previousSelectedId.HasValue)
+                {
+                    var reselected = Tables.FirstOrDefault(t => t.Id == previousSelectedId.Value);
+                    if (reselected != null)
+                        await SelectTableAsync(reselected);
+                }
             }
             else if (!string.IsNullOrEmpty(error))
             {
@@ -206,6 +245,8 @@ public class TablesViewModel : INotifyPropertyChanged
                 if (orderLookup.TryGetValue(orderSummary.Id, out var fullOrder))
                 {
                     orderSummary.Items = fullOrder.Items;
+                    orderSummary.ActivitySessions = fullOrder.ActivitySessions;
+                    orderSummary.TotalAmount = fullOrder.TotalAmount;
                 }
             }
 
@@ -220,6 +261,16 @@ public class TablesViewModel : INotifyPropertyChanged
         if (SelectedTable == null || !SelectedTable.IsReserved) return;
 
         var loc = LocalizationService.Instance;
+
+        // Block checkout if any order has an active activity session
+        var hasActiveSession = SelectedTable.CurrentReservation?.Orders
+            .Any(o => o.ActivitySessions.Any(s => s.IsActive)) == true;
+
+        if (hasActiveSession)
+        {
+            await ShowAlertAsync(loc["Checkout"], loc["ActiveSessionBlocksCheckout"], loc["OK"]);
+            return;
+        }
 
         // Confirm checkout
         var confirm = await ShowAlertAsync(
@@ -445,6 +496,113 @@ public class TablesViewModel : INotifyPropertyChanged
         }
         finally
         {
+            IsLoading = false;
+        }
+    }
+
+    private async Task StopSessionAsync(ActivitySessionSummaryDto? session)
+    {
+        if (session?.SessionStatus != ActivitySessionStatus.Active) return;
+
+        var loc = LocalizationService.Instance;
+
+        var confirm = await ShowAlertAsync(
+            loc["StopSession"],
+            $"{loc["ConfirmStopSession"]} {session.ActivityName}?",
+            loc["Confirm"],
+            loc["Cancel"]
+        );
+
+        if (!confirm) return;
+
+        IsLoading = true;
+
+        try
+        {
+            var (result, error) = await _activityService.StopSessionAsync(session.Id);
+
+            if (result != null)
+            {
+                await ShowAlertAsync(
+                    loc["StopSession"],
+                    $"{session.ActivityName}\n{loc["Duration"]}: {result.DurationDisplay}\n{loc["TotalAmount"]}: {result.TotalAmountDisplay}",
+                    loc["OK"]
+                );
+
+                // Full reload so both the table card total and the details panel update
+                await LoadTablesAsync();
+            }
+            else if (!string.IsNullOrEmpty(error))
+            {
+                await ShowAlertAsync(loc["Error"], error, loc["OK"]);
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task AddItemsToOrderAsync(TableOrderSummaryDto? order)
+    {
+        if (order == null) return;
+        var parameters = new Dictionary<string, object>
+        {
+            ["orderId"] = order.Id.ToString(),
+            ["orderNumber"] = order.OrderNumber
+        };
+        await Shell.Current.GoToAsync("AddToOrderPage", parameters);
+    }
+
+    private async Task AddActivityToOrderAsync(TableOrderSummaryDto? order)
+    {
+        if (order == null) return;
+        _selectedOrderForActivity = order;
+        IsLoadingActivities = true;
+        ShowActivitySelection = true;
+
+        var (groups, error) = await _activityService.GetActivityBoardAsync();
+        if (groups != null)
+        {
+            ActivityBoardGroups.Clear();
+            foreach (var g in groups)
+                ActivityBoardGroups.Add(g);
+        }
+        IsLoadingActivities = false;
+    }
+
+    private async Task SelectActivityAsync(ActivityBoardItemDto activity)
+    {
+        if (activity == null || !activity.IsActive || _selectedOrderForActivity == null) return;
+
+        ShowActivitySelection = false;
+        IsLoading = true;
+
+        try
+        {
+            var request = new StartActivitySessionRequest
+            {
+                ActivityId = activity.Id,
+                OrderId = _selectedOrderForActivity.Id
+            };
+
+            var (session, error) = await _activityService.StartSessionAsync(request);
+
+            var loc = LocalizationService.Instance;
+            if (session != null)
+            {
+                // Reload orders so the new session appears on the card
+                if (SelectedTable != null)
+                    await LoadOrderItemsAsync(SelectedTable);
+            }
+            else if (!string.IsNullOrEmpty(error))
+            {
+                await ShowAlertAsync(loc["Error"], error, loc["OK"]);
+            }
+        }
+        finally
+        {
+            _selectedOrderForActivity = null;
             IsLoading = false;
         }
     }

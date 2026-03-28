@@ -7,6 +7,7 @@ namespace Trenios.Mobile.Pages;
 public partial class TablesPage : ContentPage
 {
     private readonly TablesViewModel _viewModel;
+    private IDispatcherTimer? _liveTimer;
 
     public TablesPage(TablesViewModel viewModel)
     {
@@ -39,6 +40,25 @@ public partial class TablesPage : ContentPage
     {
         base.OnAppearing();
         _ = _viewModel.LoadTablesAsync();
+
+        _liveTimer = Dispatcher.CreateTimer();
+        _liveTimer.Interval = TimeSpan.FromSeconds(1);
+        _liveTimer.Tick += (s, e) =>
+        {
+            var orders = _viewModel.SelectedTable?.CurrentReservation?.Orders;
+            if (orders == null) return;
+            foreach (var order in orders)
+                foreach (var session in order.ActivitySessions)
+                    session.Tick();
+        };
+        _liveTimer.Start();
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _liveTimer?.Stop();
+        _liveTimer = null;
     }
 
     private void UpdateLanguageLabels()

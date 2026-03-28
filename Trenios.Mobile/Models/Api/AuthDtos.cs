@@ -155,4 +155,7 @@ public class BranchDto
 
     [JsonPropertyName("requireTableForDineIn")]
     public bool RequireTableForDineIn { get; set; } = false;
+
+    [JsonPropertyName("isActivityEnabled")]
+    public bool IsActivityEnabled { get; set; } = false;
 }

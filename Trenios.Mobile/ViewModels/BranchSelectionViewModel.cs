@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Trenios.Mobile.Models.Api;
 using Trenios.Mobile.Services;
+using Trenios.Mobile;
 
 namespace Trenios.Mobile.ViewModels;
 
@@ -137,6 +138,9 @@ public class BranchSelectionViewModel : BaseViewModel
         _authService.SetSelectedBranch(branch.Id, branch.Name, branch);
 
         await Shell.Current.GoToAsync("//MainTabs");
+
+        if (Shell.Current is AppShell appShell)
+            appShell.ApplyBranchSettings(_authService);
     }
 
     private async Task GoBackAsync()

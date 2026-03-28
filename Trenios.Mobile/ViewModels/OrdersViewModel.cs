@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using Trenios.Mobile.Models.Api;
 using Trenios.Mobile.Services;
+using Trenios.Mobile.Helpers;
 
 namespace Trenios.Mobile.ViewModels;
 
@@ -23,6 +24,7 @@ public class OrdersViewModel : INotifyPropertyChanged
     private readonly ApiService _apiService;
     private readonly AuthService _authService;
     private readonly OrderHubService _orderHubService;
+    private readonly ActivityService _activityService;
 
     private bool _isLoading;
     private bool _isRefreshing;
@@ -32,11 +34,26 @@ public class OrdersViewModel : INotifyPropertyChanged
     private DateTime _endDate = DateTime.Today;
     private bool _showTodayOnly = true;
     private IReadOnlyList<OrderGroup> _groupedOrders = Array.Empty<OrderGroup>();
+    private bool _showActivitySelection;
+    private bool _isLoadingActivities;
 
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ObservableCollection<OrderResponse> Orders { get; } = new();
+    public ObservableCollection<ActivityBoardGroupDto> ActivityBoardGroups { get; } = new();
+
+    public bool ShowActivitySelection
+    {
+        get => _showActivitySelection;
+        set { _showActivitySelection = value; OnPropertyChanged(nameof(ShowActivitySelection)); }
+    }
+
+    public bool IsLoadingActivities
+    {
+        get => _isLoadingActivities;
+        set { _isLoadingActivities = value; OnPropertyChanged(nameof(IsLoadingActivities)); }
+    }
 
     public IReadOnlyList<OrderGroup> GroupedOrders
     {
@@ -79,11 +96,24 @@ public class OrdersViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(SelectedOrder));
             OnPropertyChanged(nameof(HasSelectedOrder));
             OnPropertyChanged(nameof(SelectedOrderCanChangeStatus));
+            OnPropertyChanged(nameof(CanCompleteSelectedOrder));
+            OnPropertyChanged(nameof(CanAddActivity));
+            OnPropertyChanged(nameof(ShowActivitiesCard));
         }
     }
 
+    // Set by ActivityBoardViewModel before navigating to this tab to pre-select an order.
+    public static Guid? PendingOrderId { get; set; }
+
     public bool HasSelectedOrder => SelectedOrder != null;
     public bool SelectedOrderCanChangeStatus => SelectedOrder?.CanChangeStatus ?? false;
+    public bool CanCompleteSelectedOrder => SelectedOrder?.CanChangeStatus == true && SelectedOrder?.HasActiveSession == false;
+    public bool IsActivityEnabled => _authService.IsActivityEnabled;
+    public bool CanAddActivity => IsActivityEnabled && SelectedOrderCanChangeStatus;
+
+    // Show the activities card if the feature is enabled OR if the order has historic session data
+    public bool ShowActivitiesCard => (IsActivityEnabled && (SelectedOrder?.HasActivitySessions == true || SelectedOrderCanChangeStatus))
+                                      || SelectedOrder?.HasActivitySessions == true;
 
     public OrderStatus? StatusFilter
     {
@@ -169,12 +199,18 @@ public class OrdersViewModel : INotifyPropertyChanged
     public ICommand CompleteOrderSwipeCommand { get; }
     public ICommand CancelOrderSwipeCommand { get; }
     public ICommand LogoutCommand { get; }
+    public ICommand StopSessionFromOrderCommand { get; }
+    public ICommand AddItemsToOrderCommand { get; }
+    public ICommand AddActivityToOrderCommand { get; }
+    public ICommand SelectActivityCommand { get; }
+    public ICommand CloseActivitySelectionCommand { get; }
 
-    public OrdersViewModel(ApiService apiService, AuthService authService, OrderHubService orderHubService)
+    public OrdersViewModel(ApiService apiService, AuthService authService, OrderHubService orderHubService, ActivityService activityService)
     {
         _apiService = apiService;
         _authService = authService;
         _orderHubService = orderHubService;
+        _activityService = activityService;
 
         LoadOrdersCommand = new Command(async () => await LoadOrdersAsync());
         RefreshCommand = new Command(async () => await RefreshAsync());
@@ -185,6 +221,11 @@ public class OrdersViewModel : INotifyPropertyChanged
         CompleteOrderSwipeCommand = new Command<OrderResponse>(async (order) => await CompleteOrderAsync(order));
         CancelOrderSwipeCommand = new Command<OrderResponse>(async (order) => await CancelOrderAsync(order));
         LogoutCommand = new Command(async () => await LogoutAsync());
+        StopSessionFromOrderCommand = new Command<ActivitySessionSummaryDto>(async (s) => await StopSessionFromOrderAsync(s));
+        AddItemsToOrderCommand = new Command(async () => await AddItemsToOrderAsync());
+        AddActivityToOrderCommand = new Command(async () => await AddActivityToOrderAsync());
+        SelectActivityCommand = new Command<ActivityBoardItemDto>(async (a) => await SelectActivityAsync(a));
+        CloseActivitySelectionCommand = new Command(() => ShowActivitySelection = false);
 
         // Subscribe to real-time hub events
         _orderHubService.OnOrderCreated += HandleOrderCreated;
@@ -198,6 +239,15 @@ public class OrdersViewModel : INotifyPropertyChanged
             await _orderHubService.ConnectAsync(branchId.Value);
 
         await LoadOrdersAsync();
+
+        if (PendingOrderId.HasValue)
+        {
+            var pending = PendingOrderId.Value;
+            PendingOrderId = null;
+            var order = Orders.FirstOrDefault(o => o.Id == pending);
+            if (order != null)
+                SelectedOrder = order;
+        }
     }
 
     public async Task LoadOrdersAsync()
@@ -229,11 +279,35 @@ public class OrdersViewModel : INotifyPropertyChanged
                     .OrderByDescending(o => o.PlacedAt)
                     .ToList();
 
-                Orders.Clear();
+                // Preserve tableId/tableNumber from in-memory orders when the list
+                // endpoint omits those fields (backend may not include them in list responses).
                 foreach (var order in sorted)
-                    Orders.Add(order);
+                {
+                    if (!order.TableId.HasValue && string.IsNullOrEmpty(order.TableNumber))
+                    {
+                        var existing = Orders.FirstOrDefault(o => o.Id == order.Id);
+                        if (existing != null)
+                        {
+                            order.TableId = existing.TableId;
+                            order.TableNumber = existing.TableNumber;
+                        }
+                    }
+                }
 
-                RebuildGroups();
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    var previousSelectedId = SelectedOrder?.Id;
+
+                    Orders.Clear();
+                    foreach (var order in sorted)
+                        Orders.Add(order);
+
+                    RebuildGroups();
+
+                    // Re-select from fresh data so the details panel reflects the latest state
+                    if (previousSelectedId.HasValue)
+                        SelectedOrder = Orders.FirstOrDefault(o => o.Id == previousSelectedId.Value);
+                });
             }
         }
         finally
@@ -324,12 +398,25 @@ public class OrdersViewModel : INotifyPropertyChanged
         if (SelectedOrder == null) return;
         if (!Enum.TryParse<OrderStatus>(statusStr, out var newStatus)) return;
 
+        var loc = LocalizationService.Instance;
+
+        if (SelectedOrder.HasTable && (newStatus == OrderStatus.Completed || newStatus == OrderStatus.Cancelled))
+        {
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], loc["TableOrderBlocksAction"], loc["OK"]);
+            return;
+        }
+
+        if (newStatus == OrderStatus.Completed && SelectedOrder.HasActiveSession)
+        {
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], loc["ActiveSessionBlocksComplete"], loc["OK"]);
+            return;
+        }
+
         string? cancellationReason = null;
 
         // If cancelling, prompt for reason
         if (newStatus == OrderStatus.Cancelled)
         {
-            var loc = LocalizationService.Instance;
             cancellationReason = await Application.Current?.MainPage?.DisplayPromptAsync(
                 loc["CancelOrderTitle"],
                 loc["EnterCancellationReason"],
@@ -349,7 +436,8 @@ public class OrdersViewModel : INotifyPropertyChanged
             CancellationReason = cancellationReason
         };
 
-        var result = await _apiService.PatchAsync<OrderResponse>($"/api/orders/{SelectedOrder.Id}/status", request);
+        var orderToCancel = SelectedOrder;
+        var result = await _apiService.PatchAsync<OrderResponse>($"/api/orders/{orderToCancel.Id}/status", request);
 
         if (result.IsSuccess)
         {
@@ -357,17 +445,44 @@ public class OrdersViewModel : INotifyPropertyChanged
                 ApplyOrderUpdate(result.Data);
             else
                 _ = LoadOrdersAsync(); // fallback if API returns no body
+
+            // Cancel any active activity session linked to this order, then reload so
+            // the Stop button and timer disappear from the details panel.
+            if (newStatus == OrderStatus.Cancelled)
+            {
+                var activeSession = orderToCancel.ActivitySessions
+                    .FirstOrDefault(s => s.SessionStatus == ActivitySessionStatus.Active);
+                if (activeSession != null)
+                {
+                    await _activityService.CancelSessionAsync(activeSession.Id, cancellationReason);
+                    var selectedId = orderToCancel.Id;
+                    await LoadOrdersAsync();
+                    SelectedOrder = Orders.FirstOrDefault(o => o.Id == selectedId);
+                }
+            }
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
-            var loc = LocalizationService.Instance;
-            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], result.ErrorMessage, loc["OK"]);
+            // If the backend blocked completion due to an active session, show the localized message
+            // instead of the raw English server error (list endpoint may not return hasActiveSession).
+            var message = newStatus == OrderStatus.Completed
+                ? loc["ActiveSessionBlocksComplete"]
+                : result.ErrorMessage;
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], message, loc["OK"]);
         }
     }
 
     private async Task CompleteOrderAsync(OrderResponse? order)
     {
         if (order == null || !order.CanSwipe) return;
+
+        var loc = LocalizationService.Instance;
+
+        if (order.HasTable)
+        {
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], loc["TableOrderBlocksAction"], loc["OK"]);
+            return;
+        }
 
         var request = new UpdateOrderStatusRequest
         {
@@ -385,7 +500,6 @@ public class OrdersViewModel : INotifyPropertyChanged
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
-            var loc = LocalizationService.Instance;
             await Application.Current?.MainPage?.DisplayAlert(loc["Error"], result.ErrorMessage, loc["OK"]);
         }
     }
@@ -394,8 +508,13 @@ public class OrdersViewModel : INotifyPropertyChanged
     {
         if (order == null || !order.CanSwipe) return;
 
-        // Prompt for cancellation reason
         var loc = LocalizationService.Instance;
+
+        if (order.HasTable)
+        {
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], loc["TableOrderBlocksAction"], loc["OK"]);
+            return;
+        }
         var cancellationReason = await Application.Current?.MainPage?.DisplayPromptAsync(
             loc["CancelOrderTitle"],
             loc["EnterCancellationReason"],
@@ -437,6 +556,110 @@ public class OrdersViewModel : INotifyPropertyChanged
     private void HandleOrderStatusUpdated(OrderResponse order)
     {
         ApplyOrderUpdate(order);
+    }
+
+    private async Task StopSessionFromOrderAsync(ActivitySessionSummaryDto session)
+    {
+        if (session?.SessionStatus != ActivitySessionStatus.Active) return;
+
+        var loc = LocalizationService.Instance;
+
+        var confirm = await (Application.Current?.MainPage?.DisplayAlert(
+            loc["StopSession"],
+            $"{loc["ConfirmStopSession"]} {session.ActivityName}?",
+            loc["Confirm"],
+            loc["Cancel"]
+        ) ?? Task.FromResult(false));
+
+        if (!confirm) return;
+
+        var (result, error) = await _activityService.StopSessionAsync(session.Id);
+
+        if (result != null)
+        {
+            await Application.Current?.MainPage?.DisplayAlert(
+                loc["StopSession"],
+                $"{session.ActivityName}\n{loc["Duration"]}: {result.DurationDisplay}\n{loc["TotalAmount"]}: {result.TotalAmountDisplay}",
+                loc["OK"]
+            );
+
+            // Reload orders and re-select the same order
+            var selectedId = SelectedOrder?.Id;
+            await LoadOrdersAsync();
+            if (selectedId.HasValue)
+                SelectedOrder = Orders.FirstOrDefault(o => o.Id == selectedId.Value);
+        }
+        else if (!string.IsNullOrEmpty(error))
+        {
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], error, loc["OK"]);
+        }
+    }
+
+    private async Task AddItemsToOrderAsync()
+    {
+        if (SelectedOrder == null) return;
+
+        var parameters = new Dictionary<string, object>
+        {
+            ["orderId"] = SelectedOrder.Id.ToString(),
+            ["orderNumber"] = SelectedOrder.OrderNumber
+        };
+        await Shell.Current.GoToAsync("AddToOrderPage", parameters);
+    }
+
+    private async Task AddActivityToOrderAsync()
+    {
+        if (SelectedOrder == null) return;
+
+        IsLoadingActivities = true;
+        ShowActivitySelection = true;
+
+        try
+        {
+            var (groups, error) = await _activityService.GetActivityBoardAsync();
+            if (groups != null)
+            {
+                ActivityBoardGroups.Clear();
+                foreach (var g in groups)
+                    ActivityBoardGroups.Add(g);
+            }
+            else if (!string.IsNullOrEmpty(error))
+            {
+                ShowActivitySelection = false;
+                var loc = LocalizationService.Instance;
+                await Application.Current?.MainPage?.DisplayAlert(loc["Error"], error, loc["OK"]);
+            }
+        }
+        finally
+        {
+            IsLoadingActivities = false;
+        }
+    }
+
+    private async Task SelectActivityAsync(ActivityBoardItemDto activity)
+    {
+        if (activity == null || !activity.IsActive || activity.IsOccupied) return;
+        if (SelectedOrder == null) return;
+
+        ShowActivitySelection = false;
+
+        var (session, error) = await _activityService.StartSessionAsync(new StartActivitySessionRequest
+        {
+            ActivityId = activity.Id,
+            OrderId = SelectedOrder.Id
+        });
+
+        if (session != null)
+        {
+            var selectedId = SelectedOrder.Id;
+            await LoadOrdersAsync();
+            SelectedOrder = Orders.FirstOrDefault(o => o.Id == selectedId);
+        }
+        else if (!string.IsNullOrEmpty(error))
+        {
+            var loc = LocalizationService.Instance;
+            await Application.Current?.MainPage?.DisplayAlert(loc["Error"], error, loc["OK"]);
+        }
     }
 
     private async Task LogoutAsync()

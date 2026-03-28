@@ -61,7 +61,7 @@
                 <Border Style="{StaticResource OrderItemCard}"
                         Margin="0,0,0,8">
                     <Grid ColumnDefinitions="*,Auto"
-                          RowDefinitions="Auto,Auto,Auto">
+                          RowDefinitions="Auto,Auto,Auto,Auto">
                         <!-- Product Name -->
                         <Label Grid.Row="0" Grid.Column="0"
                                Text="{Binding MenuItemName}"
@@ -69,21 +69,56 @@
                                FontSize="14"
                                LineBreakMode="TailTruncation"/>
 
-                        <!-- Price -->
-                        <Label Grid.Row="0" Grid.Column="1"
-                               Text="{Binding TotalPriceDisplay}"
-                               Style="{StaticResource Price}"
-                               FontSize="14"/>
+                        <!-- Price column: strikethrough original + discounted (when discount) or normal price -->
+                        <VerticalStackLayout Grid.Row="0" Grid.Column="1"
+                                             HorizontalOptions="End"
+                                             Spacing="0">
+                            <!-- Original price (strikethrough) — shown only when discount applies -->
+                            <Label Text="{Binding OriginalTotalPriceDisplay}"
+                                   FontSize="11"
+                                   TextColor="{StaticResource Gray400}"
+                                   HorizontalTextAlignment="End"
+                                   IsVisible="{Binding HasDiscount}">
+                                <Label.TextDecorations>Strikethrough</Label.TextDecorations>
+                            </Label>
+                            <!-- Discounted / regular price -->
+                            <Label Text="{Binding TotalPriceDisplay}"
+                                   Style="{StaticResource Price}"
+                                   FontSize="14"
+                                   HorizontalTextAlignment="End"/>
+                        </VerticalStackLayout>
+
+                        <!-- Discount badge — shown only when discount applies -->
+                        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                BackgroundColor="{StaticResource Success}"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 4"
+                                Padding="6,2"
+                                HorizontalOptions="Start"
+                                Margin="0,4,0,0"
+                                IsVisible="{Binding HasDiscount}">
+                            <Label FontSize="11"
+                                   TextColor="White"
+                                   FontFamily="OpenSansSemibold">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding DiscountName}"/>
+                                        <Span Text=" · "/>
+                                        <Span Text="{Binding DisplayDiscount}"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </Border>
 
                         <!-- Additions -->
-                        <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                        <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
                                Text="{Binding AdditionsSummary}"
                                Style="{StaticResource Caption}"
                                IsVisible="{Binding AdditionsSummary, Converter={StaticResource IsNotNullConverter}}"
                                Margin="0,4,0,0"/>
 
                         <!-- Quantity Controls -->
-                        <HorizontalStackLayout Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                        <HorizontalStackLayout Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
                                                Spacing="12"
                                                Margin="0,8,0,0">
                             <Button Text="-"
@@ -371,17 +406,33 @@
                 </CollectionView>
 
                 <!-- Totals -->
-                <Grid Grid.Row="2"
-                      Padding="16,12"
-                      ColumnDefinitions="*,Auto"
-                      BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}">
-                    <Label Text="{h:Translate Total}"
-                           Style="{StaticResource Title}"
-                           VerticalOptions="Center"/>
-                    <Label Grid.Column="1"
-                           Text="{Binding SubtotalDisplay}"
-                           Style="{StaticResource TotalPrice}"/>
-                </Grid>
+                <VerticalStackLayout Grid.Row="2"
+                                     Padding="16,12"
+                                     Spacing="4"
+                                     BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}">
+                    <!-- Discount row — visible only when discounts apply -->
+                    <Grid ColumnDefinitions="*,Auto"
+                          IsVisible="{Binding HasCartDiscount}">
+                        <Label Text="{h:Translate Discount}"
+                               Style="{StaticResource Caption}"
+                               TextColor="{StaticResource Success}"
+                               VerticalOptions="Center"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding DiscountAmountDisplay}"
+                               FontFamily="OpenSansSemibold"
+                               FontSize="14"
+                               TextColor="{StaticResource Success}"/>
+                    </Grid>
+                    <!-- Total row -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="{h:Translate Total}"
+                               Style="{StaticResource Title}"
+                               VerticalOptions="Center"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding SubtotalDisplay}"
+                               Style="{StaticResource TotalPrice}"/>
+                    </Grid>
+                </VerticalStackLayout>
 
                 <!-- Quick Actions -->
                 <Grid Grid.Row="3"
@@ -600,17 +651,33 @@
                     </CollectionView>
 
                     <!-- Totals -->
-                    <Grid Grid.Row="2"
-                          Padding="16,12"
-                          ColumnDefinitions="*,Auto"
-                          BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}">
-                        <Label Text="{h:Translate Total}"
-                               Style="{StaticResource Title}"
-                               VerticalOptions="Center"/>
-                        <Label Grid.Column="1"
-                               Text="{Binding SubtotalDisplay}"
-                               Style="{StaticResource TotalPrice}"/>
-                    </Grid>
+                    <VerticalStackLayout Grid.Row="2"
+                                         Padding="16,12"
+                                         Spacing="4"
+                                         BackgroundColor="{AppThemeBinding Light={StaticResource Gray50}, Dark={StaticResource Gray700}}">
+                        <!-- Discount row -->
+                        <Grid ColumnDefinitions="*,Auto"
+                              IsVisible="{Binding HasCartDiscount}">
+                            <Label Text="{h:Translate Discount}"
+                                   Style="{StaticResource Caption}"
+                                   TextColor="{StaticResource Success}"
+                                   VerticalOptions="Center"/>
+                            <Label Grid.Column="1"
+                                   Text="{Binding DiscountAmountDisplay}"
+                                   FontFamily="OpenSansSemibold"
+                                   FontSize="14"
+                                   TextColor="{StaticResource Success}"/>
+                        </Grid>
+                        <!-- Total row -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="{h:Translate Total}"
+                                   Style="{StaticResource Title}"
+                                   VerticalOptions="Center"/>
+                            <Label Grid.Column="1"
+                                   Text="{Binding SubtotalDisplay}"
+                                   Style="{StaticResource TotalPrice}"/>
+                        </Grid>
+                    </VerticalStackLayout>
 
                     <!-- Quick Actions -->
                     <Grid Grid.Row="3"
