@@ -7,14 +7,13 @@ variables:
   ANDROID_SDK_ROOT: "/android-sdk"
   ANDROID_HOME: "/android-sdk"
 
-# ─── DEVELOP BRANCH ───────────────────────────────────────────────────────────
+# ─── TEST (ANY BRANCH EXCEPT MAIN) ────────────────────────────────────────────
 
 build-android:
   stage: build
   image: mcr.microsoft.com/dotnet/sdk:9.0
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
-    - when: manual
+    - if: '$CI_COMMIT_BRANCH != "main"'
   before_script:
     - apt-get update -qq && apt-get install -y -qq openjdk-17-jdk-headless unzip wget
     - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
@@ -53,8 +52,7 @@ build-ios:
   stage: build
   image: alpine:latest
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
-    - when: manual
+    - if: '$CI_COMMIT_BRANCH != "main"'
   script:
     - apk add --no-cache curl
     - |
@@ -62,7 +60,7 @@ build-ios:
         -H "Authorization: Bearer $GITHUB_TOKEN" \
         -H "Accept: application/vnd.github.v3+json" \
         https://api.github.com/repos/$GITHUB_IOS_REPO/actions/workflows/ios-test.yml/dispatches \
-        -d '{"ref":"develop"}'
+        -d "{\"ref\":\"$CI_COMMIT_BRANCH\"}"
     - echo "iOS build triggered on GitHub Actions"
 
 publish-android-test:
@@ -70,7 +68,7 @@ publish-android-test:
   image: ruby:3.2
   needs: [build-android]
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_BRANCH != "main"'
   before_script:
     - gem install fastlane -NV
   script:

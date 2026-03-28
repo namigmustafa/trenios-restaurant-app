@@ -6,6 +6,7 @@ namespace Trenios.Mobile.Pages;
 public partial class OrdersPage : ContentPage
 {
     private readonly OrdersViewModel _viewModel;
+    private IDispatcherTimer? _liveTimer;
 
     public OrdersPage(OrdersViewModel viewModel)
     {
@@ -26,9 +27,12 @@ public partial class OrdersPage : ContentPage
             {
                 await Dispatcher.DispatchAsync(() =>
                 {
-                    var items = OrdersCollectionView.ItemsSource;
+                    // Always read from the ViewModel, not from ItemsSource.
+                    // Reading ItemsSource after the first cycle returns a stale static
+                    // reference (the data binding is broken by setting ItemsSource = null),
+                    // so subsequent updates would silently restore the old list.
                     OrdersCollectionView.ItemsSource = null;
-                    OrdersCollectionView.ItemsSource = items;
+                    OrdersCollectionView.ItemsSource = _viewModel.GroupedOrders;
                 });
             }
         };
@@ -37,8 +41,25 @@ public partial class OrdersPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        // Fire-and-forget: page appears immediately, data loads in background
         _ = _viewModel.InitializeAsync();
+
+        _liveTimer = Dispatcher.CreateTimer();
+        _liveTimer.Interval = TimeSpan.FromSeconds(1);
+        _liveTimer.Tick += (s, e) =>
+        {
+            var sessions = _viewModel.SelectedOrder?.ActivitySessions;
+            if (sessions == null) return;
+            foreach (var session in sessions)
+                session.Tick();
+        };
+        _liveTimer.Start();
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _liveTimer?.Stop();
+        _liveTimer = null;
     }
 
     private void UpdateLanguageLabels()

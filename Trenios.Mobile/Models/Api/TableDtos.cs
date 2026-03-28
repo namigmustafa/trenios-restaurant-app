@@ -208,9 +208,18 @@ public class TableOrderSummaryDto
     [JsonPropertyName("items")]
     public List<OrderItemResponse> Items { get; set; } = new();
 
+    [JsonPropertyName("activitySessions")]
+    public List<ActivitySessionSummaryDto> ActivitySessions { get; set; } = new();
+
     // Helper properties
     [JsonIgnore]
     public bool HasItems => Items?.Count > 0;
+
+    [JsonIgnore]
+    public bool HasActivitySessions => ActivitySessions?.Count > 0;
+
+    [JsonIgnore]
+    public bool CanChangeStatus => OrderStatus != Api.OrderStatus.Cancelled && OrderStatus != Api.OrderStatus.Completed;
     [JsonIgnore]
     public OrderStatus OrderStatus => (OrderStatus)Status;
     [JsonIgnore]

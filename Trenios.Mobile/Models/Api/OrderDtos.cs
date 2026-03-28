@@ -4,6 +4,12 @@ using Trenios.Mobile.Services;
 
 namespace Trenios.Mobile.Models.Api;
 
+public class AddOrderItemsRequest
+{
+    [JsonPropertyName("items")]
+    public List<CreateOrderItemRequest> Items { get; set; } = new();
+}
+
 public class CreateOrderRequest
 {
     [JsonPropertyName("branchId")]
@@ -30,8 +36,12 @@ public class CreateOrderItemRequest
     [JsonPropertyName("quantity")]
     public int Quantity { get; set; }
 
-    [JsonPropertyName("unitPrice")]
-    public decimal UnitPrice { get; set; }
+    /// <summary>
+    /// The discounted unit price returned by validate-cart.
+    /// Backend compares this against its own calculation; returns HTTP 409 if they differ.
+    /// </summary>
+    [JsonPropertyName("expectedUnitPrice")]
+    public decimal ExpectedUnitPrice { get; set; }
 
     [JsonPropertyName("notes")]
     public string? Notes { get; set; }
@@ -93,6 +103,12 @@ public class OrderResponse
     [JsonPropertyName("items")]
     public List<OrderItemResponse> Items { get; set; } = new();
 
+    [JsonPropertyName("activitySessions")]
+    public List<ActivitySessionSummaryDto> ActivitySessions { get; set; } = new();
+
+    [JsonPropertyName("hasActiveSession")]
+    public bool HasActiveSession { get; set; }
+
     [JsonPropertyName("placedAt")]
     public DateTime PlacedAt { get; set; }
 
@@ -129,7 +145,10 @@ public class OrderResponse
     }
 
     [JsonIgnore]
-    public bool HasTable => !string.IsNullOrEmpty(TableNumber);
+    public bool HasActivitySessions => ActivitySessions.Count > 0;
+
+    [JsonIgnore]
+    public bool HasTable => TableId.HasValue || !string.IsNullOrEmpty(TableNumber);
 
     [JsonIgnore]
     public string TableDisplay => HasTable ? $"{LocalizationService.Instance["Table"]} {TableNumber}" : string.Empty;
@@ -162,6 +181,9 @@ public class OrderResponse
         OrderStatus.Cancelled => Colors.Red,
         _ => Colors.Gray
     };
+
+    [JsonIgnore]
+    public bool HasDiscount => DiscountAmount > 0;
 
     [JsonIgnore]
     public string TotalAmountDisplay => CurrencyFormatter.Format(TotalAmount);
@@ -266,8 +288,26 @@ public class OrderItemResponse
     [JsonPropertyName("quantity")]
     public int Quantity { get; set; }
 
+    /// <summary>Discounted unit price (what was charged per unit).</summary>
     [JsonPropertyName("unitPrice")]
     public decimal UnitPrice { get; set; }
+
+    /// <summary>Base price before any discount was applied.</summary>
+    [JsonPropertyName("originalUnitPrice")]
+    public decimal OriginalUnitPrice { get; set; }
+
+    /// <summary>Total discount amount for this line item (across all units).</summary>
+    [JsonPropertyName("discountAmount")]
+    public decimal DiscountAmount { get; set; }
+
+    [JsonPropertyName("appliedDiscountName")]
+    public string? AppliedDiscountName { get; set; }
+
+    [JsonPropertyName("appliedDiscountType")]
+    public int? AppliedDiscountType { get; set; }
+
+    [JsonPropertyName("appliedDiscountValue")]
+    public decimal? AppliedDiscountValue { get; set; }
 
     [JsonPropertyName("totalPrice")]
     public decimal TotalPrice { get; set; }
@@ -277,7 +317,32 @@ public class OrderItemResponse
 
     // Helper properties
     [JsonIgnore]
+    public bool HasDiscount => DiscountAmount > 0;
+
+    [JsonIgnore]
     public string TotalPriceDisplay => CurrencyFormatter.Format(TotalPrice);
+
+    [JsonIgnore]
+    public string OriginalTotalPriceDisplay => CurrencyFormatter.Format(OriginalUnitPrice * Quantity);
+
+    [JsonIgnore]
+    public string OriginalUnitPriceDisplay => CurrencyFormatter.Format(OriginalUnitPrice);
+
+    /// <summary>Badge text e.g. "20% OFF" or "€1.00 OFF".</summary>
+    [JsonIgnore]
+    public string? DisplayDiscount => HasDiscount
+        ? AppliedDiscountType == (int)DiscountType.Percentage
+            ? $"{AppliedDiscountValue:0.##}% OFF"
+            : $"{CurrencyFormatter.Format(AppliedDiscountValue ?? DiscountAmount / Quantity)} OFF"
+        : null;
+
+    /// <summary>Discount label shown under item name, e.g. "Summer Sale · 20% OFF".</summary>
+    [JsonIgnore]
+    public string? DiscountLabel => HasDiscount
+        ? string.IsNullOrEmpty(AppliedDiscountName)
+            ? DisplayDiscount
+            : $"{AppliedDiscountName} · {DisplayDiscount}"
+        : null;
 
     [JsonIgnore]
     public bool HasAdditions => Additions?.Count > 0;
@@ -295,6 +360,9 @@ public class OrderItemAdditionResponse
 {
     [JsonPropertyName("id")]
     public Guid Id { get; set; }
+
+    [JsonPropertyName("additionId")]
+    public Guid AdditionId { get; set; }
 
     [JsonPropertyName("additionName")]
     public string AdditionName { get; set; } = string.Empty;
@@ -328,4 +396,126 @@ public class ApiError
 
     [JsonPropertyName("message")]
     public string Message { get; set; } = string.Empty;
+}
+
+// ── Validate-Cart DTOs ──────────────────────────────────────────────────────
+
+public class ValidateCartRequest
+{
+    [JsonPropertyName("branchId")]
+    public Guid BranchId { get; set; }
+
+    [JsonPropertyName("items")]
+    public List<ValidateCartItemRequest> Items { get; set; } = new();
+}
+
+public class ValidateCartItemRequest
+{
+    [JsonPropertyName("menuItemId")]
+    public Guid MenuItemId { get; set; }
+
+    [JsonPropertyName("quantity")]
+    public int Quantity { get; set; }
+}
+
+public class ValidateCartResponse
+{
+    [JsonPropertyName("items")]
+    public List<ValidateCartItemResult> Items { get; set; } = new();
+
+    [JsonPropertyName("cartTotal")]
+    public decimal CartTotal { get; set; }
+
+    [JsonPropertyName("cartDiscountTotal")]
+    public decimal CartDiscountTotal { get; set; }
+}
+
+public class ValidateCartItemResult
+{
+    [JsonPropertyName("menuItemId")]
+    public Guid MenuItemId { get; set; }
+
+    [JsonPropertyName("menuItemName")]
+    public string MenuItemName { get; set; } = string.Empty;
+
+    [JsonPropertyName("quantity")]
+    public int Quantity { get; set; }
+
+    [JsonPropertyName("originalUnitPrice")]
+    public decimal OriginalUnitPrice { get; set; }
+
+    /// <summary>Final unit price after any discount. Use this as ExpectedUnitPrice when creating an order.</summary>
+    [JsonPropertyName("unitPrice")]
+    public decimal UnitPrice { get; set; }
+
+    [JsonPropertyName("discountAmountPerUnit")]
+    public decimal DiscountAmountPerUnit { get; set; }
+
+    [JsonPropertyName("lineTotal")]
+    public decimal LineTotal { get; set; }
+
+    [JsonPropertyName("appliedDiscount")]
+    public AppliedDiscountDto? AppliedDiscount { get; set; }
+
+    // Computed helpers for CartItem mapping
+    [JsonIgnore]
+    public bool HasDiscount => AppliedDiscount != null;
+
+    [JsonIgnore]
+    public string? DiscountName => AppliedDiscount?.Name;
+
+    [JsonIgnore]
+    public string? DisplayDiscount => AppliedDiscount != null
+        ? AppliedDiscount.Type == (int)DiscountType.Percentage
+            ? $"{AppliedDiscount.Value:0.##}% OFF"
+            : $"{Helpers.CurrencyFormatter.Format(AppliedDiscount.Value)} OFF"
+        : null;
+}
+
+public class AppliedDiscountDto
+{
+    [JsonPropertyName("discountId")]
+    public Guid DiscountId { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("target")]
+    public int Target { get; set; }
+
+    [JsonPropertyName("type")]
+    public int Type { get; set; }
+
+    [JsonPropertyName("value")]
+    public decimal Value { get; set; }
+}
+
+// ── Price-Change DTOs (returned with HTTP 409) ─────────────────────────────
+
+public class PriceChangedResponse
+{
+    [JsonPropertyName("changes")]
+    public List<PriceChangedItem> Changes { get; set; } = new();
+
+    /// <summary>Fresh validate-cart result. Use this to refresh CartState before resubmitting.</summary>
+    [JsonPropertyName("updatedCart")]
+    public ValidateCartResponse UpdatedCart { get; set; } = null!;
+}
+
+public class PriceChangedItem
+{
+    [JsonPropertyName("menuItemId")]
+    public Guid MenuItemId { get; set; }
+
+    [JsonPropertyName("menuItemName")]
+    public string MenuItemName { get; set; } = string.Empty;
+
+    [JsonPropertyName("expectedPrice")]
+    public decimal ExpectedPrice { get; set; }
+
+    [JsonPropertyName("currentPrice")]
+    public decimal CurrentPrice { get; set; }
+
+    [JsonPropertyName("changeReason")]
+    public string ChangeReason { get; set; } = string.Empty;
 }

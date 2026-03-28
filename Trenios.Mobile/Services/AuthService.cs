@@ -97,6 +97,8 @@ public class AuthService
 
     public BranchDto? GetCurrentBranch() => CurrentBranch;
 
+    public bool IsActivityEnabled => CurrentBranch?.IsActivityEnabled == true;
+
     /// <summary>
     /// Gets the effective branch name based on user role.
     /// </summary>
