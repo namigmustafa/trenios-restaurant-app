@@ -1,3 +1,4 @@
+using Trenios.Mobile.Helpers;
 using Trenios.Mobile.Models.Api;
 
 namespace Trenios.Mobile.Services;
@@ -236,6 +237,8 @@ public class CartItem
     public decimal AdditionsTotal => Additions.Sum(a => a.TotalPrice);
     public decimal ItemPrice => UnitPrice + AdditionsTotal;
     public decimal TotalPrice => ItemPrice * Quantity;
+    public string TotalPriceDisplay => CurrencyFormatter.Format(TotalPrice);
+    public string UnitPriceDisplay => CurrencyFormatter.Format(UnitPrice);
 
     public string? AdditionsSummary => Additions.Count > 0
         ? string.Join(", ", Additions.Select(a => a.Quantity > 1 ? $"{a.AdditionName} x{a.Quantity}" : a.AdditionName))
@@ -250,6 +253,7 @@ public class SelectedAddition
     public int Quantity { get; set; } = 1;
 
     public decimal TotalPrice => UnitPrice * Quantity;
+    public string TotalPriceDisplay => CurrencyFormatter.Format(TotalPrice);
 
     // Alias for backward compatibility
     public decimal Price => TotalPrice;

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Trenios.Mobile.Helpers;
 using Trenios.Mobile.Services;
 
 namespace Trenios.Mobile.Models.Api;
@@ -106,6 +107,9 @@ public class TableWithReservationDto
         .Sum(o => o.ItemCount) ?? 0;
 
     [JsonIgnore]
+    public string TotalAmountDisplay => CurrencyFormatter.Format(TotalAmount);
+
+    [JsonIgnore]
     public string DurationDisplay => CurrentReservation?.DurationDisplay ?? "";
 }
 
@@ -175,7 +179,7 @@ public class TableReservationDto
         .Sum(o => o.TotalAmount);
 
     [JsonIgnore]
-    public string TotalAmountDisplay => $"€{ActiveOrdersAmount:F2}";
+    public string TotalAmountDisplay => CurrencyFormatter.Format(ActiveOrdersAmount);
 }
 
 /// <summary>
@@ -248,7 +252,7 @@ public class TableOrderSummaryDto
     public string PlacedAtFullDisplay => PlacedAt.ToLocalTime().ToString("MMM dd, HH:mm");
 
     [JsonIgnore]
-    public string TotalAmountDisplay => $"€{TotalAmount:F2}";
+    public string TotalAmountDisplay => CurrencyFormatter.Format(TotalAmount);
 
     [JsonIgnore]
     public string ItemCountDisplay => $"{ItemCount} {LocalizationService.Instance["Items"]}";

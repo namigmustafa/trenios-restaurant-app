@@ -9,11 +9,11 @@
              Title="{h:Translate Reports}"
              Shell.NavBarIsVisible="False">
 
-    <ScrollView BackgroundColor="{StaticResource Gray100}">
+    <ScrollView BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
         <VerticalStackLayout Spacing="0" Padding="0">
 
             <!-- ==================== PAGE HEADER ==================== -->
-            <VerticalStackLayout BackgroundColor="White" Padding="0,0,0,0">
+            <VerticalStackLayout BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}" Padding="0,0,0,0">
                 <Grid Padding="16,12" HeightRequest="64" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                     <Image Source="trenios_logo_red.png"
                            HeightRequest="36"
@@ -25,14 +25,14 @@
                             Padding="12,6"
                             StrokeShape="RoundRectangle 8"
                             StrokeThickness="1.5"
-                            Stroke="{StaticResource Gray300}"
-                            BackgroundColor="White"
+                            Stroke="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                             VerticalOptions="Center">
                         <Label x:Name="LanguageLabel"
                                Text="EN"
                                FontFamily="OpenSansSemibold"
                                FontSize="13"
-                               TextColor="{StaticResource Gray700}"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
                                HorizontalOptions="Center"
                                VerticalOptions="Center" />
                         <Border.GestureRecognizers>
@@ -55,16 +55,16 @@
                         </Border.GestureRecognizers>
                     </Border>
                 </Grid>
-                <BoxView HeightRequest="1" Color="{StaticResource Gray200}" />
+                <BoxView HeightRequest="1" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}" />
             </VerticalStackLayout>
 
             <!-- ==================== CONTEXT CARD ==================== -->
             <Border Margin="16,16,16,0"
                     Padding="16"
-                    BackgroundColor="White"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                     StrokeShape="RoundRectangle 14"
                     StrokeThickness="1"
-                    Stroke="{StaticResource Gray200}">
+                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}">
                 <VerticalStackLayout Spacing="10">
 
                     <!-- Role label and context name -->
@@ -80,10 +80,10 @@
                     <!-- Restaurant picker - SuperAdmin only -->
                     <Border IsVisible="{Binding ShowRestaurantFilter}"
                             Padding="12,10"
-                            BackgroundColor="White"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                             StrokeShape="RoundRectangle 10"
                             StrokeThickness="1"
-                            Stroke="{StaticResource Gray300}">
+                            Stroke="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding SelectRestaurantCommand}" />
                         </Border.GestureRecognizers>
@@ -94,7 +94,7 @@
                                        VerticalOptions="Center" />
                                 <Label Text="{Binding SelectedRestaurantName}"
                                        FontSize="14"
-                                       TextColor="{StaticResource Gray700}"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
                                        VerticalOptions="Center" />
                             </HorizontalStackLayout>
                             <Label Grid.Column="1"
@@ -108,10 +108,10 @@
                     <!-- Branch picker - SuperAdmin and RestaurantOwner -->
                     <Border IsVisible="{Binding ShowBranchFilter}"
                             Padding="12,10"
-                            BackgroundColor="White"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                             StrokeShape="RoundRectangle 10"
                             StrokeThickness="1"
-                            Stroke="{StaticResource Gray300}">
+                            Stroke="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding SelectBranchCommand}" />
                         </Border.GestureRecognizers>
@@ -122,7 +122,7 @@
                                        VerticalOptions="Center" />
                                 <Label Text="{Binding SelectedBranchName}"
                                        FontSize="14"
-                                       TextColor="{StaticResource Gray700}"
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
                                        VerticalOptions="Center" />
                             </HorizontalStackLayout>
                             <Label Grid.Column="1"
@@ -139,10 +139,10 @@
             <!-- ==================== DATE / FILTER CARD ==================== -->
             <Border Margin="16,12,16,0"
                     Padding="16"
-                    BackgroundColor="White"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                     StrokeShape="RoundRectangle 14"
                     StrokeThickness="1"
-                    Stroke="{StaticResource Gray200}">
+                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}">
                 <VerticalStackLayout Spacing="12">
 
                     <!-- Toggle row -->
@@ -155,7 +155,7 @@
                                 <Label Text="{h:Translate ShowTodayOnly}"
                                        FontFamily="OpenSansSemibold"
                                        FontSize="15"
-                                       TextColor="{StaticResource Gray900}" />
+                                       TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
                                 <Label Text="{Binding TodayDisplay}"
                                        FontSize="12"
                                        TextColor="{StaticResource Gray500}"
@@ -177,13 +177,13 @@
                                    FontSize="12"
                                    TextColor="{StaticResource Gray500}" />
                             <Border Padding="10,6"
-                                    BackgroundColor="White"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                                     StrokeShape="RoundRectangle 8"
                                     StrokeThickness="1"
-                                    Stroke="{StaticResource Gray300}">
+                                    Stroke="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}">
                                 <DatePicker Date="{Binding StartDate, Mode=TwoWay}"
                                             FontSize="14"
-                                            TextColor="{StaticResource Gray900}" />
+                                            TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
                             </Border>
                         </VerticalStackLayout>
                         <VerticalStackLayout Grid.Column="1" Spacing="4">
@@ -191,13 +191,13 @@
                                    FontSize="12"
                                    TextColor="{StaticResource Gray500}" />
                             <Border Padding="10,6"
-                                    BackgroundColor="White"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                                     StrokeShape="RoundRectangle 8"
                                     StrokeThickness="1"
-                                    Stroke="{StaticResource Gray300}">
+                                    Stroke="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}">
                                 <DatePicker Date="{Binding EndDate, Mode=TwoWay}"
                                             FontSize="14"
-                                            TextColor="{StaticResource Gray900}" />
+                                            TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
                             </Border>
                         </VerticalStackLayout>
                     </Grid>
@@ -229,10 +229,10 @@
 
                 <!-- Total Revenue card -->
                 <Border Padding="16"
-                        BackgroundColor="White"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                         StrokeShape="RoundRectangle 14"
                         StrokeThickness="1"
-                        Stroke="{StaticResource Gray200}">
+                        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}">
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding ViewOrderBreakdownCommand}" />
                     </Border.GestureRecognizers>
@@ -252,7 +252,7 @@
                         <Label Text="{Binding SalesSummary.TotalRevenueDisplay}"
                                FontFamily="OpenSansSemibold"
                                FontSize="32"
-                               TextColor="{StaticResource Gray900}" />
+                               TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
                         <Label Text="{h:Translate VsPreviousPeriod}"
                                FontSize="12"
                                TextColor="{StaticResource Gray400}" />
@@ -263,10 +263,10 @@
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
 
                     <Border Padding="14"
-                            BackgroundColor="White"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                             StrokeShape="RoundRectangle 14"
                             StrokeThickness="1"
-                            Stroke="{StaticResource Gray200}">
+                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}">
                         <VerticalStackLayout Spacing="6">
                             <Label Text="{h:Translate TotalOrders}"
                                    FontSize="13"
@@ -274,7 +274,7 @@
                             <Label Text="{Binding SalesSummary.TotalOrders}"
                                    FontFamily="OpenSansSemibold"
                                    FontSize="28"
-                                   TextColor="{StaticResource Gray900}" />
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
                             <Label Text="{Binding SalesSummary.PreviousPeriod.OrdersChangeDisplay}"
                                    FontFamily="OpenSansSemibold"
                                    FontSize="13"
@@ -284,10 +284,10 @@
 
                     <Border Grid.Column="1"
                             Padding="14"
-                            BackgroundColor="White"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                             StrokeShape="RoundRectangle 14"
                             StrokeThickness="1"
-                            Stroke="{StaticResource Gray200}">
+                            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}">
                         <VerticalStackLayout Spacing="6">
                             <Label Text="{h:Translate AvgOrder}"
                                    FontSize="13"
@@ -295,7 +295,7 @@
                             <Label Text="{Binding SalesSummary.AverageOrderValueDisplay}"
                                    FontFamily="OpenSansSemibold"
                                    FontSize="22"
-                                   TextColor="{StaticResource Gray900}" />
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
                             <Label Text="{Binding SalesSummary.PreviousPeriod.AovChangeDisplay}"
                                    FontFamily="OpenSansSemibold"
                                    FontSize="13"
@@ -307,10 +307,10 @@
 
                 <!-- Completion Rate card -->
                 <Border Padding="16"
-                        BackgroundColor="White"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                         StrokeShape="RoundRectangle 14"
                         StrokeThickness="1"
-                        Stroke="{StaticResource Gray200}">
+                        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}">
                     <VerticalStackLayout Spacing="10">
 
                         <Grid ColumnDefinitions="*,Auto">
@@ -322,7 +322,7 @@
                                    Text="{Binding SalesSummary.CompletionRateDisplay}"
                                    FontFamily="OpenSansSemibold"
                                    FontSize="17"
-                                   TextColor="{StaticResource Gray900}"
+                                   TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"
                                    VerticalOptions="Center" />
                         </Grid>
 
@@ -400,35 +400,12 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- Performance Insight card -->
-                <Border Padding="16"
-                        BackgroundColor="#FFF5F5"
-                        StrokeShape="RoundRectangle 14"
-                        StrokeThickness="1"
-                        Stroke="#FFE0E0">
-                    <HorizontalStackLayout Spacing="12" VerticalOptions="Start">
-                        <Label Text="{Binding InsightIcon}"
-                               FontSize="24"
-                               VerticalOptions="Start" />
-                        <VerticalStackLayout Spacing="4" HorizontalOptions="FillAndExpand">
-                            <Label Text="{h:Translate PerformanceInsight}"
-                                   FontFamily="OpenSansSemibold"
-                                   FontSize="14"
-                                   TextColor="{StaticResource Gray900}" />
-                            <Label Text="{Binding PerformanceInsight}"
-                                   FontSize="13"
-                                   TextColor="{StaticResource Gray600}"
-                                   LineBreakMode="WordWrap" />
-                        </VerticalStackLayout>
-                    </HorizontalStackLayout>
-                </Border>
-
                 <!-- ── TOP SELLING PRODUCTS ── -->
                 <Border Padding="16"
-                        BackgroundColor="White"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                         StrokeShape="RoundRectangle 14"
                         StrokeThickness="1"
-                        Stroke="{StaticResource Gray200}"
+                        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
                         IsVisible="{Binding HasTopProductsData}">
                     <VerticalStackLayout Spacing="0">
 
@@ -466,7 +443,7 @@
                                                 <Label Text="{Binding MenuItemName}"
                                                        FontFamily="OpenSansSemibold"
                                                        FontSize="14"
-                                                       TextColor="{StaticResource Gray900}"
+                                                       TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"
                                                        LineBreakMode="TailTruncation" />
                                                 <Label Text="{Binding CategoryName}"
                                                        FontSize="12"
@@ -481,7 +458,7 @@
                                                 <Label Text="{Binding RevenueDisplay}"
                                                        FontFamily="OpenSansSemibold"
                                                        FontSize="14"
-                                                       TextColor="{StaticResource Gray900}"
+                                                       TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"
                                                        HorizontalOptions="End" />
                                                 <Label FontSize="12"
                                                        TextColor="{StaticResource Gray500}"
@@ -524,10 +501,10 @@
 
                 <!-- ── SALES TRENDS ── -->
                 <Border Padding="16"
-                        BackgroundColor="White"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                         StrokeShape="RoundRectangle 14"
                         StrokeThickness="1"
-                        Stroke="{StaticResource Gray200}"
+                        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
                         IsVisible="{Binding HasSalesTrendsData}">
                     <VerticalStackLayout Spacing="0">
 
@@ -564,14 +541,14 @@
 
                                         <!-- Date label -->
                                         <Border Padding="8,4"
-                                                BackgroundColor="{StaticResource Gray100}"
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray700}}"
                                                 StrokeShape="RoundRectangle 6"
                                                 StrokeThickness="0"
                                                 VerticalOptions="Center">
                                             <Label Text="{Binding Label}"
                                                    FontFamily="OpenSansSemibold"
                                                    FontSize="12"
-                                                   TextColor="{StaticResource Gray700}"
+                                                   TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
                                                    VerticalOptions="Center" />
                                         </Border>
 
@@ -592,7 +569,7 @@
                                                Text="{Binding RevenueDisplay}"
                                                FontFamily="OpenSansSemibold"
                                                FontSize="14"
-                                               TextColor="{StaticResource Gray900}"
+                                               TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"
                                                VerticalOptions="Center" />
 
                                     </Grid>
@@ -627,7 +604,7 @@
                 <Label Text="{h:Translate NotAuthorized}"
                        FontFamily="OpenSansSemibold"
                        FontSize="16"
-                       TextColor="{StaticResource Gray700}"
+                       TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
                        HorizontalTextAlignment="Center"
                        LineBreakMode="WordWrap" />
             </VerticalStackLayout>

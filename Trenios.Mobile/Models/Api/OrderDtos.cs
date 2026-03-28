@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Trenios.Mobile.Helpers;
 using Trenios.Mobile.Services;
 
 namespace Trenios.Mobile.Models.Api;
@@ -163,6 +164,15 @@ public class OrderResponse
     };
 
     [JsonIgnore]
+    public string TotalAmountDisplay => CurrencyFormatter.Format(TotalAmount);
+
+    [JsonIgnore]
+    public string SubTotalDisplay => CurrencyFormatter.Format(SubTotal);
+
+    [JsonIgnore]
+    public string DiscountAmountDisplay => $"-{CurrencyFormatter.Format(DiscountAmount)}";
+
+    [JsonIgnore]
     public string PlacedAtDisplay => PlacedAt.ToLocalTime().ToString("HH:mm");
 
     [JsonIgnore]
@@ -266,6 +276,9 @@ public class OrderItemResponse
     public List<OrderItemAdditionResponse>? Additions { get; set; }
 
     // Helper properties
+    [JsonIgnore]
+    public string TotalPriceDisplay => CurrencyFormatter.Format(TotalPrice);
+
     [JsonIgnore]
     public bool HasAdditions => Additions?.Count > 0;
 

@@ -16,11 +16,13 @@ public partial class OrdersPage : ContentPage
         UpdateLanguageLabels();
         LocalizationService.Instance.OnLanguageChanged += UpdateLanguageLabels;
 
-        // On tablet, force CollectionView to re-layout when the side panel appears/disappears
-        // (column span changes from 2 to 1). GroupedOrders replacement already closes open SwipeViews.
+        // MAUI grouped CollectionView does not re-render when the bound IReadOnlyList reference
+        // is replaced — force an ItemsSource cycle on every GroupedOrders change.
+        // Also reset on HasSelectedOrder change to close open SwipeViews.
         _viewModel.PropertyChanged += async (s, e) =>
         {
-            if (e.PropertyName == nameof(OrdersViewModel.HasSelectedOrder))
+            if (e.PropertyName == nameof(OrdersViewModel.GroupedOrders) ||
+                e.PropertyName == nameof(OrdersViewModel.HasSelectedOrder))
             {
                 await Dispatcher.DispatchAsync(() =>
                 {
@@ -36,7 +38,7 @@ public partial class OrdersPage : ContentPage
     {
         base.OnAppearing();
         // Fire-and-forget: page appears immediately, data loads in background
-        _ = _viewModel.LoadOrdersAsync();
+        _ = _viewModel.InitializeAsync();
     }
 
     private void UpdateLanguageLabels()

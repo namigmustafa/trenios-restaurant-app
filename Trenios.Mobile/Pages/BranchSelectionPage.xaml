@@ -7,14 +7,14 @@
              x:Class="Trenios.Mobile.Pages.BranchSelectionPage"
              x:DataType="vm:BranchSelectionViewModel"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="{StaticResource Gray100}">
+             BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
 
     <Grid RowDefinitions="Auto,Auto,*">
 
         <!-- Header -->
         <Border Grid.Row="0"
                 StrokeThickness="0"
-                BackgroundColor="White"
+                BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                 HeightRequest="{OnIdiom Phone=72, Tablet=96}"
                 Padding="16,0">
             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
@@ -31,7 +31,7 @@
                 <Border Grid.Column="1"
                         StrokeShape="RoundRectangle 8"
                         StrokeThickness="1.5"
-                        Stroke="{StaticResource Gray200}"
+                        Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
                         BackgroundColor="Transparent"
                         Padding="14,8"
                         VerticalOptions="Center">
@@ -42,7 +42,7 @@
                            Text="EN"
                            FontFamily="OpenSansSemibold"
                            FontSize="13"
-                           TextColor="{StaticResource Gray700}"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
                            VerticalOptions="Center"
                            HorizontalOptions="Center"/>
                 </Border>
@@ -69,7 +69,7 @@
         </Border>
 
         <!-- Separator -->
-        <BoxView Grid.Row="1" HeightRequest="1" BackgroundColor="{StaticResource Gray200}"/>
+        <BoxView Grid.Row="1" HeightRequest="1" Color="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"/>
 
         <!-- Content -->
         <ScrollView Grid.Row="2">
@@ -85,7 +85,7 @@
                             StrokeThickness="0"
                             HeightRequest="56"
                             WidthRequest="56"
-                            BackgroundColor="{StaticResource Gray200}"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
                             VerticalOptions="Center">
                         <Image Source="{Binding RestaurantImageUrl, Converter={StaticResource ImageFallbackConverter}}"
                                Aspect="AspectFill"
@@ -96,7 +96,7 @@
                         <Label Text="{Binding RestaurantName}"
                                FontFamily="OpenSansSemibold"
                                FontSize="22"
-                               TextColor="{StaticResource Gray900}"/>
+                               TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
                         <Label Text="{h:Translate SelectBranch}"
                                FontSize="13"
                                TextColor="{StaticResource Secondary}"/>
@@ -107,8 +107,8 @@
                 <Button Text="{h:Translate SelectRestaurant}"
                         Command="{Binding BackCommand}"
                         IsVisible="{Binding CanGoBack}"
-                        BackgroundColor="{StaticResource Gray200}"
-                        TextColor="{StaticResource Gray700}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+                        TextColor="{AppThemeBinding Light={StaticResource Gray700}, Dark={StaticResource Gray300}}"
                         BorderColor="Transparent"
                         BorderWidth="0"
                         CornerRadius="10"
@@ -165,8 +165,8 @@
                         <DataTemplate x:DataType="api:BranchDto">
                             <Border StrokeShape="RoundRectangle 16"
                                     StrokeThickness="1"
-                                    Stroke="{StaticResource Gray200}"
-                                    BackgroundColor="White"
+                                    Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                                     Padding="16">
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer
@@ -196,7 +196,7 @@
                                         <Label Text="{Binding Name}"
                                                FontFamily="OpenSansSemibold"
                                                FontSize="16"
-                                               TextColor="{StaticResource Gray900}"/>
+                                               TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"/>
                                         <HorizontalStackLayout Spacing="4"
                                                                IsVisible="{Binding Address, Converter={StaticResource IsNotNullOrEmptyConverter}}">
                                             <Label Text="&#x2315;"
@@ -263,7 +263,7 @@
                     HorizontalOptions="Center"
                     StrokeShape="RoundRectangle 16"
                     StrokeThickness="0"
-                    BackgroundColor="White"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray800}}"
                     Padding="0"
                     WidthRequest="300">
                 <Border.GestureRecognizers>

@@ -28,8 +28,11 @@ public enum Currency
 {
     EUR = 1,
     USD = 2,
-    GBP = 3,
-    TRY = 4
+    AZN = 3,
+    GBP = 4,
+    TRY = 5,
+    RUB = 6,
+    DKK = 7
 }
 
 public enum SelectionType
