@@ -409,7 +409,8 @@ public class OrdersViewModel : INotifyPropertyChanged
             CancellationReason = cancellationReason
         };
 
-        var result = await _apiService.PatchAsync<OrderResponse>($"/api/orders/{SelectedOrder.Id}/status", request);
+        var orderToCancel = SelectedOrder;
+        var result = await _apiService.PatchAsync<OrderResponse>($"/api/orders/{orderToCancel.Id}/status", request);
 
         if (result.IsSuccess)
         {
@@ -417,6 +418,21 @@ public class OrdersViewModel : INotifyPropertyChanged
                 ApplyOrderUpdate(result.Data);
             else
                 _ = LoadOrdersAsync(); // fallback if API returns no body
+
+            // Cancel any active activity session linked to this order, then reload so
+            // the Stop button and timer disappear from the details panel.
+            if (newStatus == OrderStatus.Cancelled)
+            {
+                var activeSession = orderToCancel.ActivitySessions
+                    .FirstOrDefault(s => s.SessionStatus == ActivitySessionStatus.Active);
+                if (activeSession != null)
+                {
+                    await _activityService.CancelSessionAsync(activeSession.Id, cancellationReason);
+                    var selectedId = orderToCancel.Id;
+                    await LoadOrdersAsync();
+                    SelectedOrder = Orders.FirstOrDefault(o => o.Id == selectedId);
+                }
+            }
         }
         else if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
